@@ -1,0 +1,16 @@
+spring:
+  profiles:
+    active: common,local
+---
+spring:
+  config:
+    activate:
+      on-profile: common
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+    import:
+      - "classpath:variables.yml"
+      - "classpath:application-datasource.yml"

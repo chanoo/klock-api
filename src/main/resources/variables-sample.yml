@@ -1,0 +1,8 @@
+# variables.yml 파일명을 변경 하고 사용 하세요.
+app:
+  common:
+    db:
+      host: db.example.com
+      port: 3306
+      user: username
+      password: password
