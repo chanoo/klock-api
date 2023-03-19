@@ -8,27 +8,31 @@ import app.klock.api.service.AuthService
 import app.klock.api.utils.JwtUtils
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
+import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.ServerRequest
 import org.springframework.web.reactive.function.server.ServerResponse
 import reactor.core.publisher.Mono
 import java.time.LocalDateTime
 
+
 @Component
 class AuthHandler(
     private val accountService: AccountService,
     private val authService: AuthService,
-    private val jwtUtils: JwtUtils
+    private val jwtUtils: JwtUtils,
+    private val passwordEncoder: PasswordEncoder
 ) {
     // 회원가입 요청 처리
     fun signup(request: ServerRequest): Mono<ServerResponse> {
         return request.bodyToMono(CreateUserRequest::class.java)
             .flatMap { request ->
+                val hashedPassword = if (request.password != null) passwordEncoder.encode(request.password) else null
                 authService.registerUser(
                     Account(
-                        username = request.name,
+                        username = request.username,
                         email = request.email,
-                        hashedPassword = request.password,
+                        hashedPassword = hashedPassword,
                         role = AccountRole.USER,
                         active = true,
                         totalStudyTime = 0,
@@ -41,7 +45,7 @@ class AuthHandler(
             .flatMap { user ->
                 ServerResponse
                     .status(HttpStatus.CREATED)
-                    .bodyValue(CreateUserResponse(user.id, user.username, user.email))
+                    .bodyValue(AuthDto(user.id, user.username, user.email))
             }
     }
 

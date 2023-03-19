@@ -30,46 +30,51 @@ class StudySessionRouterTest @Autowired constructor(
     @MockBean
     private lateinit var studySessionService: StudySessionService
 
-    private lateinit var studySessions: List<StudySession>
+    private lateinit var studySession: StudySession
 
     @BeforeEach
     fun setUp() {
-        studySessions = listOf(
+        studySession = StudySession(
+            id = 1,
+            accountId = 1,
+            startTime = LocalDateTime.now(),
+            endTime = LocalDateTime.now().plusHours(1)
+        )
+    }
+
+    @Test
+    fun `특정 사용자의 공부 시간 조회`() {
+        val accountId = 1L
+        val startDate = LocalDate.now()
+        val studySessions = listOf(
             StudySession(
                 id = 1,
-                accountId = 1,
+                accountId = accountId,
                 startTime = LocalDateTime.now(),
                 endTime = LocalDateTime.now().plusHours(1)
             ),
             StudySession(
                 id = 2,
-                accountId = 2,
+                accountId = accountId,
                 startTime = LocalDateTime.now(),
                 endTime = LocalDateTime.now().plusHours(1)
             )
         )
-    }
 
-    @Test
-    fun `findByAccountIdAndStartTimeBetween`() {
-        val accountId = 1L
-        val startDate = LocalDate.now()
-
-        Mockito.`when`(studySessionService.findByAccountIdAndStartTimeBetween(accountId, startDate))
-            .thenReturn(Flux.fromIterable(studySessions.filter { it.accountId == accountId }))
+        Mockito.`when`(studySessionService.findByAccountIdAndStartTimeBetween(accountId, startDate)).thenReturn(Flux.just(studySessions[0], studySessions[1]))
 
         webTestClient.get()
-            .uri("/api/study-sessions?userId=$accountId&startDate=$startDate")
+            .uri("/api/study-sessions?accountId=$accountId&date=$startDate")
             .exchange()
             .expectStatus().isOk
             .expectHeader().contentType(MediaType.APPLICATION_JSON)
             .expectBodyList(StudySession::class.java)
-            .hasSize(1)
-            .contains(studySessions[0])
+            .hasSize(2)
+            .contains(studySessions[0], studySessions[1])
     }
 
     @Test
-    fun `create`() {
+    fun `공부 시간 추가`() {
         val studySession =
             StudySession(accountId = 3, startTime = LocalDateTime.now(), endTime = LocalDateTime.now().plusHours(1))
 
@@ -87,8 +92,9 @@ class StudySessionRouterTest @Autowired constructor(
     }
 
     @Test
-    fun `update`() {
-        val studySession = studySessions[0].copy(endTime = LocalDateTime.now().plusHours(2))
+    fun `공부 시간 수정`() {
+        val studySession =
+            StudySession(id = 1L, accountId = 3, startTime = LocalDateTime.now(), endTime = LocalDateTime.now().plusHours(1))
 
         Mockito.`when`(studySessionService.update(studySession.id!!, studySession)).thenReturn(Mono.just(studySession))
 

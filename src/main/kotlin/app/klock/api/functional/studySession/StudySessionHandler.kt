@@ -1,8 +1,7 @@
 package app.klock.api.functional.studySession
 
 import app.klock.api.domain.entity.StudySession
-import app.klock.api.functional.studySession.dto.CreateStudySessionResponse
-import app.klock.api.functional.studySession.dto.StudySessionByUserIdAndDateRequest
+import app.klock.api.functional.studySession.dto.StudySessionDto
 import app.klock.api.service.StudySessionService
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -11,30 +10,32 @@ import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.server.ServerRequest
 import org.springframework.web.reactive.function.server.ServerResponse
 import reactor.core.publisher.Mono
+import java.time.LocalDate
 
 @Component
 class StudySessionHandler(private val studySessionService: StudySessionService) {
 
     // userid 로 studySession 찾기
     fun getStudySessionByUserIdAndDate(request: ServerRequest): Mono<ServerResponse> {
-        return request.bodyToMono(StudySessionByUserIdAndDateRequest::class.java)
-            .flatMap { request ->
-                studySessionService.findByAccountIdAndStartTimeBetween(request.userId, request.date)
-                    .map { studySession -> CreateStudySessionResponse(
-                        startTime = studySession.startTime,
-                        endTime = studySession.endTime,
-                        userId = studySession.accountId)
-                    }
-                    .collectList()
-                    .flatMap { studySessions -> ServerResponse.ok().body(BodyInserters.fromValue(studySessions)) }
-            }
-            .onErrorResume { error ->
-                ServerResponse.badRequest()
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(mapOf("error" to error.message))
-            }
-    }
+        val userId = request.queryParam("accountId").orElse(null)?.toLongOrNull()
+        val date = request.queryParam("date").orElse(null)?.let { LocalDate.parse(it) }
 
+        return if (userId != null && date != null) {
+            studySessionService.findByAccountIdAndStartTimeBetween(userId, date)
+                .map { studySession -> StudySessionDto(
+                    id = studySession.id,
+                    startTime = studySession.startTime,
+                    endTime = studySession.endTime,
+                    accountId = studySession.accountId)
+                }
+                .collectList()
+                .flatMap { studySessions -> ServerResponse.ok().body(BodyInserters.fromValue(studySessions)) }
+        } else {
+            ServerResponse.badRequest()
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(mapOf("error" to "Invalid query parameters"))
+        }
+    }
 
     fun create(request: ServerRequest): Mono<ServerResponse> {
         return request.bodyToMono(StudySession::class.java)

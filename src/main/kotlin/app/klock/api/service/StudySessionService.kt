@@ -13,10 +13,10 @@ import java.time.LocalTime
 class StudySessionService(private val studySessionRepository: StudySessionRepository) {
 
     // accountId로 startTime으로 studySession 찾기
-    fun findByAccountIdAndStartTimeBetween(userId: Long, startDate: LocalDate): Flux<StudySession> {
+    fun findByAccountIdAndStartTimeBetween(accountId: Long, startDate: LocalDate): Flux<StudySession> {
         val startDateTime = startDate.atStartOfDay()
         val endDateTime = startDate.atTime(LocalTime.MAX)
-        return studySessionRepository.findByAccountIdAndStartTimeBetween(userId, startDateTime, endDateTime)
+        return studySessionRepository.findByAccountIdAndStartTimeBetween(accountId, startDateTime, endDateTime)
     }
 
     // accountId로 studySession 등록

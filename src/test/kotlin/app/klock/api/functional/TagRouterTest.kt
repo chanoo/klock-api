@@ -32,8 +32,8 @@ class TagRouterTest @Autowired constructor(
 
     @BeforeEach
     fun setUp() {
-        tag1 = Tag(id = 1, name = "Tag1")
-        tag2 = Tag(id = 2, name = "Tag2")
+        tag1 = Tag(name = "Tag1")
+        tag2 = Tag(name = "Tag2")
     }
 
     @Test
@@ -66,9 +66,10 @@ class TagRouterTest @Autowired constructor(
 
     @Test
     fun `태그 조회`() {
-        Mockito.`when`(tagService.findById(tag1.id!!)).thenReturn(Mono.just(tag1))
+        val tag = Tag(id = 1L, name = "Tag1")
+        Mockito.`when`(tagService.findById(tag.id!!)).thenReturn(Mono.just(tag))
 
-        client.get().uri("/api/tags/${tag1.id}")
+        client.get().uri("/api/tags/${tag.id}")
             .exchange()
             .expectStatus().isOk
             .expectHeader().contentType(MediaType.APPLICATION_JSON)
@@ -77,10 +78,11 @@ class TagRouterTest @Autowired constructor(
     }
     @Test
     fun `태그 업데이트`() {
-        val updatedTag = Tag(name = "UpdatedTag")
-        Mockito.`when`(tagService.update(tag1.id!!, updatedTag)).thenReturn(Mono.just(tag1.copy(name = "UpdatedTag")))
+        val tag = Tag(id = 1L, name = "Original Tag")
+        val updatedTag = Tag(id = 1L, name = "UpdatedTag")
+        Mockito.`when`(tagService.update(tag.id!!, updatedTag)).thenReturn(Mono.just(tag.copy(name = "UpdatedTag")))
 
-        client.put().uri("/api/tags/${tag1.id}")
+        client.put().uri("/api/tags/${tag.id}")
             .contentType(MediaType.APPLICATION_JSON)
             .body(BodyInserters.fromValue(updatedTag))
             .exchange()
@@ -92,9 +94,10 @@ class TagRouterTest @Autowired constructor(
 
     @Test
     fun `태그 삭제`() {
-        Mockito.`when`(tagService.deleteById(tag1.id!!)).thenReturn(Mono.empty<Void>())
+        val deleteTag = Tag(id = 1L, name = "UpdatedTag")
+        Mockito.`when`(tagService.deleteById(deleteTag.id!!)).thenReturn(Mono.empty<Void>())
 
-        client.delete().uri("/api/tags/${tag1.id}")
+        client.delete().uri("/api/tags/${deleteTag.id}")
             .exchange()
             .expectStatus().isNoContent
     }
