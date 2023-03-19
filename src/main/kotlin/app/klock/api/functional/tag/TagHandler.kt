@@ -1,4 +1,4 @@
-package app.klock.api.functional.tag.handler
+package app.klock.api.functional.tag
 
 import app.klock.api.domain.entity.Tag
 import app.klock.api.service.TagService

@@ -1,4 +1,4 @@
-package app.klock.api.functional.auth.handler
+package app.klock.api.functional.account
 
 import app.klock.api.domain.entity.Account
 import app.klock.api.domain.entity.AccountRole
@@ -16,8 +16,8 @@ import reactor.core.publisher.Mono
 import java.time.LocalDateTime
 
 @Component
-class UserHandler(private val accountService: AccountService) {
-    private val logger = LoggerFactory.getLogger(UserHandler::class.java)
+class AccountHandler(private val accountService: AccountService) {
+    private val logger = LoggerFactory.getLogger(AccountHandler::class.java)
 
     // 사용자 목록 조회
     fun getAllUsers(request: ServerRequest): Mono<ServerResponse> {

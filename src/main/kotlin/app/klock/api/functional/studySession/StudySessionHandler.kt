@@ -1,4 +1,4 @@
-package app.klock.api.functional.studySession.handler
+package app.klock.api.functional.studySession
 
 import app.klock.api.functional.studySession.dto.CreateStudySessionResponse
 import app.klock.api.functional.studySession.dto.StudySessionByUserIdAndDateRequest

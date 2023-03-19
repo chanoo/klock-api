@@ -1,6 +1,5 @@
-package app.klock.api.functional.tag.router
+package app.klock.api.functional.tag
 
-import app.klock.api.functional.tag.handler.TagHandler
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.reactive.function.server.router

@@ -1,4 +1,4 @@
-package app.klock.api.functional.auth
+package app.klock.api.functional
 
 import app.klock.api.config.TestConfig
 import app.klock.api.domain.entity.Account

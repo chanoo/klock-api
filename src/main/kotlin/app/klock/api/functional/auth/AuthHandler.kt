@@ -1,4 +1,4 @@
-package app.klock.api.functional.auth.handler
+package app.klock.api.functional.auth
 
 import app.klock.api.domain.entity.Account
 import app.klock.api.domain.entity.AccountRole
