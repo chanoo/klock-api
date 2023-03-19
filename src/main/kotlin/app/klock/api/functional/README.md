@@ -105,3 +105,35 @@ data class UpdateUserRequest(val commonAttributes: UserCommonAttributes, val id:
 ```
 
 상황에 따라 상속이나 컴포지션 중 적절한 방법을 선택하여 공통 속성을 재사용하고, 코드의 중복을 줄일 수 있습니다. 각 방법은 장단점이 있으며, 프로젝트의 요구 사항과 개발 팀의 취향에 따라 선택해야 합니다.
+
+# 내가 위에 제공한 코드랑 다시 만들어준 코드랑 무슨 차이가 있어요? 둘다 리액티브 스타일로 코드인가요?
+
+제가 이전에 제공한 코드는 코루틴 스타일을 사용하고 있었습니다. 코루틴 스타일은 suspend 키워드를 사용하여 비동기 작업을 처리하는 스타일입니다. 다시 작성한 코드는 리액티브 스타일로 수정되었습니다.
+
+두 스타일의 주요 차이점은 다음과 같습니다.
+
+코루틴 스타일 (suspend 사용):
+
+```kotlin
+suspend fun create(request: ServerRequest): ServerResponse {
+    val event = request.awaitBody<DDayEventDto>()
+    val createdEvent = service.create(event)
+    return ServerResponse.ok().json().bodyValueAndAwait(createdEvent)
+}
+```
+
+리액티브 스타일 (suspend 미사용):
+
+```kotlin
+fun create(request: ServerRequest): ServerResponse {
+    val event = request.awaitBodyOrNull<DDayEventDto>() ?: throw IllegalArgumentException("Event cannot be null")
+    val createdEvent = service.create(event)
+    return ServerResponse.ok().json().body(createdEvent)
+}
+```
+
+코루틴 스타일의 경우, suspend 키워드를 사용하여 함수를 선언하고, 비동기 작업을 처리할 때 await() 함수를 사용합니다. 리액티브 스타일의 경우, suspend 키워드를 사용하지 않고, Mono를 반환하는 방식으로 작성됩니다.
+
+두 스타일 모두 비동기 작업을 처리할 수 있지만, 코루틴 스타일은 더 간결하고 읽기 쉬운 코드를 작성할 수 있다는 장점이 있습니다. 리액티브 스타일은 더 복잡한 코드를 작성할 수도 있지만, 더 세밀한 제어가 가능한 경우가 있습니다.
+
+결국 두 스타일은 Spring WebFlux에서 모두 사용할 수 있으며, 개발자가 선호하는 스타일에 따라 선택할 수 있습니다.
