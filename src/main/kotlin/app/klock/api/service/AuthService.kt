@@ -2,7 +2,7 @@ package app.klock.api.service
 
 import app.klock.api.domain.entity.Account
 import app.klock.api.domain.entity.AccountRole
-import app.klock.api.functional.user.dto.SocialLoginRequest
+import app.klock.api.functional.auth.dto.SocialLoginRequest
 import app.klock.api.repository.AccountRepository
 import app.klock.api.utils.JwtUtils
 import com.fasterxml.jackson.databind.JsonNode
@@ -23,7 +23,9 @@ class AuthService(
     private val appleClientId = "your_apple_client_id"
 
     fun registerUser(account: Account): Mono<Account> {
-        account.hashedPassword = passwordEncoder.encode(account.hashedPassword)
+        if (account.hashedPassword != null) {
+            account.hashedPassword = passwordEncoder.encode(account.hashedPassword)
+        }
         return accountRepository.save(account)
     }
 

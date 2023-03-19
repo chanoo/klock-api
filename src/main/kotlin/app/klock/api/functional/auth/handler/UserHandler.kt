@@ -1,10 +1,10 @@
-package app.klock.api.functional.user.handler
+package app.klock.api.functional.auth.handler
 
 import app.klock.api.domain.entity.Account
 import app.klock.api.domain.entity.AccountRole
-import app.klock.api.functional.user.dto.UpdateUserRequest
-import app.klock.api.functional.user.dto.UpdateUserResponse
-import app.klock.api.functional.user.dto.UserResponse
+import app.klock.api.functional.auth.dto.UpdateUserRequest
+import app.klock.api.functional.auth.dto.UpdateUserResponse
+import app.klock.api.functional.auth.dto.UserResponse
 import app.klock.api.service.AccountService
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component

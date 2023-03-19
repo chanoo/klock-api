@@ -4,5 +4,6 @@ app:
     db:
       host: db.example.com
       port: 3306
+      schema: klock
       user: username
       password: password

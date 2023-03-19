@@ -1,0 +1,14 @@
+spring:
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath*:schema.sql
+      data-locations: classpath*:data.sql
+  r2dbc:
+    url: r2dbc:h2:mem:///PUBLIC;DB_CLOSE_DELAY=-1;MODE=MySQL
+    username: sa
+    password:
+    name: org.h2.Driver
+jwt:
+  secret: mySecretKey1234
+  expiration: 3600

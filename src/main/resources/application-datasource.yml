@@ -1,6 +1,6 @@
 spring:
   r2dbc:
-    url: r2dbc:mysql://${app.common.db.host}:${app.common.db.port}?sslMode=DISABLED
+    url: r2dbc:mysql://${app.common.db.host}:${app.common.db.port}/${app.common.db.scheme}?sslMode=DISABLED
     username: ${app.common.db.user}
     password: ${app.common.db.password}
     pool:

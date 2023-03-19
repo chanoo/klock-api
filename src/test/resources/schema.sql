@@ -1,27 +1,27 @@
 -- User Level 테이블
 CREATE TABLE IF NOT EXISTS account_level (
-                                             id BIGINT AUTO_INCREMENT PRIMARY KEY,
-                                             level INT NOT NULL,
-                                             required_study_time INT NOT NULL,
-                                             character_name VARCHAR(255) NOT NULL,
-                                             character_image VARCHAR(255) NOT NULL
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    level INT NOT NULL,
+    required_study_time INT NOT NULL,
+    character_name VARCHAR(255) NOT NULL,
+    character_image VARCHAR(255) NOT NULL
 );
 
 -- 사용자 테이블
 CREATE TABLE IF NOT EXISTS account (
-                                       id BIGINT NOT NULL AUTO_INCREMENT,
-                                       email VARCHAR(255) NOT NULL,
-                                       hashed_password VARCHAR(255),
-                                       username VARCHAR(255) NOT NULL,
-                                       total_study_time INT NOT NULL,
-                                       account_level_id BIGINT NOT NULL,
-                                       role VARCHAR(255) NOT NULL,
-                                       active BOOLEAN NOT NULL,
-                                       created_at TIMESTAMP NOT NULL,
-                                       updated_at TIMESTAMP NOT NULL,
-                                       PRIMARY KEY (id),
-                                       UNIQUE (email),
-                                       FOREIGN KEY (account_level_id) REFERENCES account_level (id)
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    email VARCHAR(255) NOT NULL,
+    hashed_password VARCHAR(255),
+    username VARCHAR(255) NOT NULL,
+    total_study_time INT NOT NULL,
+    account_level_id BIGINT NOT NULL,
+    role VARCHAR(255) NOT NULL,
+    active BOOLEAN NOT NULL,
+    created_at TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP NOT NULL,
+    PRIMARY KEY (id),
+    UNIQUE (email),
+    FOREIGN KEY (account_level_id) REFERENCES account_level (id)
 );
 
 -- 과목 테이블

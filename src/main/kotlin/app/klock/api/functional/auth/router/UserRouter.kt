@@ -1,6 +1,6 @@
-package app.klock.api.functional.user.router
+package app.klock.api.functional.auth.router
 
-import app.klock.api.functional.user.handler.UserHandler
+import app.klock.api.functional.auth.handler.UserHandler
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.reactive.function.server.router

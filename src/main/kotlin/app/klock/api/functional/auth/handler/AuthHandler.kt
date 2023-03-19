@@ -1,11 +1,11 @@
-package app.klock.api.functional.user.handler
+package app.klock.api.functional.auth.handler
 
 import app.klock.api.domain.entity.Account
 import app.klock.api.domain.entity.AccountRole
-import app.klock.api.functional.user.dto.CreateUserRequest
-import app.klock.api.functional.user.dto.CreateUserResponse
-import app.klock.api.functional.user.dto.LoginRequest
-import app.klock.api.functional.user.dto.SocialLoginRequest
+import app.klock.api.functional.auth.dto.CreateUserRequest
+import app.klock.api.functional.auth.dto.CreateUserResponse
+import app.klock.api.functional.auth.dto.LoginRequest
+import app.klock.api.functional.auth.dto.SocialLoginRequest
 import app.klock.api.service.AccountService
 import app.klock.api.service.AuthService
 import app.klock.api.utils.JwtUtils
