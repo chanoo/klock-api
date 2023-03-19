@@ -49,7 +49,7 @@ class AuthHandler(
     }
 
     // 로그인 요청 처리
-    fun login(request: ServerRequest): Mono<ServerResponse> {
+    fun signin(request: ServerRequest): Mono<ServerResponse> {
         return request.bodyToMono(LoginRequest::class.java)
             .flatMap { loginRequest ->
                 accountService.findByEmail(loginRequest.email)

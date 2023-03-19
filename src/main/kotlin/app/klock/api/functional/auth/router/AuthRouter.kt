@@ -12,7 +12,7 @@ class AuthRouter(private val authHandler: AuthHandler) {
     fun authRoutes() = router {
         "/api/auth".nest {
             POST("/signup", authHandler::signup)
-            POST("/login", authHandler::login)
+            POST("/signin", authHandler::signin)
             POST("/facebook", authHandler::authenticateFacebook)
             POST("/apple", authHandler::authenticateApple)
         }

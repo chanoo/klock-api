@@ -1,9 +1,10 @@
-package app.klock.api.functional.user
+package app.klock.api.functional.auth
 
 import app.klock.api.config.TestConfig
 import app.klock.api.domain.entity.Account
 import app.klock.api.domain.entity.AccountRole
 import app.klock.api.functional.auth.dto.CreateUserRequest
+import app.klock.api.functional.auth.dto.LoginRequest
 import app.klock.api.service.AccountService
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -76,4 +77,64 @@ class AuthRouterTest @Autowired constructor(
             .exchange()
             .expectStatus().isCreated
     }
+
+    @Test
+    fun `로그인 성공`() {
+        val loginRequest = LoginRequest(
+            email = "user1@example.com",
+            password = "password"
+        )
+
+        Mockito.`when`(accountService.findByEmail(loginRequest.email)).thenReturn(Mono.just(account))
+        Mockito.`when`(accountService.validatePassword(loginRequest.password, account.hashedPassword)).thenReturn(true)
+
+        client.post().uri("/api/auth/signin")
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(BodyInserters.fromValue(loginRequest))
+            .exchange()
+            .expectStatus().isOk
+            .expectHeader().contentType(MediaType.APPLICATION_JSON)
+            .expectBody()
+            .jsonPath("$.token").isNotEmpty
+    }
+
+    @Test
+    fun `로그인 실패 - 잘못된 이메일`() {
+        val loginRequest = LoginRequest(
+            email = "wrong@example.com",
+            password = "password"
+        )
+
+        Mockito.`when`(accountService.findByEmail(loginRequest.email)).thenReturn(Mono.empty())
+
+        client.post().uri("/api/auth/signin")
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(BodyInserters.fromValue(loginRequest))
+            .exchange()
+            .expectStatus().isBadRequest
+            .expectHeader().contentType(MediaType.APPLICATION_JSON)
+            .expectBody()
+            .jsonPath("$.error").isEqualTo("Invalid username or password")
+    }
+
+    @Test
+    fun `로그인 실패 - 잘못된 비밀번호`() {
+        val loginRequest = LoginRequest(
+            email = "user1@example.com",
+            password = "wrongpassword"
+        )
+
+        Mockito.`when`(accountService.findByEmail(loginRequest.email)).thenReturn(Mono.just(account))
+        Mockito.`when`(accountService.validatePassword(loginRequest.password, account.hashedPassword)).thenReturn(false)
+
+        client.post().uri("/api/auth/signin")
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(BodyInserters.fromValue(loginRequest))
+            .exchange()
+            .expectStatus().isBadRequest
+            .expectHeader().contentType(MediaType.APPLICATION_JSON)
+            .expectBody()
+            .jsonPath("$.error").isEqualTo("Invalid username or password")
+    }
+
 }
