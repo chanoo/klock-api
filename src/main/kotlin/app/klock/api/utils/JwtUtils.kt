@@ -52,6 +52,16 @@ class JwtUtils {
         return !claims.expiration.before(Date())
     }
 
+    // JWT 토큰의 유효성 검사하고 이메일을 반환
+    fun validateTokenAndGetEmail(token: String): String {
+        val claims: Claims = getClaimsFromToken(token)
+        if (!claims.expiration.before(Date())) {
+            return claims.subject
+        } else {
+            throw IllegalArgumentException("Invalid token")
+        }
+    }
+
     // JWT 토큰에서 권한 목록 가져오기
     fun getAuthoritiesFromJwt(token: String): List<GrantedAuthority> {
         val claims: Claims = getClaimsFromToken(token)

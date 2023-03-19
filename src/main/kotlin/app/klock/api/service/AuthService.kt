@@ -77,4 +77,14 @@ class AuthService(
                 jwtUtils.generateToken(user.email)
             }
     }
+
+    fun refreshToken(refreshToken: String): Mono<String> {
+        return Mono.fromCallable {
+            jwtUtils.validateTokenAndGetEmail(refreshToken)
+        }.flatMap { email ->
+            val newToken = jwtUtils.generateToken(email)
+            Mono.just(newToken)
+        }
+    }
+
 }

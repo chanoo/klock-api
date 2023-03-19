@@ -6,6 +6,7 @@ import app.klock.api.domain.entity.AccountRole
 import app.klock.api.functional.auth.dto.CreateUserRequest
 import app.klock.api.functional.auth.dto.LoginRequest
 import app.klock.api.service.AccountService
+import app.klock.api.service.AuthService
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -29,6 +30,8 @@ class AuthRouterTest @Autowired constructor(
 ) {
     @MockBean
     private lateinit var accountService: AccountService
+    @MockBean
+    private lateinit var authService: AuthService
 
     // 테스트 데이터 설정
     lateinit var account: Account
@@ -135,6 +138,23 @@ class AuthRouterTest @Autowired constructor(
             .expectHeader().contentType(MediaType.APPLICATION_JSON)
             .expectBody()
             .jsonPath("$.error").isEqualTo("Invalid username or password")
+    }
+
+    @Test
+    fun `토큰 갱신`() {
+        val refreshToken = "valid_refresh_token"
+        val newAccessToken = "new_access_token"
+
+        Mockito.`when`(authService.refreshToken(refreshToken)).thenReturn(Mono.just(newAccessToken))
+
+        client.post().uri("/api/auth/refresh-token")
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(BodyInserters.fromValue(mapOf("refreshToken" to refreshToken)))
+            .exchange()
+            .expectStatus().isOk
+            .expectHeader().contentType(MediaType.APPLICATION_JSON)
+            .expectBody()
+            .jsonPath("$.token").isEqualTo(newAccessToken)
     }
 
 }

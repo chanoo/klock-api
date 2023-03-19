@@ -12,8 +12,10 @@ class AuthRouter(private val authHandler: AuthHandler) {
         "/api/auth".nest {
             POST("/signup", authHandler::signup)
             POST("/signin", authHandler::signin)
+            POST("/refresh-token", authHandler::refreshToken)
             POST("/facebook", authHandler::authenticateFacebook)
             POST("/apple", authHandler::authenticateApple)
         }
     }
+
 }
