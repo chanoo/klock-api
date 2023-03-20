@@ -2,7 +2,7 @@ package app.klock.api.service
 
 import app.klock.api.domain.entity.Account
 import app.klock.api.repository.AccountRepository
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
+import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
@@ -12,7 +12,7 @@ import reactor.core.publisher.Mono
  * 데이터베이스 작업을 위해 UserRepository와 통신합니다.
  */
 @Service
-class AccountService(private val accountRepository: AccountRepository) {
+class AccountService(private val accountRepository: AccountRepository, private val passwordEncoder: PasswordEncoder) {
     /**
      * 데이터베이스에서 모든 User 엔티티를 검색합니다.
      * @return User 엔티티의 Flux를 반환합니다.
@@ -54,6 +54,25 @@ class AccountService(private val accountRepository: AccountRepository) {
     fun findByEmail(email: String): Mono<Account> = accountRepository.findByEmail(email)
 
     // BCrypt 암호화를 사용하여 검증 합니다.
-    fun validatePassword(password: String, hashedPassword: String?): Boolean = BCryptPasswordEncoder().matches(password, hashedPassword)
+    fun validatePassword(password: String, hashedPassword: String?): Boolean = passwordEncoder.matches(password, hashedPassword)
+
+    /**
+     * 사용자의 비밀번호를 변경합니다.
+     * @param id 비밀번호를 변경할 사용자의 ID
+     * @param currentPassword 현재 비밀번호
+     * @param password 변경할 비밀번호
+     * @return 변경된 사용자의 Mono를 반환합니다.
+     */
+    fun changePassword(id: Long, currentPassword: String, newPassword: String): Mono<Account> =
+        accountRepository.findById(id)
+            .flatMap {
+                if (validatePassword(currentPassword, it.hashedPassword)) {
+                    val hashedPassword = passwordEncoder.encode(newPassword)
+                    accountRepository.save(it.copy(hashedPassword = hashedPassword))
+                } else {
+                    Mono.error(IllegalArgumentException("Invalid current password"))
+                }
+            }
+
 
 }

@@ -38,18 +38,6 @@ class AuthServiceTest {
 
     @Test
     fun `사용자 등록`() {
-        val account = Account(
-            username = "testuser",
-            email = "test@example.com",
-            hashedPassword = "password",
-            role = AccountRole.USER,
-            active = true,
-            totalStudyTime = 0,
-            accountLevelId = 1,
-            createdAt = LocalDateTime.now(),
-            updatedAt = LocalDateTime.now()
-        )
-
         val savedAccount = Account(
             id = 1L,
             username = "testuser",
@@ -63,10 +51,13 @@ class AuthServiceTest {
             updatedAt = LocalDateTime.now()
         )
 
-        Mockito.`when`(passwordEncoder.encode(account.hashedPassword)).thenReturn("encoded_password")
-        Mockito.`when`(accountRepository.save(account)).thenReturn(Mono.just(savedAccount))
+        Mockito.`when`(passwordEncoder.encode(savedAccount.hashedPassword)).thenReturn("encoded_password")
+        Mockito.`when`(accountRepository.save(any(Account::class.java))).thenReturn(Mono.just(savedAccount))
 
-        StepVerifier.create(authService.registerUser(account))
+        StepVerifier.create(authService.create(
+            username = savedAccount.username,
+            email = savedAccount.email,
+            password = savedAccount.hashedPassword))
             .expectNext(savedAccount)
             .verifyComplete()
     }

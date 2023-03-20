@@ -2,14 +2,12 @@ package app.klock.api.functional
 
 import app.klock.api.config.TestConfig
 import app.klock.api.domain.entity.Account
-import app.klock.api.domain.entity.AccountLevel
 import app.klock.api.domain.entity.AccountRole
 import app.klock.api.functional.auth.dto.CreateUserRequest
 import app.klock.api.functional.auth.dto.LoginRequest
 import app.klock.api.repository.AccountLevelRepository
 import app.klock.api.service.AccountService
 import app.klock.api.service.AuthService
-import org.hamcrest.Matchers
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -18,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
-import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.reactive.server.WebTestClient
@@ -38,8 +35,6 @@ class AuthRouterTest @Autowired constructor(
     private lateinit var authService: AuthService
     @MockBean
     private lateinit var accountLevelRepository: AccountLevelRepository
-    @MockBean
-    private lateinit var passwordEncoder: PasswordEncoder
 
     // 테스트 데이터 설정
     lateinit var account: Account
@@ -70,16 +65,8 @@ class AuthRouterTest @Autowired constructor(
             createdAt = LocalDateTime.now(),
             updatedAt = LocalDateTime.now())
     }
-
     @Test
     fun `회원 가입`() {
-        val accountLevel = AccountLevel(
-            level = 1,
-            requiredStudyTime = 10,
-            characterName = "Character",
-            characterImage = "image.png"
-        )
-
         // Prepare test data
         val accountToSave = Account(
             username = "user1",
@@ -93,17 +80,15 @@ class AuthRouterTest @Autowired constructor(
             updatedAt = LocalDateTime.now()
         )
         val savedAccount = accountToSave.copy(id = 1L)
-        // Mock passwordEncoder
-        Mockito.`when`(passwordEncoder.encode("test_password")).thenReturn("encoded_test_password")
 
         // Save user mock
-        Mockito.`when`(authService.registerUser(accountToSave)).thenReturn(Mono.just(savedAccount))
+        Mockito.`when`(authService.create(username = accountToSave.username, email = accountToSave.email, password = accountToSave.hashedPassword)).thenReturn(Mono.just(savedAccount))
 
         // 요청 테스트
         val createUserRequest = CreateUserRequest(
-            username = "user1",
-            email = "user1@example.com",
-            password = "test_password"
+            username = accountToSave.username,
+            email = accountToSave.email,
+            password = accountToSave.hashedPassword
         )
 
         // Make a request to create a user
@@ -113,10 +98,10 @@ class AuthRouterTest @Autowired constructor(
             .exchange()
             .expectStatus().isCreated
             .expectBody()
-            .jsonPath("$.user.id").value<Long>(Matchers.equalTo(savedAccount.id?.toInt()))
-            .jsonPath("$.user.username").isEqualTo(savedAccount.username)
-            .jsonPath("$.user.email").isEqualTo(savedAccount.email)
+            .jsonPath("$.username").isEqualTo(savedAccount.username)
+            .jsonPath("$.email").isEqualTo(savedAccount.email)
     }
+
 
     @Test
     fun `로그인 성공`() {

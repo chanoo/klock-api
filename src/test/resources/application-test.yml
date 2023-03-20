@@ -9,6 +9,12 @@ spring:
     username: sa
     password:
     name: org.h2.Driver
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+      settings:
+        web-allow-others: true
 jwt:
   secret: mySecretKey1234
   expiration: 3600

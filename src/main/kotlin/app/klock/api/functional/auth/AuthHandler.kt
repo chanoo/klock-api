@@ -1,7 +1,5 @@
 package app.klock.api.functional.auth
 
-import app.klock.api.domain.entity.Account
-import app.klock.api.domain.entity.AccountRole
 import app.klock.api.functional.auth.dto.*
 import app.klock.api.service.AccountService
 import app.klock.api.service.AuthService
@@ -13,41 +11,24 @@ import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.ServerRequest
 import org.springframework.web.reactive.function.server.ServerResponse
 import reactor.core.publisher.Mono
-import java.time.LocalDateTime
 
 
 @Component
 class AuthHandler(
-    private val accountService: AccountService,
     private val authService: AuthService,
+    private val accountService: AccountService,
     private val jwtUtils: JwtUtils,
     private val passwordEncoder: PasswordEncoder
 ) {
+
     // 회원가입 요청 처리
-    fun signup(request: ServerRequest): Mono<ServerResponse> {
-        return request.bodyToMono(CreateUserRequest::class.java)
-            .flatMap { request ->
-                val hashedPassword = if (request.password != null) passwordEncoder.encode(request.password) else null
-                authService.registerUser(
-                    Account(
-                        username = request.username,
-                        email = request.email,
-                        hashedPassword = hashedPassword,
-                        role = AccountRole.USER,
-                        active = true,
-                        totalStudyTime = 0,
-                        accountLevelId = 1,
-                        createdAt = LocalDateTime.now(),
-                        updatedAt = LocalDateTime.now()
-                    )
-                )
+    fun signup(request: ServerRequest): Mono<ServerResponse> =
+        request.bodyToMono(CreateUserRequest::class.java)
+            .flatMap { request -> authService.create(username = request.username, email = request.email, password = request.password)
+                .flatMap { user ->
+                    ServerResponse.status(HttpStatus.CREATED).bodyValue(AuthDto(user.id, user.username, user.email))
+                }
             }
-            .flatMap { user ->
-                ServerResponse
-                    .status(HttpStatus.CREATED)
-                    .bodyValue(AuthDto(user.id, user.username, user.email))
-            }
-    }
 
     // 로그인 요청 처리
     fun signin(request: ServerRequest): Mono<ServerResponse> {

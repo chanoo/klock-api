@@ -1,10 +1,10 @@
 -- User Level 테이블
 CREATE TABLE IF NOT EXISTS account_level (
-                                             id BIGINT AUTO_INCREMENT PRIMARY KEY,
-                                             level INT NOT NULL,
-                                             required_study_time INT NOT NULL,
-                                             character_name VARCHAR(255) NOT NULL,
-                                             character_image VARCHAR(255) NOT NULL
+     id BIGINT AUTO_INCREMENT PRIMARY KEY,
+     level INT NOT NULL,
+     required_study_time INT NOT NULL,
+     character_name VARCHAR(255) NOT NULL,
+     character_image VARCHAR(255) NOT NULL
 );
 
 -- 사용자 테이블

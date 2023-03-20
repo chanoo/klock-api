@@ -22,10 +22,18 @@ class AuthService(
     private val facebookAppSecret = "your_facebook_app_secret"
     private val appleClientId = "your_apple_client_id"
 
-    fun registerUser(account: Account): Mono<Account> {
-        if (account.hashedPassword != null) {
-            account.hashedPassword = passwordEncoder.encode(account.hashedPassword)
-        }
+    fun create(username: String, email: String, password: String? = null): Mono<Account> {
+        val account = Account(
+            username = username,
+            email = email,
+            hashedPassword = passwordEncoder.encode(password),
+            role = AccountRole.USER,
+            active = true,
+            totalStudyTime = 0,
+            accountLevelId = 1,
+            createdAt = LocalDateTime.now(),
+            updatedAt = LocalDateTime.now()
+        )
         return accountRepository.save(account)
     }
 

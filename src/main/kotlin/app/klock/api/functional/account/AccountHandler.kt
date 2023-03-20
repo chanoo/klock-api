@@ -2,9 +2,7 @@ package app.klock.api.functional.account
 
 import app.klock.api.domain.entity.Account
 import app.klock.api.domain.entity.AccountRole
-import app.klock.api.functional.auth.dto.UpdateUserRequest
-import app.klock.api.functional.auth.dto.UpdateUserResponse
-import app.klock.api.functional.auth.dto.UserResponse
+import app.klock.api.functional.auth.dto.*
 import app.klock.api.service.AccountService
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
@@ -65,4 +63,17 @@ class AccountHandler(private val accountService: AccountService) {
     fun deleteUser(request: ServerRequest): Mono<ServerResponse> =
         accountService.deleteById(request.pathVariable("id").toLong())
             .then(ServerResponse.noContent().build())
+
+    // 계정 비밀번호 변경
+    fun changePassword(request: ServerRequest): Mono<ServerResponse> =
+        request.bodyToMono(ChangePasswordRequest::class.java)
+            .flatMap { changePasswordRequest ->
+                val accountId = request.pathVariable("id").toLong()
+                accountService.changePassword(accountId, changePasswordRequest.currentPassword, changePasswordRequest.newPassword)
+            }
+            .flatMap { account ->
+                ServerResponse.ok().bodyValue(AccountResponse.from(account))
+            }
+            .switchIfEmpty(ServerResponse.notFound().build())
+
 }
