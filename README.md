@@ -1,4 +1,33 @@
-# Spring Boot + WebFlux + R2DBC + MySQL + Kotlin + WebSocket + Gradle + JWT
+# Spring Boot + WebFlux + R2DBC + MySQL + Kotlin + WebSocket + Gradle + JWT + Test
+
+메인:
+```bash
+main/kotlin/app.klock.api
+├── domain
+│   └── entity
+├── exception
+├── functional
+│   ├── account
+│   ├── auth
+│   ├── dDayEvent
+│   ├── studySession
+│   └── tag
+├── repository
+├── security
+├── service
+├── utils
+└── websocket
+    ├── config
+    └── handler
+```
+
+테스트:
+```bash
+text/kotlin/app.klock.api
+├── config
+├── functional
+└── service
+```
 
 ## 인증
 1. [x] 이메일, 비밀번호 로그인
