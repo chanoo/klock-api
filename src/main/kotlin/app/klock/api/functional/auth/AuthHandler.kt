@@ -6,7 +6,6 @@ import app.klock.api.service.AuthService
 import app.klock.api.utils.JwtUtils
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
-import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.ServerRequest
 import org.springframework.web.reactive.function.server.ServerResponse
@@ -17,8 +16,7 @@ import reactor.core.publisher.Mono
 class AuthHandler(
     private val authService: AuthService,
     private val accountService: AccountService,
-    private val jwtUtils: JwtUtils,
-    private val passwordEncoder: PasswordEncoder
+    private val jwtUtils: JwtUtils
 ) {
 
     // 회원가입 요청 처리

@@ -1,5 +1,6 @@
 package app.klock.api.config
 
+import app.klock.api.functional.FriendRelationRouter
 import app.klock.api.functional.account.AccountRouter
 import app.klock.api.functional.accountTag.AccountTagRouter
 import app.klock.api.functional.auth.AuthRouter
@@ -15,7 +16,8 @@ class TestConfig(
     private val accountRouter: AccountRouter,
     private val tagRouter: TagRouter,
     private val accountTagRouter: AccountTagRouter,
-    private val studySessionRouter: StudySessionRouter
+    private val studySessionRouter: StudySessionRouter,
+    private val friendRelationRouter: FriendRelationRouter
 ) {
 
     @Bean
@@ -25,7 +27,9 @@ class TestConfig(
                 .andOther(accountRouter.userRoutes())
                 .andOther(accountTagRouter.accountTagRoutes())
                 .andOther(studySessionRouter.studySessionRoutes())
-                .andOther(tagRouter.tagRoutes())) // TagRouter를 추가합니다.
+                .andOther(tagRouter.tagRoutes()) // TagRouter를 추가합니다.
+                .andOther(friendRelationRouter.friendRelationRoutes())
+            ) // FriendRelationRouter를 추가합니다.
             .configureClient()
             .build()
     }

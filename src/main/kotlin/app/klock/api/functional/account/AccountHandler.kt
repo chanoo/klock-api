@@ -4,7 +4,6 @@ import app.klock.api.domain.entity.Account
 import app.klock.api.domain.entity.AccountRole
 import app.klock.api.functional.auth.dto.*
 import app.klock.api.service.AccountService
-import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.server.ServerRequest
@@ -15,7 +14,6 @@ import java.time.LocalDateTime
 
 @Component
 class AccountHandler(private val accountService: AccountService) {
-    private val logger = LoggerFactory.getLogger(AccountHandler::class.java)
 
     // 사용자 목록 조회
     fun getAllUsers(request: ServerRequest): Mono<ServerResponse> {

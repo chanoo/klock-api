@@ -10,6 +10,7 @@ main/kotlin/app.klock.api
 │   ├── account
 │   ├── auth
 │   ├── dDayEvent
+│   ├── friemdRelation
 │   ├── studySession
 │   └── tag
 ├── repository
@@ -40,6 +41,10 @@ text/kotlin/app.klock.api
 2. [x] 계정 삭제
 3. [x] 계정 정보 조회
 4. [x] 비밀번호 변경
+
+## 친구
+1. [x] 친구 요청
+2. [x] 친구 관계 확인
 
 ## 공부 시간
 1. [x] 공부 시간 등록 
