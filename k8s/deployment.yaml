@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: klock-api-app
+spec:
+  selector:
+    matchLabels:
+      app: klock-api-app
+  template:
+    metadata:
+      labels:
+        app: klock-api-app
+    spec:
+      containers:
+        - name: klock-api-app
+          image: $IMAGE_NAME
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: common,prod
+            - name: SPRING_R2DBC_URL
+              value: $DB_URL
+            - name: SPRING_R2DBC_USERNAME
+              value: $DB_USERNAME
+            - name: SPRING_R2DBC_PASSWORD
+              value: $DB_PASSWORD
+      tolerations:
+        - key: "eks.amazonaws.com/compute-type"
+          operator: "Equal"
+          value: "fargate"
+          effect: "NoSchedule"
+      nodeSelector:
+        eks.amazonaws.com/compute-type: fargate

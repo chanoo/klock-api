@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: klock-api-app
+spec:
+  selector:
+    app: klock-api-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: LoadBalancer

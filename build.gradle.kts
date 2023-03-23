@@ -1,8 +1,10 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.springframework.boot.gradle.tasks.bundling.BootBuildImage
 
 plugins {
     id("org.springframework.boot") version "3.0.4"
     id("io.spring.dependency-management") version "1.1.0"
+    id("com.palantir.docker") version "0.34.0" // 이 플러그인을 추가
     kotlin("jvm") version "1.7.22"
     kotlin("plugin.spring") version "1.7.22"
 }
@@ -35,6 +37,16 @@ dependencies {
     runtimeOnly("org.mariadb.jdbc:mariadb-java-client")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("io.projectreactor:reactor-test")
+}
+
+tasks.named<BootBuildImage>("bootBuildImage") {
+    imageName.set("${System.getenv("ECR_REGISTRY")}/klock-repository:${System.getenv("GITHUB_SHA")}")
+    val currentEnvironment = mutableMapOf<String, String>()
+    currentEnvironment["SPRING_PROFILES_ACTIVE"] = System.getenv("SPRING_PROFILES_ACTIVE") ?: ""
+    currentEnvironment["SPRING_R2DBC_URL"] = System.getenv("DB_URL") ?: ""
+    currentEnvironment["SPRING_R2DBC_USERNAME"] = System.getenv("DB_USERNAME") ?: ""
+    currentEnvironment["SPRING_R2DBC_PASSWORD"] = System.getenv("DB_PASSWORD") ?: ""
+    environment.set(currentEnvironment)
 }
 
 tasks.withType<KotlinCompile> {

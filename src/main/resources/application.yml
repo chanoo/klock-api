@@ -1,16 +1,25 @@
 spring:
   profiles:
-    active: common,local
+    active: ${SPRING_PROFILES_ACTIVE}
 ---
 spring:
   config:
     activate:
       on-profile: common
+jwt:
+  secret: mySecretKey1234
+  expiration: 3600
 ---
 spring:
   config:
     activate:
       on-profile: local
     import:
-      - "classpath:variables.yml"
-      - "classpath:application-datasource.yml"
+      - "classpath:application-datasource-local.yml"
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+    import:
+      - "classpath:application-datasource-prod.yml"

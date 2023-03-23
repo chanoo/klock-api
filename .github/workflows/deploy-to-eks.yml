@@ -1,0 +1,59 @@
+name: Deploy to EKS Fargate
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v2
+        with:
+          java-version: 17
+          distribution: 'temurin'
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build and push Docker image
+        run: |
+          export ECR_REGISTRY=${{ steps.login-ecr.outputs.registry }}
+          export GITHUB_SHA=${{ github.sha }}
+          ./gradlew bootBuildImage
+          docker push $ECR_REGISTRY/klock-repository:$GITHUB_SHA
+
+      - name: Install and configure kubectl
+        run: |
+          VERSION=$(curl --silent https://storage.googleapis.com/kubernetes-release/release/stable.txt)
+          curl -LO https://storage.googleapis.com/kubernetes-release/release/$VERSION/bin/linux/amd64/kubectl
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/
+          echo ${{ secrets.KUBECONFIG }} | base64 --decode > kubeconfig.yaml
+
+      - name: Deploy to EKS Fargate
+        run: |
+          export KUBECONFIG=kubeconfig.yaml
+          export IMAGE_NAME=${{ steps.login-ecr.outputs.registry }}/klock-repository:${{ github.sha }}
+          export DB_URL=${{ secrets.DB_URL }}
+          export DB_USERNAME=${{ secrets.DB_USERNAME }}
+          export DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          export SPRING_PROFILES_ACTIVE=common,prod
+          envsubst < k8s/deployment.yaml > k8s/deployment-deploy.yaml
+          kubectl apply -f k8s/deployment-deploy.yaml
+          kubectl apply -f k8s/service.yaml
+
