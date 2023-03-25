@@ -4,6 +4,7 @@ import app.klock.api.functional.FriendRelationRouter
 import app.klock.api.functional.account.AccountRouter
 import app.klock.api.functional.accountTag.AccountTagRouter
 import app.klock.api.functional.auth.AuthRouter
+import app.klock.api.functional.echo.EchoRouter
 import app.klock.api.functional.studySession.StudySessionRouter
 import app.klock.api.functional.tag.TagRouter
 import org.springframework.boot.test.context.TestConfiguration
@@ -15,6 +16,7 @@ class TestConfig(
     private val authRouter: AuthRouter,
     private val accountRouter: AccountRouter,
     private val tagRouter: TagRouter,
+    private val echoRouter: EchoRouter,
     private val accountTagRouter: AccountTagRouter,
     private val studySessionRouter: StudySessionRouter,
     private val friendRelationRouter: FriendRelationRouter
@@ -27,6 +29,7 @@ class TestConfig(
                 .andOther(accountRouter.userRoutes())
                 .andOther(accountTagRouter.accountTagRoutes())
                 .andOther(studySessionRouter.studySessionRoutes())
+                .andOther(echoRouter.echoRoutes())
                 .andOther(tagRouter.tagRoutes()) // TagRouter를 추가합니다.
                 .andOther(friendRelationRouter.friendRelationRoutes())
             ) // FriendRelationRouter를 추가합니다.
