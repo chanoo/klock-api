@@ -1,18 +1,25 @@
+# deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: klock-api-app
+  name: klock-api-app-deployment
+  namespace: klock
 spec:
   selector:
     matchLabels:
-      app: klock-api-app
+      app: klock-api-app-pod
   template:
     metadata:
       labels:
-        app: klock-api-app
+        app: klock-api-app-pod
     spec:
+      tolerations:
+        - key: eks.amazonaws.com/compute-type
+          operator: Equal
+          value: ec2
+          effect: NoSchedule
       containers:
-        - name: klock-api-app
+        - name: klock-api-app-container
           image: $IMAGE_NAME
           ports:
             - containerPort: 8080
@@ -25,10 +32,12 @@ spec:
               value: $DB_USERNAME
             - name: SPRING_R2DBC_PASSWORD
               value: $DB_PASSWORD
-      tolerations:
-        - key: "eks.amazonaws.com/compute-type"
-          operator: "Equal"
-          value: "fargate"
-          effect: "NoSchedule"
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
       nodeSelector:
         eks.amazonaws.com/compute-type: fargate

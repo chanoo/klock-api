@@ -55,5 +55,5 @@ jobs:
           export SPRING_PROFILES_ACTIVE=common,prod
           envsubst < k8s/deployment.yaml > k8s/deployment-deploy.yaml
           kubectl apply -f k8s/deployment-deploy.yaml
+          kubectl apply -f k8s/ingress.yaml
           kubectl apply -f k8s/service.yaml
-
