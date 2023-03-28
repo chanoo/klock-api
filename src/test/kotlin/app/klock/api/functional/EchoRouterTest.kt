@@ -1,6 +1,7 @@
 package app.klock.api.functional
 
 import app.klock.api.config.TestConfig
+import app.klock.api.functional.echo.EchoDto
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
@@ -33,5 +34,20 @@ class EchoRouterTest @Autowired constructor(
             .uri("/echo")
             .exchange()
             .expectStatus().is5xxServerError
+    }
+
+    @Test
+    fun `POST 메소드로 전송한 메시지에 Hello를 추가하여 반환하는 에코 엔드포인트`() {
+        val message = "Hello, World!"
+        val echoDto = EchoDto(message)
+        val expectedResponse = echoDto.copy(message = "Hello, ${echoDto.message}!")
+
+        client.post()
+            .uri("/echo")
+            .bodyValue(echoDto)
+            .exchange()
+            .expectStatus().isOk
+            .expectBody(EchoDto::class.java)
+            .isEqualTo(expectedResponse)
     }
 }

@@ -10,7 +10,8 @@ class EchoRouter(private val echoHandler: EchoHandler) {
     @Bean
     fun echoRoutes() = router {
         "/echo".nest {
-            GET("", echoHandler::echo)
+            GET("", echoHandler::get)
+            POST("", echoHandler::post)
         }
     }
 }
