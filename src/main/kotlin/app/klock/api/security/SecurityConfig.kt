@@ -51,7 +51,7 @@ class SecurityConfig(
             .logout().disable() // 로그아웃 비활성화
             .authorizeExchange { exchanges ->
                 exchanges
-                    .pathMatchers("/echo/**", "/api/auth/**", "/ws/**").permitAll() // 인증이 필요 없는 경로
+                    .pathMatchers("/echo/**", "/api/auth/**", "/ws/**", "/api/tags").permitAll() // 인증이 필요 없는 경로
                     .anyExchange().authenticated() // 나머지 경로는 인증 필요
             }
             .addFilterAt(jwtAuthenticationWebFilter(), SecurityWebFiltersOrder.AUTHENTICATION) // JWT 인증 필터 추가
