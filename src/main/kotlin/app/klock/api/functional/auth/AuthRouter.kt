@@ -13,8 +13,8 @@ class AuthRouter(private val authHandler: AuthHandler) {
             POST("/signup", authHandler::signup)
             POST("/signin", authHandler::signin)
             POST("/refresh-token", authHandler::refreshToken)
-            POST("/facebook", authHandler::authenticateFacebook)
-            POST("/apple", authHandler::authenticateApple)
+            POST("/signin-with-facebook", authHandler::authenticateFacebook)
+            POST("/signin-with-apple", authHandler::authenticateApple)
         }
     }
 
