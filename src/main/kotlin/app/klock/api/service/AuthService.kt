@@ -2,8 +2,10 @@ package app.klock.api.service
 
 import app.klock.api.domain.entity.Account
 import app.klock.api.domain.entity.AccountRole
+import app.klock.api.domain.entity.SocialProvider
 import app.klock.api.functional.auth.dto.SocialLoginRequest
 import app.klock.api.repository.AccountRepository
+import app.klock.api.repository.SocialLoginRepository
 import app.klock.api.utils.JwtUtils
 import com.fasterxml.jackson.databind.JsonNode
 import org.springframework.security.crypto.password.PasswordEncoder
@@ -16,7 +18,8 @@ import java.time.LocalDateTime
 class AuthService(
     private val jwtUtils: JwtUtils,
     private val passwordEncoder: PasswordEncoder,
-    private val accountRepository: AccountRepository) {
+    private val accountRepository: AccountRepository,
+    private var socialLoginRepository: SocialLoginRepository) {
 
     private val facebookAppId = "your_facebook_app_id"
     private val facebookAppSecret = "your_facebook_app_secret"
@@ -37,6 +40,17 @@ class AuthService(
         return accountRepository.save(account)
     }
 
+    private fun authenticateSocial(socialProvider: SocialProvider, providerUserId: String): Mono<String> {
+        return socialLoginRepository.findByProviderAndProviderUserId(socialProvider, providerUserId)
+            .flatMap { socialLogin ->
+                accountRepository.findById(socialLogin.accountId)
+                    .flatMap { account ->
+                        // JWT 토큰을 생성합니다.
+                        Mono.just(jwtUtils.generateToken(account.id.toString()))
+                    }
+            }
+    }
+
     fun authenticateFacebook(socialLoginRequest: Mono<SocialLoginRequest>): Mono<String> {
         return socialLoginRequest.flatMap { request ->
             // Facebook 액세스 토큰을 사용하여 사용자 정보를 가져옵니다.
@@ -45,11 +59,9 @@ class AuthService(
             WebClient.create().get().uri(userInfoUrl).retrieve().bodyToMono(JsonNode::class.java)
                 .flatMap { userInfo ->
                     val userId = userInfo.get("id").asText()
-                    val email = userInfo.get("email").asText()
-                    val name = userInfo.get("name").asText()
 
-                    // 사용자를 인증하고 JWT 토큰을 생성합니다.
-                    authenticateAndGenerateJwt(userId, email, name)
+                    // accountId로 Account가 있는지 확인해서 가져와서 JWT 토큰을 생성하고 반환 한다.
+                    authenticateSocial(SocialProvider.FACEBOOK, userId)
                 }
         }
     }
@@ -61,29 +73,9 @@ class AuthService(
             // 여기서는 구현의 간소화를 위해 사용자 ID만 사용합니다.
             val appleUserId = jwtUtils.getUsernameFromToken(appleAccessToken)
 
-            // 사용자를 인증하고 JWT 토큰을 생성합니다.
-            authenticateAndGenerateJwt(appleUserId, "apple@example.com", "Apple User")
+            // accountId로 Account가 있는지 확인해서 가져와서 JWT 토큰을 생성하고 반환 한다.
+            authenticateSocial(SocialProvider.APPLE, appleUserId)
         }
-    }
-
-    private fun authenticateAndGenerateJwt(userId: String, email: String, name: String): Mono<String> {
-        return accountRepository.findByEmail(email)
-            .switchIfEmpty(Mono.defer {
-                val newUser = Account(
-                    username = name,
-                    email = email,
-                    role = AccountRole.USER,
-                    active = true,
-                    totalStudyTime = 0,
-                    accountLevelId = 1,
-                    createdAt = LocalDateTime.now(),
-                    updatedAt = LocalDateTime.now())
-                accountRepository.save(newUser)
-            })
-            .map { user ->
-                // JWT 토큰을 생성합니다.
-                jwtUtils.generateToken(user.email)
-            }
     }
 
     fun refreshToken(refreshToken: String): Mono<String> {
@@ -94,5 +86,4 @@ class AuthService(
             Mono.just(newToken)
         }
     }
-
 }

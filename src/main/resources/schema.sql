@@ -24,6 +24,18 @@ CREATE TABLE IF NOT EXISTS account (
     FOREIGN KEY (account_level_id) REFERENCES account_level (id) -- account_level 테이블 참조
 );
 
+-- 소셜 로그인 테이블
+CREATE TABLE IF NOT EXISTS social_login (
+    id BIGINT NOT NULL AUTO_INCREMENT, -- 고유 식별자
+    provider VARCHAR(255) NOT NULL, -- 소셜 로그인 제공자 (예: Facebook, Google, Twitter 등)
+    provider_user_id VARCHAR(255) NOT NULL, -- 제공자의 사용자 고유 식별자
+    account_id BIGINT NOT NULL, -- 연결된 사용자 계정 ID (외래 키)
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, -- 생성일
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, -- 업데이트 일자
+    PRIMARY KEY (id), -- 기본 키 설정
+    FOREIGN KEY (account_id) REFERENCES account (id) -- account 테이블 참조
+);
+
 -- 친구 관계 테이블
 CREATE TABLE IF NOT EXISTS friend_relation (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,    -- 관계 고유 ID

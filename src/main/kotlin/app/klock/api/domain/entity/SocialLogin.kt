@@ -15,8 +15,8 @@ data class SocialLogin(
     val provider: SocialProvider,
     @Column("provider_user_id")
     val providerUserId: String,
-    @Column("app_user_id")
-    val appUserId: Long,
+    @Column("account_id")
+    val accountId: Long,
     @CreatedDate
     @Column("created_at")
     val createdAt: LocalDateTime = LocalDateTime.now(),
