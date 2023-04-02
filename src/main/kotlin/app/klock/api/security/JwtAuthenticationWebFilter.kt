@@ -26,7 +26,7 @@ class JwtAuthenticationWebFilter(
             if (token != null && token.startsWith("Bearer ")) {
                 val authToken = token.substring(7)
                 if (jwtUtils.validateToken(authToken)) {
-                    val username = jwtUtils.getUsernameFromToken(authToken)
+                    val username = jwtUtils.getUserIdFromToken(authToken)
                     val authorities = jwtUtils.getAuthoritiesFromJwt(authToken)
                     // JWT 토큰의 사용자 이름 및 권한을 사용하여 인증 토큰 생성
                     return@setServerAuthenticationConverter Mono.just(UsernamePasswordAuthenticationToken(username, null, authorities))

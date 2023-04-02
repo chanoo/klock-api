@@ -11,7 +11,6 @@ import org.springframework.web.reactive.function.server.ServerRequest
 import org.springframework.web.reactive.function.server.ServerResponse
 import reactor.core.publisher.Mono
 
-
 @Component
 class AuthHandler(
     private val authService: AuthService,
@@ -24,7 +23,7 @@ class AuthHandler(
         request.bodyToMono(CreateUserRequest::class.java)
             .flatMap { request -> authService.create(username = request.username, email = request.email, password = request.password)
                 .flatMap { user ->
-                    ServerResponse.status(HttpStatus.CREATED).bodyValue(AuthDto(user.id, user.username, user.email))
+                    ServerResponse.status(HttpStatus.CREATED).bodyValue(AuthDTO(user.id, user.username, user.email))
                 }
             }
 
@@ -37,7 +36,7 @@ class AuthHandler(
                         .password, user.hashedPassword) }
                     .switchIfEmpty(Mono.error(Exception("Invalid username or password")))
                     .flatMap { user ->
-                        val token = jwtUtils.generateToken(user.email)
+                        val token = jwtUtils.generateToken(user.id.toString())
                         ServerResponse.ok()
                             .contentType(MediaType.APPLICATION_JSON)
                             .bodyValue(mapOf("token" to token))
@@ -55,8 +54,11 @@ class AuthHandler(
         return request.bodyToMono(RefreshTokenRequest::class.java)
             .flatMap { refreshTokenRequest ->
                 authService.refreshToken(refreshTokenRequest.refreshToken)
-                    .flatMap { jwt ->
-                        ServerResponse.ok().bodyValue(mapOf("token" to jwt))
+                    .flatMap { accessToken ->
+                        val userId = jwtUtils.getUserIdFromToken(refreshTokenRequest.refreshToken)
+                        val newRefreshToken = jwtUtils.generateToken(userId)
+                        val refreshTokenResponse = RefreshTokenResponse(accessToken, newRefreshToken)
+                        ServerResponse.ok().bodyValue(refreshTokenResponse)
                     }
             }
             .onErrorResume { error ->

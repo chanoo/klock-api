@@ -71,7 +71,7 @@ class AuthService(
             val appleAccessToken = request.accessToken
             // Apple 액세스 토큰을 사용하여 사용자 정보를 가져옵니다.
             // 여기서는 구현의 간소화를 위해 사용자 ID만 사용합니다.
-            val appleUserId = jwtUtils.getUsernameFromToken(appleAccessToken)
+            val appleUserId = jwtUtils.getUserIdFromToken(appleAccessToken)
 
             // accountId로 Account가 있는지 확인해서 가져와서 JWT 토큰을 생성하고 반환 한다.
             authenticateSocial(SocialProvider.APPLE, appleUserId)
@@ -80,9 +80,9 @@ class AuthService(
 
     fun refreshToken(refreshToken: String): Mono<String> {
         return Mono.fromCallable {
-            jwtUtils.validateTokenAndGetEmail(refreshToken)
-        }.flatMap { email ->
-            val newToken = jwtUtils.generateToken(email)
+            jwtUtils.validateTokenAndGetUserId(refreshToken)
+        }.flatMap { userId ->
+            val newToken = jwtUtils.generateToken(userId)
             Mono.just(newToken)
         }
     }

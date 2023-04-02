@@ -9,6 +9,7 @@ spring:
 jwt:
   secret: mySecretKey1234
   expiration: 3600
+  refreshExpiration: 86400
 server:
   port: 8080
 ---
