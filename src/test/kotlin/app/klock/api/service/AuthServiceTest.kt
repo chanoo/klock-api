@@ -2,6 +2,7 @@ import app.klock.api.domain.entity.Account
 import app.klock.api.domain.entity.AccountRole
 import app.klock.api.functional.auth.dto.SocialLoginRequest
 import app.klock.api.repository.AccountRepository
+import app.klock.api.repository.SocialLoginRepository
 import app.klock.api.service.AuthService
 import app.klock.api.utils.JwtUtils
 import org.junit.jupiter.api.BeforeEach
@@ -29,11 +30,14 @@ class AuthServiceTest {
     @Mock
     private lateinit var accountRepository: AccountRepository
 
+    @Mock
+    private lateinit var socialLoginRepository: SocialLoginRepository
+
     private lateinit var authService: AuthService
 
     @BeforeEach
     fun setUp() {
-        authService = AuthService(jwtUtils, passwordEncoder, accountRepository)
+        authService = AuthService(jwtUtils, passwordEncoder, accountRepository, socialLoginRepository)
     }
 
     @Test
@@ -79,7 +83,7 @@ class AuthServiceTest {
             updatedAt = LocalDateTime.now()
         )
 
-        Mockito.`when`(jwtUtils.getUsernameFromToken(anyString())).thenReturn(userEmail)
+        Mockito.`when`(jwtUtils.getUserIdFromToken(anyString())).thenReturn(userEmail)
         Mockito.`when`(jwtUtils.generateToken(anyString())).thenReturn(jwtToken)
         Mockito.`when`(accountRepository.findByEmail(anyString())).thenReturn(Mono.empty())
         Mockito.`when`(accountRepository.save(any(Account::class.java))).thenReturn(Mono.just(account))
@@ -95,7 +99,7 @@ class AuthServiceTest {
         val jwtToken = "jwt_token"
         val userEmail = "user@example.com"
 
-        Mockito.`when`(jwtUtils.validateTokenAndGetEmail(anyString())).thenReturn(userEmail)
+        Mockito.`when`(jwtUtils.validateTokenAndGetUserId(anyString())).thenReturn(userEmail)
         Mockito.`when`(jwtUtils.generateToken(anyString())).thenReturn(jwtToken)
 
         StepVerifier.create(authService.refreshToken(refreshToken))
