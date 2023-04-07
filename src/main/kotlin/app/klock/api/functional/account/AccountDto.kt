@@ -10,7 +10,7 @@ data class ChangePasswordRequest(
 data class AccountResponse(
     val id: Long? = null,
     val username: String,
-    val email: String
+    val email: String? = null
 ) {
     companion object {
         fun from(account: Account): AccountResponse {

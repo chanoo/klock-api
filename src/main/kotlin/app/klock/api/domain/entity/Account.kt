@@ -9,7 +9,7 @@ import java.time.LocalDateTime
 data class Account(
     @Id
     val id: Long? = null,
-    val email: String,
+    val email: String?,
     @Column("hashed_password")
     var hashedPassword: String? = null,
     val username: String,

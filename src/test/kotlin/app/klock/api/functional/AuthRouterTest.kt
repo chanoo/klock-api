@@ -3,9 +3,10 @@ package app.klock.api.functional
 import app.klock.api.config.TestConfig
 import app.klock.api.domain.entity.Account
 import app.klock.api.domain.entity.AccountRole
-import app.klock.api.functional.auth.dto.CreateUserRequest
+import app.klock.api.domain.entity.SocialLogin
+import app.klock.api.domain.entity.SocialProvider
 import app.klock.api.functional.auth.dto.LoginRequest
-import app.klock.api.repository.AccountLevelRepository
+import app.klock.api.functional.auth.dto.SignUpReqDTO
 import app.klock.api.service.AccountService
 import app.klock.api.service.AuthService
 import org.junit.jupiter.api.BeforeEach
@@ -33,8 +34,6 @@ class AuthRouterTest @Autowired constructor(
     private lateinit var accountService: AccountService
     @MockBean
     private lateinit var authService: AuthService
-    @MockBean
-    private lateinit var accountLevelRepository: AccountLevelRepository
 
     // 테스트 데이터 설정
     lateinit var account: Account
@@ -65,43 +64,63 @@ class AuthRouterTest @Autowired constructor(
             createdAt = LocalDateTime.now(),
             updatedAt = LocalDateTime.now())
     }
+
     @Test
     fun `회원 가입`() {
         // Prepare test data
         val accountToSave = Account(
-            username = "user1",
-            email = "user1@example.com",
-            hashedPassword = "encoded_test_password",
-            role = AccountRole.USER,
-            active = true,
-            totalStudyTime = 0,
-            accountLevelId = 1,
-            createdAt = LocalDateTime.now(),
-            updatedAt = LocalDateTime.now()
+                username = "user1",
+                email = "user1@example.com",
+                hashedPassword = "encoded_test_password",
+                role = AccountRole.USER,
+                active = true,
+                totalStudyTime = 0,
+                accountLevelId = 1,
+                createdAt = LocalDateTime.now(),
+                updatedAt = LocalDateTime.now()
         )
         val savedAccount = accountToSave.copy(id = 1L)
 
+        var socialLoginToSave = SocialLogin(
+                provider = SocialProvider.APPLE,
+                providerUserId = "1234",
+                accountId = savedAccount.id!!,
+                createdAt = LocalDateTime.now(),
+                updatedAt = LocalDateTime.now())
+
+        val savedSocialLogin = socialLoginToSave.copy(id = 1L)
+
         // Save user mock
-        Mockito.`when`(authService.create(username = accountToSave.username, email = accountToSave.email, password = accountToSave.hashedPassword)).thenReturn(Mono.just(savedAccount))
+        Mockito.`when`(authService.createAccount(
+                username = accountToSave.username,
+                email = accountToSave.email,
+                password = accountToSave.hashedPassword)).thenReturn(Mono.just(savedAccount))
+
+        Mockito.`when`(authService.createSocialLogin(
+                accountId = savedAccount.id!!,
+                provider = SocialProvider.APPLE,
+                providerUserId = "1234")).thenReturn(Mono.just(savedSocialLogin))
 
         // 요청 테스트
-        val createUserRequest = CreateUserRequest(
-            username = accountToSave.username,
-            email = accountToSave.email,
-            password = accountToSave.hashedPassword
+        val signUpReqDTO = SignUpReqDTO(
+                username = accountToSave.username,
+                provider = SocialProvider.APPLE,
+                providerUserId = "1234",
+                email = accountToSave.email,
+                password = accountToSave.hashedPassword
         )
 
         // Make a request to create a user
         client.post().uri("/api/auth/signup")
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(BodyInserters.fromValue(createUserRequest))
-            .exchange()
-            .expectStatus().isCreated
-            .expectBody()
-            .jsonPath("$.username").isEqualTo(savedAccount.username)
-            .jsonPath("$.email").isEqualTo(savedAccount.email)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(BodyInserters.fromValue(signUpReqDTO))
+                .exchange()
+                .expectStatus().isCreated
+                .expectBody()
+                .jsonPath("$.username").isEqualTo(savedAccount.username)
+                .jsonPath("$.provider").isEqualTo(savedSocialLogin.provider.toString())
+                .jsonPath("$.providerUserId").isEqualTo(savedSocialLogin.providerUserId)
     }
-
 
     @Test
     fun `로그인 성공`() {

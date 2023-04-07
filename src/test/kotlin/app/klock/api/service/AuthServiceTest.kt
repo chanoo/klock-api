@@ -1,5 +1,7 @@
 import app.klock.api.domain.entity.Account
 import app.klock.api.domain.entity.AccountRole
+import app.klock.api.domain.entity.SocialLogin
+import app.klock.api.domain.entity.SocialProvider
 import app.klock.api.functional.auth.dto.SocialLoginRequest
 import app.klock.api.repository.AccountRepository
 import app.klock.api.repository.SocialLoginRepository
@@ -43,28 +45,49 @@ class AuthServiceTest {
     @Test
     fun `사용자 등록`() {
         val savedAccount = Account(
-            id = 1L,
-            username = "testuser",
-            email = "test@example.com",
-            hashedPassword = "encoded_password",
-            role = AccountRole.USER,
-            active = true,
-            totalStudyTime = 0,
-            accountLevelId = 1,
-            createdAt = LocalDateTime.now(),
-            updatedAt = LocalDateTime.now()
+                id = 1L,
+                username = "testuser",
+                email = "test@example.com",
+                hashedPassword = "encoded_password",
+                role = AccountRole.USER,
+                active = true,
+                totalStudyTime = 0,
+                accountLevelId = 1,
+                createdAt = LocalDateTime.now(),
+                updatedAt = LocalDateTime.now()
         )
 
+        val socialLogin = SocialLogin(
+                id = 1L,
+                accountId = savedAccount.id!!,
+                provider = SocialProvider.APPLE,
+                providerUserId = "1234"
+        )
+
+        // Account 생성 관련 mock
         Mockito.`when`(passwordEncoder.encode(savedAccount.hashedPassword)).thenReturn("encoded_password")
         Mockito.`when`(accountRepository.save(any(Account::class.java))).thenReturn(Mono.just(savedAccount))
 
-        StepVerifier.create(authService.create(
-            username = savedAccount.username,
-            email = savedAccount.email,
-            password = savedAccount.hashedPassword))
-            .expectNext(savedAccount)
-            .verifyComplete()
+        // SocialLogin 생성 관련 mock
+        Mockito.`when`(socialLoginRepository.save(any(SocialLogin::class.java))).thenReturn(Mono.just(socialLogin))
+
+        // Account 생성 테스트
+        StepVerifier.create(authService.createAccount(
+                username = savedAccount.username,
+                email = savedAccount.email,
+                password = savedAccount.hashedPassword))
+                .expectNext(savedAccount)
+                .verifyComplete()
+
+        // SocialLogin 생성 테스트
+        StepVerifier.create(authService.createSocialLogin(
+                accountId = savedAccount.id!!,
+                provider = SocialProvider.APPLE,
+                providerUserId = "1234"))
+                .expectNext(socialLogin)
+                .verifyComplete()
     }
+
 
     @Test
     fun `애플 인증`() {

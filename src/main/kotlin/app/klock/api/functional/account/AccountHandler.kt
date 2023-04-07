@@ -17,7 +17,7 @@ class AccountHandler(private val accountService: AccountService) {
 
     // 사용자 목록 조회
     fun getAllUsers(request: ServerRequest): Mono<ServerResponse> {
-        val usersFlux = accountService.findAll() ?: Flux.empty<Account>()
+        val usersFlux = accountService.findAll()
         return usersFlux.map { user -> UserResponse(user.id, user.username, user.email) }
             .collectList()
             .flatMap { users -> ServerResponse.ok().body(BodyInserters.fromValue(users)) }
