@@ -1,7 +1,7 @@
 package app.klock.api.functional.studySession
 
 import app.klock.api.domain.entity.StudySession
-import app.klock.api.functional.studySession.dto.StudySessionDto
+import app.klock.api.functional.studySession.dto.StudySessionDTO
 import app.klock.api.service.StudySessionService
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -22,7 +22,7 @@ class StudySessionHandler(private val studySessionService: StudySessionService) 
 
         return if (userId != null && date != null) {
             studySessionService.findByAccountIdAndStartTimeBetween(userId, date)
-                .map { studySession -> StudySessionDto(
+                .map { studySession -> StudySessionDTO(
                     id = studySession.id,
                     startTime = studySession.startTime,
                     endTime = studySession.endTime,

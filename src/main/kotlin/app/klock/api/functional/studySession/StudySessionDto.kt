@@ -2,7 +2,7 @@ package app.klock.api.functional.studySession.dto
 
 import java.time.LocalDateTime
 
-data class StudySessionDto(
+data class StudySessionDTO(
     val id: Long? = null,
     val accountId: Long,
     val startTime: LocalDateTime,
