@@ -2,11 +2,11 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.springframework.boot.gradle.tasks.bundling.BootBuildImage
 
 plugins {
-    id("org.springframework.boot") version "3.0.4"
-    id("io.spring.dependency-management") version "1.1.0"
-    id("com.palantir.docker") version "0.34.0" // 이 플러그인을 추가
-    kotlin("jvm") version "1.7.22"
-    kotlin("plugin.spring") version "1.7.22"
+  id("org.springframework.boot") version "3.0.4"
+  id("io.spring.dependency-management") version "1.1.0"
+  id("com.palantir.docker") version "0.34.0" // 이 플러그인을 추가
+  kotlin("jvm") version "1.7.22"
+  kotlin("plugin.spring") version "1.7.22"
 }
 
 group = "app.klock"
@@ -14,48 +14,49 @@ version = "0.0.1-SNAPSHOT"
 java.sourceCompatibility = JavaVersion.VERSION_17
 
 repositories {
-    mavenCentral()
-    google()
+  mavenCentral()
+  google()
 }
 
 dependencies {
-    implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
-    implementation("org.springframework.boot:spring-boot-starter-webflux")
-    implementation("org.springframework.boot:spring-boot-starter-rsocket")
-    implementation("org.springframework.boot:spring-boot-starter-security")
-    implementation("io.jsonwebtoken:jjwt-api:0.11.5")
-    implementation("io.jsonwebtoken:jjwt-impl:0.11.5")
-    implementation("io.jsonwebtoken:jjwt-jackson:0.11.5")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-    implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
-    implementation("org.jetbrains.kotlin:kotlin-reflect")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
-    implementation("dev.miku:r2dbc-mysql:0.8.2.RELEASE")
-    runtimeOnly("io.r2dbc:r2dbc-h2")
-    runtimeOnly("com.h2database:h2")
-    runtimeOnly("org.mariadb:r2dbc-mariadb:1.1.3")
-    runtimeOnly("org.mariadb.jdbc:mariadb-java-client")
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("io.projectreactor:reactor-test")
+  implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
+  implementation("org.springframework.boot:spring-boot-starter-webflux")
+  implementation("org.springframework.boot:spring-boot-starter-rsocket")
+  implementation("org.springframework.boot:spring-boot-starter-security")
+  implementation("io.jsonwebtoken:jjwt-api:0.11.5")
+  implementation("io.jsonwebtoken:jjwt-impl:0.11.5")
+  implementation("io.jsonwebtoken:jjwt-jackson:0.11.5")
+  implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+  implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
+  implementation("org.jetbrains.kotlin:kotlin-reflect")
+  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
+  implementation("dev.miku:r2dbc-mysql:0.8.2.RELEASE")
+  implementation("com.nimbusds:nimbus-jose-jwt:9.31")
+  runtimeOnly("io.r2dbc:r2dbc-h2")
+  runtimeOnly("com.h2database:h2")
+  runtimeOnly("org.mariadb:r2dbc-mariadb:1.1.3")
+  runtimeOnly("org.mariadb.jdbc:mariadb-java-client")
+  testImplementation("org.springframework.boot:spring-boot-starter-test")
+  testImplementation("io.projectreactor:reactor-test")
 }
 
 tasks.named<BootBuildImage>("bootBuildImage") {
-    imageName.set("${System.getenv("ECR_REGISTRY")}/klock-repository:${System.getenv("GITHUB_SHA")}")
-    val currentEnvironment = mutableMapOf<String, String>()
-    currentEnvironment["SPRING_PROFILES_ACTIVE"] = System.getenv("SPRING_PROFILES_ACTIVE") ?: ""
-    currentEnvironment["SPRING_R2DBC_URL"] = System.getenv("DB_URL") ?: ""
-    currentEnvironment["SPRING_R2DBC_USERNAME"] = System.getenv("DB_USERNAME") ?: ""
-    currentEnvironment["SPRING_R2DBC_PASSWORD"] = System.getenv("DB_PASSWORD") ?: ""
-    environment.set(currentEnvironment)
+  imageName.set("${System.getenv("ECR_REGISTRY")}/klock-repository:${System.getenv("GITHUB_SHA")}")
+  val currentEnvironment = mutableMapOf<String, String>()
+  currentEnvironment["SPRING_PROFILES_ACTIVE"] = System.getenv("SPRING_PROFILES_ACTIVE") ?: ""
+  currentEnvironment["SPRING_R2DBC_URL"] = System.getenv("DB_URL") ?: ""
+  currentEnvironment["SPRING_R2DBC_USERNAME"] = System.getenv("DB_USERNAME") ?: ""
+  currentEnvironment["SPRING_R2DBC_PASSWORD"] = System.getenv("DB_PASSWORD") ?: ""
+  environment.set(currentEnvironment)
 }
 
 tasks.withType<KotlinCompile> {
-    kotlinOptions {
-        freeCompilerArgs = listOf("-Xjsr305=strict")
-        jvmTarget = "17"
-    }
+  kotlinOptions {
+    freeCompilerArgs = listOf("-Xjsr305=strict")
+    jvmTarget = "17"
+  }
 }
 
 tasks.withType<Test> {
-    useJUnitPlatform()
+  useJUnitPlatform()
 }

@@ -9,11 +9,20 @@ import app.klock.api.repository.AccountRepository
 import app.klock.api.repository.SocialLoginRepository
 import app.klock.api.utils.JwtUtils
 import com.fasterxml.jackson.databind.JsonNode
+import com.nimbusds.jose.JWSAlgorithm
+import com.nimbusds.jose.jwk.JWKSet
+import com.nimbusds.jose.jwk.source.ImmutableJWKSet
+import com.nimbusds.jose.proc.JWSVerificationKeySelector
+import com.nimbusds.jose.proc.SecurityContext
+import com.nimbusds.jwt.JWTClaimsSet
+import com.nimbusds.jwt.proc.ConfigurableJWTProcessor
+import com.nimbusds.jwt.proc.DefaultJWTProcessor
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 import java.time.LocalDateTime
+
 
 @Service
 class AuthService(
@@ -25,6 +34,7 @@ class AuthService(
   private val facebookAppId = "your_facebook_app_id"
   private val facebookAppSecret = "your_facebook_app_secret"
   private val appleClientId = "your_apple_client_id"
+
 
   fun createAccount(username: String,
                     email: String? = null,
@@ -85,12 +95,17 @@ class AuthService(
   fun authenticateApple(socialLoginRequest: Mono<SocialLoginRequest>): Mono<String> {
     return socialLoginRequest.flatMap { request ->
       val appleAccessToken = request.accessToken
-      // Apple 액세스 토큰을 사용하여 사용자 정보를 가져옵니다.
-      // 여기서는 구현의 간소화를 위해 사용자 ID만 사용합니다.
-      val appleUserId = jwtUtils.getUserIdFromToken(appleAccessToken)
+      // Apple 공개 키를 가져옵니다.
+      fetchApplePublicKeys().flatMap { jwkSet ->
+        // Apple 액세스 토큰 (JWT)를 검증합니다.
+        validateAppleJwt(appleAccessToken, jwkSet)
+      }.flatMap { jwtClaimsSet ->
+        // JWT에서 사용자 ID를 가져옵니다.
+        val appleUserId = jwtClaimsSet.subject
 
-      // accountId로 Account가 있는지 확인해서 가져와서 JWT 토큰을 생성하고 반환 한다.
-      authenticateSocial(SocialProvider.APPLE, appleUserId)
+        // accountId로 Account가 있는지 확인해서 가져와서 JWT 토큰을 생성하고 반환한다.
+        authenticateSocial(SocialProvider.APPLE, appleUserId)
+      }
     }
   }
 
@@ -102,4 +117,31 @@ class AuthService(
       Mono.just(newToken)
     }
   }
+
+  private fun fetchApplePublicKeys(): Mono<ImmutableJWKSet<SecurityContext>> {
+    val applePublicKeysUrl = "https://appleid.apple.com/auth/keys"
+    return WebClient.create()
+      .get()
+      .uri(applePublicKeysUrl)
+      .retrieve()
+      .bodyToMono(String::class.java)
+      .map { jwkSetString ->
+        val parsedJWKSet = JWKSet.parse(jwkSetString)
+        ImmutableJWKSet<SecurityContext>(parsedJWKSet)
+      }
+  }
+
+  private fun validateAppleJwt(token: String, jwkSet: ImmutableJWKSet<SecurityContext>): Mono<JWTClaimsSet> {
+    val jwtProcessor: ConfigurableJWTProcessor<SecurityContext> = DefaultJWTProcessor()
+    val jwsKeySelector = JWSVerificationKeySelector<SecurityContext>(JWSAlgorithm.RS256, jwkSet)
+    jwtProcessor.jwsKeySelector = jwsKeySelector
+
+    return try {
+      val claimsSet = jwtProcessor.process(token, null) // null을 사용하여 SecurityContext를 생략합니다.
+      Mono.just(claimsSet)
+    } catch (e: Exception) {
+      Mono.error(e)
+    }
+  }
+
 }
