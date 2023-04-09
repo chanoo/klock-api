@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS social_login (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, -- 생성일
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, -- 업데이트 일자
     PRIMARY KEY (id), -- 기본 키 설정
+    UNIQUE (provider, provider_user_id), -- provider와 provider_user_id 컬럼에 UNIQUE 제약 조건 추가
     FOREIGN KEY (account_id) REFERENCES account (id) -- account 테이블 참조
 );
 
