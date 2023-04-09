@@ -51,8 +51,12 @@ class AuthHandler(
         }
       }
       .flatMap { (user, socialLogin, accountTag) ->
+        val accessToken = jwtUtils.generateToken(user.id.toString())
+        val refreshToken = jwtUtils.generateRefreshToken(user.id.toString())
         ServerResponse.status(HttpStatus.CREATED).bodyValue(
           SignUpResDTO(id = user.id!!,
+            accessToken = accessToken,
+            refreshToken = refreshToken,
             username = user.username,
             provider = socialLogin.provider,
             providerUserId = socialLogin.providerUserId,
