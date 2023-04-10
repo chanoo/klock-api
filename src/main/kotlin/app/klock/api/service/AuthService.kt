@@ -89,7 +89,7 @@ class AuthService(
           // accountId로 Account가 있는지 확인해서 가져와서 JWT 토큰을 생성하고 반환 한다.
           authenticateSocial(SocialProvider.FACEBOOK, userId)
         }
-    }
+    }.switchIfEmpty(Mono.error(NoSuchElementException("Authentication failed")))
   }
 
   fun authenticateApple(socialLoginRequest: Mono<SocialLoginRequest>): Mono<String> {
@@ -106,7 +106,7 @@ class AuthService(
         // accountId로 Account가 있는지 확인해서 가져와서 JWT 토큰을 생성하고 반환한다.
         authenticateSocial(SocialProvider.APPLE, appleUserId)
       }
-    }
+    }.switchIfEmpty(Mono.error(NoSuchElementException("Authentication failed")))
   }
 
   fun refreshToken(refreshToken: String): Mono<String> {
@@ -118,7 +118,9 @@ class AuthService(
     }
   }
 
+  // Apple의 공개 키를 가져오는 함수입니다.
   private fun fetchApplePublicKeys(): Mono<ImmutableJWKSet<SecurityContext>> {
+    // Apple의 공개 키를 가져오기 위한 URL입니다.
     val applePublicKeysUrl = "https://appleid.apple.com/auth/keys"
     return WebClient.create()
       .get()
@@ -126,22 +128,31 @@ class AuthService(
       .retrieve()
       .bodyToMono(String::class.java)
       .map { jwkSetString ->
+        // JSON 형식의 JWKSet 문자열을 JWKSet 객체로 변환합니다.
         val parsedJWKSet = JWKSet.parse(jwkSetString)
+        // 변환된 JWKSet 객체를 ImmutableJWKSet로 변환합니다.
         ImmutableJWKSet<SecurityContext>(parsedJWKSet)
       }
   }
 
+  // 주어진 Apple JWT 토큰을 검증하는 함수입니다.
   private fun validateAppleJwt(token: String, jwkSet: ImmutableJWKSet<SecurityContext>): Mono<JWTClaimsSet> {
+    // JWT 처리를 위한 ConfigurableJWTProcessor를 생성합니다.
     val jwtProcessor: ConfigurableJWTProcessor<SecurityContext> = DefaultJWTProcessor()
+    // JWS 알고리즘과 JWKSet을 사용하여 JWSVerificationKeySelector를 생성합니다.
     val jwsKeySelector = JWSVerificationKeySelector<SecurityContext>(JWSAlgorithm.RS256, jwkSet)
+    // 생성한 JWSVerificationKeySelector를 jwtProcessor의 jwsKeySelector로 설정합니다.
     jwtProcessor.jwsKeySelector = jwsKeySelector
 
     return try {
+      // Apple JWT 토큰을 검증하고 ClaimsSet을 반환합니다.
       val claimsSet = jwtProcessor.process(token, null) // null을 사용하여 SecurityContext를 생략합니다.
       Mono.just(claimsSet)
     } catch (e: Exception) {
+      // 검증 과정에서 오류가 발생한 경우 Mono.error로 처리합니다.
       Mono.error(e)
     }
   }
+
 
 }
