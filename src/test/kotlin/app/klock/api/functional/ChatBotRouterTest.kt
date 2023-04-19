@@ -34,6 +34,7 @@ class ChatBotRouterTest @Autowired constructor(
         subject = "국어",
         title = "문장의 비결, 국어 전문가 미희 선생님",
         name = "미희",
+        chatBotImageUrl = "img_korean_teacher",
         persona = "안녕하세요, 국어 선생님 미희입니다! 맞춤법, 작문, 독해 등 국어의 모든 것을 함께 배워볼까요? 궁금한 것이 있다면 언제든지 질문해주세요!",
         active = true,
         createdAt = LocalDateTime.now(),
@@ -57,6 +58,7 @@ class ChatBotRouterTest @Autowired constructor(
       .jsonPath("$[0].subject").isEqualTo(testChatBots[0].subject)
       .jsonPath("$[0].title").isEqualTo(testChatBots[0].title)
       .jsonPath("$[0].name").isEqualTo(testChatBots[0].name)
+      .jsonPath("$[0].chatBotImageUrl").isEqualTo(testChatBots[0].chatBotImageUrl)
       .jsonPath("$[0].persona").isEqualTo(testChatBots[0].persona)
   }
 }

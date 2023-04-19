@@ -28,6 +28,7 @@ class ChatBotHandler(private val chatBotService: ChatBotService) {
       id = chatBot.id,
       subject = chatBot.subject,
       name = chatBot.name,
+      chatBotImageUrl = chatBot.chatBotImageUrl,
       title = chatBot.title,
       persona = chatBot.persona
     )

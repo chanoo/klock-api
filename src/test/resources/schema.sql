@@ -108,13 +108,14 @@ CREATE TABLE IF NOT EXISTS account_tag
 -- 챗봇 테이블 생성
 CREATE TABLE IF NOT EXISTS chatbot
 (
-    id         BIGINT       NOT NULL AUTO_INCREMENT,                                        -- 고유 식별자
-    subject    VARCHAR(255) NOT NULL,                                                       -- 챗봇 주제
-    name       VARCHAR(255) NOT NULL,                                                       -- 챗봇 이름
-    title      VARCHAR(255) NOT NULL,                                                       -- 챗봇 타이틀
-    persona    VARCHAR(255) NOT NULL,                                                       -- 챗봇 개성
-    active     BOOLEAN      NOT NULL,                                                       -- 챗봇 활성 상태
-    created_at TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,                             -- 생성일
-    updated_at TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, -- 업데이트 일자
-    PRIMARY KEY (id)                                                                        -- 기본 키 설정
+    id                 BIGINT       NOT NULL AUTO_INCREMENT,                                        -- 고유 식별자
+    subject            VARCHAR(255) NOT NULL,                                                       -- 챗봇 주제
+    name               VARCHAR(255) NOT NULL,                                                       -- 챗봇 이름
+    chat_bot_image_url VARCHAR(255) NOT NULL,                                                       -- 챗봇 이미지 URL
+    title              VARCHAR(255) NOT NULL,                                                       -- 챗봇 타이틀
+    persona            VARCHAR(255) NOT NULL,                                                       -- 챗봇 개성
+    active             BOOLEAN      NOT NULL,                                                       -- 챗봇 활성 상태
+    created_at         TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,                             -- 생성일
+    updated_at         TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, -- 업데이트 일자
+    PRIMARY KEY (id)                                                                                -- 기본 키 설정
 );

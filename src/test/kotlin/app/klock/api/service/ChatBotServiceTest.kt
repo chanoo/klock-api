@@ -28,8 +28,8 @@ class ChatBotServiceTest {
   fun `getByActiveChatBots should return active chatbots`() {
     val currentTime = LocalDateTime.now()
     val activeChatBots = listOf(
-      ChatBot(1, "Subject 1", "Active ChatBot 1", "Title 1", "Persona 1", true, currentTime, currentTime),
-      ChatBot(2, "Subject 2", "Active ChatBot 2", "Title 2", "Persona 2", true, currentTime, currentTime)
+      ChatBot(1, "Subject 1", "Active ChatBot 1", "Title 1", "Persona 1", "hello", true, currentTime, currentTime),
+      ChatBot(2, "Subject 2", "Active ChatBot 2", "Title 2", "Persona 2", "hi", true, currentTime, currentTime)
     )
 
     Mockito.`when`(chatBotRepository.findByActive(true)).thenReturn(Flux.fromIterable(activeChatBots))
@@ -48,8 +48,8 @@ class ChatBotServiceTest {
   fun `getByActiveChatBots should return inactive chatbots`() {
     val currentTime = LocalDateTime.now()
     val inactiveChatBots = listOf(
-      ChatBot(3, "Subject 3", "Inactive ChatBot 1", "Title 3", "Persona 3", false, currentTime, currentTime),
-      ChatBot(4, "Subject 4", "Inactive ChatBot 2", "Title 4", "Persona 4", false, currentTime, currentTime)
+      ChatBot(3, "Subject 3", "Inactive ChatBot 1", "Title 3", "img_korean_teacher", "Persona 3", false, currentTime, currentTime),
+      ChatBot(4, "Subject 4", "Inactive ChatBot 2", "Title 4", "img_math_teacher", "Persona 4", false, currentTime, currentTime)
     )
 
     Mockito.`when`(chatBotRepository.findByActive(false)).thenReturn(Flux.fromIterable(inactiveChatBots))
