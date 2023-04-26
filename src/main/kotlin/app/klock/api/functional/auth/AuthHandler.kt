@@ -51,8 +51,8 @@ class AuthHandler(
         }
       }
       .flatMap { (user, socialLogin, accountTag) ->
-        val accessToken = jwtUtils.generateToken(user.id.toString())
-        val refreshToken = jwtUtils.generateRefreshToken(user.id.toString())
+        val accessToken = jwtUtils.generateToken(user.id.toString(), listOf(user.role.name))
+        val refreshToken = jwtUtils.generateRefreshToken(user.id.toString(), listOf(user.role.name))
         ServerResponse.status(HttpStatus.CREATED).bodyValue(
           SignUpResDTO(id = user.id!!,
             accessToken = accessToken,
@@ -81,7 +81,7 @@ class AuthHandler(
           }
           .switchIfEmpty(Mono.error(Exception("Invalid username or password")))
           .flatMap { user ->
-            val token = jwtUtils.generateToken(user.id.toString())
+            val token = jwtUtils.generateToken(user.id.toString(), listOf(user.role.name))
             ServerResponse.ok()
               .contentType(MediaType.APPLICATION_JSON)
               .bodyValue(mapOf("token" to token))
@@ -101,7 +101,8 @@ class AuthHandler(
         authService.refreshToken(refreshTokenRequest.refreshToken)
           .flatMap { accessToken ->
             val userId = jwtUtils.getUserIdFromToken(refreshTokenRequest.refreshToken)
-            val newRefreshToken = jwtUtils.generateToken(userId)
+            val roles = jwtUtils.getAuthoritiesFromJwt(refreshTokenRequest.refreshToken).map { it.authority }
+            val newRefreshToken = jwtUtils.generateRefreshToken(userId, roles)
             val refreshTokenResponse = RefreshTokenResponse(accessToken, newRefreshToken)
             ServerResponse.ok().bodyValue(refreshTokenResponse)
           }

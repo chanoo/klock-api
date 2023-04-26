@@ -72,7 +72,7 @@ class AuthService(
         accountRepository.findById(socialLogin.accountId)
           .flatMap { account ->
             // JWT 토큰을 생성합니다.
-            Mono.just(jwtUtils.generateToken(account.id.toString()))
+            Mono.just(jwtUtils.generateToken(account.id.toString(), listOf(account.role.name)))
           }
       }
   }
@@ -113,8 +113,15 @@ class AuthService(
     return Mono.fromCallable {
       jwtUtils.validateTokenAndGetUserId(refreshToken)
     }.flatMap { userId ->
-      val newToken = jwtUtils.generateToken(userId)
-      Mono.just(newToken)
+      accountRepository.findById(userId.toLong())
+        .flatMap { account ->
+          // Account 역할을 가져옵니다.
+          val roles = listOf(account.role.name)
+
+          // 새 JWT 토큰을 생성하고 반환합니다.
+          val newToken = jwtUtils.generateToken(userId, roles)
+          Mono.just(newToken)
+        }
     }
   }
 

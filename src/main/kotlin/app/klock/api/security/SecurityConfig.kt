@@ -1,14 +1,13 @@
 package app.klock.api.security
 
+import app.klock.api.service.CustomReactiveUserDetailsService
 import app.klock.api.utils.JwtUtils
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.authentication.ReactiveAuthenticationManager
-import org.springframework.security.authentication.UserDetailsRepositoryReactiveAuthenticationManager
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder
 import org.springframework.security.config.web.server.ServerHttpSecurity
-import org.springframework.security.core.userdetails.ReactiveUserDetailsService
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.server.SecurityWebFilterChain
@@ -17,7 +16,7 @@ import org.springframework.security.web.server.SecurityWebFilterChain
 @Configuration
 @EnableWebFluxSecurity
 class SecurityConfig(
-  private val userDetailsService: ReactiveUserDetailsService,
+  private val userDetailsService: CustomReactiveUserDetailsService,
   private val jwtUtils: JwtUtils // JwtUtils 주입
 ) {
 
@@ -27,18 +26,16 @@ class SecurityConfig(
     return BCryptPasswordEncoder()
   }
 
-  // 인증 관리자 빈 생성
   @Bean
-  fun authenticationManager(): ReactiveAuthenticationManager {
-    val authenticationManager = UserDetailsRepositoryReactiveAuthenticationManager(userDetailsService)
-    authenticationManager.setPasswordEncoder(passwordEncoder())
-    return authenticationManager
+  fun customReactiveAuthenticationManager(): ReactiveAuthenticationManager {
+    return CustomReactiveAuthenticationManager(userDetailsService)
   }
+
 
   // JwtAuthenticationWebFilter 빈 생성
   @Bean
   fun jwtAuthenticationWebFilter(): JwtAuthenticationWebFilter {
-    return JwtAuthenticationWebFilter(jwtUtils, authenticationManager())
+    return JwtAuthenticationWebFilter(jwtUtils, customReactiveAuthenticationManager())
   }
 
   // 보안 웹 필터 체인 설정
@@ -57,4 +54,5 @@ class SecurityConfig(
       .addFilterAt(jwtAuthenticationWebFilter(), SecurityWebFiltersOrder.AUTHENTICATION) // JWT 인증 필터 추가
       .build()
   }
+
 }
