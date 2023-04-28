@@ -9,6 +9,9 @@ data class UserTimer(
   @Id
   val id: Long? = null,
 
+  @Column("user_id")
+  val userId: Long,
+
   @Column("type")
   val type: UserTimerType,
 

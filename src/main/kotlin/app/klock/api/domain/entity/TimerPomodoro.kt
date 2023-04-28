@@ -12,10 +12,14 @@ data class TimerPomodoro(
   @Id
   val id: Long? = null,
 
-  @Column("user_timer_id")
-  val userTimerId: Long,
+  @Column("user_id")
+  val userId: Long,
 
+  @Column("name")
   val name: String,
+
+  @Column("seq")
+  val seq: Int,
 
   @Column("focus_time")
   val focusTime: Int,

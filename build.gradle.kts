@@ -37,6 +37,7 @@ dependencies {
   runtimeOnly("org.mariadb:r2dbc-mariadb:1.1.3")
   runtimeOnly("org.mariadb.jdbc:mariadb-java-client")
   testImplementation("org.springframework.boot:spring-boot-starter-test")
+  testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test")
   testImplementation("io.projectreactor:reactor-test")
 }
 

@@ -121,49 +121,41 @@ CREATE TABLE IF NOT EXISTS klk_chat_bot
     PRIMARY KEY (id)                                                                                -- 기본 키 설정
 );
 
--- 사용자 타이머 테이블 생성
-CREATE TABLE IF NOT EXISTS klk_user_timer
-(
-    id   BIGINT AUTO_INCREMENT PRIMARY KEY, -- 고유 식별자
-    type VARCHAR(10) NOT NULL,              -- 타이머 타입
-    seq  INT         NOT NULL               -- 정렬
-);
-
 -- 타이머 시험 테이블 생성
 CREATE TABLE IF NOT EXISTS klk_timer_exam
 (
     id             BIGINT AUTO_INCREMENT PRIMARY KEY,                                           -- 고유 식별자
-    user_timer_id  BIGINT       NOT NULL,                                                       -- 사용자 타이머 ID (외래 키)
+    user_id        BIGINT       NOT NULL,                                                       -- 사용자 ID (외래 키)
     name           VARCHAR(255) NOT NULL,                                                       -- 시험 이름
     start_time     TIMESTAMP    NOT NULL,                                                       -- 시작 시간
     duration       INT          NOT NULL,                                                       -- 지속 시간
     question_count INT          NOT NULL,                                                       -- 문제 수
     created_at     TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,                             -- 생성일
     updated_at     TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, -- 업데이트 일자
-    FOREIGN KEY (user_timer_id) REFERENCES klk_user_timer (id)                                  -- 사용자 타이머 테이블 참조
+    FOREIGN KEY (user_id) REFERENCES klk_user (id)                                              -- 사용자 타이머 테이블 참조
 );
 
 -- 타이머 포모도로 테이블 생성
 CREATE TABLE IF NOT EXISTS klk_timer_pomodoro
 (
-    id            BIGINT AUTO_INCREMENT PRIMARY KEY,                                           -- 고유 식별자
-    user_timer_id BIGINT       NOT NULL,                                                       -- 사용자 타이머 ID (외래 키)
-    name          VARCHAR(255) NOT NULL,                                                       -- 포모도로 이름
-    focus_time    INT          NOT NULL,                                                       -- 집중 시간
-    rest_time     INT          NOT NULL,                                                       -- 휴식 시간
-    cycle_count   INT          NOT NULL,                                                       -- 사이클 수
-    created_at    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,                             -- 생성일
-    updated_at    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, -- 업데이트 일자
-    FOREIGN KEY (user_timer_id) REFERENCES klk_user_timer (id)                                 -- 사용자 타이머 테이블 참조
+    id          BIGINT AUTO_INCREMENT PRIMARY KEY,                                           -- 고유 식별자
+    user_id     BIGINT       NOT NULL,                                                       -- 사용자 ID (외래 키)
+    name        VARCHAR(255) NOT NULL,                                                       -- 포모도로 이름
+    focus_time  INT          NOT NULL,                                                       -- 집중 시간
+    rest_time   INT          NOT NULL,                                                       -- 휴식 시간
+    cycle_count INT          NOT NULL,                                                       -- 사이클 수
+    created_at  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,                             -- 생성일
+    updated_at  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, -- 업데이트 일자
+    FOREIGN KEY (user_id) REFERENCES klk_user (id)                                           -- 사용자 타이머 테이블 참조
 );
 
 -- 타이머 공부 테이블 생성
-CREATE TABLE IF NOT EXISTS klk_timer_study
+CREATE TABLE IF NOT EXISTS klk_timer_focus
 (
-    id            BIGINT AUTO_INCREMENT PRIMARY KEY,                                           -- 고유 식별자
-    user_timer_id BIGINT       NOT NULL,                                                       -- 사용자 타이머 ID (외래 키)
-    name          VARCHAR(255) NOT NULL,                                                       -- 공부 이름
-    created_at    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,                             -- 생성일
-    updated_at    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, -- 업데이트 일자
-    FOREIGN KEY (user_timer_id) REFERENCES klk_user_timer (id)                                 -- 사용자 타이머 테이블 참조
+    id         BIGINT AUTO_INCREMENT PRIMARY KEY,                                           -- 고유 식별자
+    user_id    BIGINT       NOT NULL,                                                       -- 사용자 ID (외래 키)
+    name       VARCHAR(255) NOT NULL,                                                       -- 공부 이름
+    created_at TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,                             -- 생성일
+    updated_at TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, -- 업데이트 일자
+    FOREIGN KEY (user_id) REFERENCES klk_user (id)                                          -- 사용자 타이머 테이블 참조
 );
