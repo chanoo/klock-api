@@ -25,87 +25,87 @@ import java.time.LocalDateTime
 @SpringBootTest(classes = [TestConfig::class])
 @ActiveProfiles("test")
 class StudySessionRouterTest @Autowired constructor(
-    private val webTestClient: WebTestClient
+  private val webTestClient: WebTestClient
 ) {
-    @MockBean
-    private lateinit var studySessionService: StudySessionService
+  @MockBean
+  private lateinit var studySessionService: StudySessionService
 
-    private lateinit var studySession: StudySession
+  private lateinit var studySession: StudySession
 
-    @BeforeEach
-    fun setUp() {
-        studySession = StudySession(
-            id = 1,
-            accountId = 1,
-            startTime = LocalDateTime.now(),
-            endTime = LocalDateTime.now().plusHours(1)
-        )
-    }
+  @BeforeEach
+  fun setUp() {
+    studySession = StudySession(
+      id = 1,
+      userId = 1,
+      startTime = LocalDateTime.now(),
+      endTime = LocalDateTime.now().plusHours(1)
+    )
+  }
 
-    @Test
-    fun `특정 사용자의 공부 시간 조회`() {
-        val accountId = 1L
-        val startDate = LocalDate.now()
-        val studySessions = listOf(
-            StudySession(
-                id = 1,
-                accountId = accountId,
-                startTime = LocalDateTime.now(),
-                endTime = LocalDateTime.now().plusHours(1)
-            ),
-            StudySession(
-                id = 2,
-                accountId = accountId,
-                startTime = LocalDateTime.now(),
-                endTime = LocalDateTime.now().plusHours(1)
-            )
-        )
+  @Test
+  fun `특정 사용자의 공부 시간 조회`() {
+    val userId = 1L
+    val startDate = LocalDate.now()
+    val studySessions = listOf(
+      StudySession(
+        id = 1,
+        userId = userId,
+        startTime = LocalDateTime.now(),
+        endTime = LocalDateTime.now().plusHours(1)
+      ),
+      StudySession(
+        id = 2,
+        userId = userId,
+        startTime = LocalDateTime.now(),
+        endTime = LocalDateTime.now().plusHours(1)
+      )
+    )
 
-        Mockito.`when`(studySessionService.findByAccountIdAndStartTimeBetween(accountId, startDate)).thenReturn(Flux.just(studySessions[0], studySessions[1]))
+    Mockito.`when`(studySessionService.findByUserIdAndStartTimeBetween(userId, startDate)).thenReturn(Flux.just(studySessions[0], studySessions[1]))
 
-        webTestClient.get()
-            .uri("/api/study-sessions?accountId=$accountId&date=$startDate")
-            .exchange()
-            .expectStatus().isOk
-            .expectHeader().contentType(MediaType.APPLICATION_JSON)
-            .expectBodyList(StudySession::class.java)
-            .hasSize(2)
-            .contains(studySessions[0], studySessions[1])
-    }
+    webTestClient.get()
+      .uri("/api/study-sessions?userId=$userId&date=$startDate")
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBodyList(StudySession::class.java)
+      .hasSize(2)
+      .contains(studySessions[0], studySessions[1])
+  }
 
-    @Test
-    fun `공부 시간 추가`() {
-        val studySession =
-            StudySession(accountId = 3, startTime = LocalDateTime.now(), endTime = LocalDateTime.now().plusHours(1))
+  @Test
+  fun `공부 시간 추가`() {
+    val studySession =
+      StudySession(userId = 3, startTime = LocalDateTime.now(), endTime = LocalDateTime.now().plusHours(1))
 
-        Mockito.`when`(studySessionService.create(studySession)).thenReturn(Mono.just(studySession.copy(id = 3)))
+    Mockito.`when`(studySessionService.create(studySession)).thenReturn(Mono.just(studySession.copy(id = 3)))
 
-        webTestClient.post()
-            .uri("/api/study-sessions")
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(BodyInserters.fromValue(studySession))
-            .exchange()
-            .expectStatus().isCreated
-            .expectHeader().contentType(MediaType.APPLICATION_JSON)
-            .expectBody(StudySession::class.java)
-            .isEqualTo(studySession.copy(id = 3))
-    }
+    webTestClient.post()
+      .uri("/api/study-sessions")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(BodyInserters.fromValue(studySession))
+      .exchange()
+      .expectStatus().isCreated
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(StudySession::class.java)
+      .isEqualTo(studySession.copy(id = 3))
+  }
 
-    @Test
-    fun `공부 시간 수정`() {
-        val studySession =
-            StudySession(id = 1L, accountId = 3, startTime = LocalDateTime.now(), endTime = LocalDateTime.now().plusHours(1))
+  @Test
+  fun `공부 시간 수정`() {
+    val studySession =
+      StudySession(id = 1L, userId = 3, startTime = LocalDateTime.now(), endTime = LocalDateTime.now().plusHours(1))
 
-        Mockito.`when`(studySessionService.update(studySession.id!!, studySession)).thenReturn(Mono.just(studySession))
+    Mockito.`when`(studySessionService.update(studySession.id!!, studySession)).thenReturn(Mono.just(studySession))
 
-        webTestClient.put()
-            .uri("/api/study-sessions/${studySession.id}")
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(BodyInserters.fromValue(studySession))
-            .exchange()
-            .expectStatus().isOk
-            .expectHeader().contentType(MediaType.APPLICATION_JSON)
-            .expectBody(StudySession::class.java)
-            .isEqualTo(studySession)
-    }
+    webTestClient.put()
+      .uri("/api/study-sessions/${studySession.id}")
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(BodyInserters.fromValue(studySession))
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody(StudySession::class.java)
+      .isEqualTo(studySession)
+  }
 }

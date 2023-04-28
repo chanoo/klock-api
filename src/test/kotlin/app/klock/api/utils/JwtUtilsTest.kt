@@ -1,6 +1,6 @@
 package app.klock.api.utils
 
-import app.klock.api.domain.entity.AccountRole
+import app.klock.api.domain.entity.UserRole
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -24,7 +24,7 @@ class JwtUtilsTest {
   @Test
   fun generateTokenTest() {
     val userId = "1"
-    val userRole = listOf(AccountRole.USER.name)
+    val userRole = listOf(UserRole.USER.name)
     val token = jwtUtils.generateToken(userId, userRole)
     assertTrue(jwtUtils.validateToken(token))
 
@@ -35,7 +35,7 @@ class JwtUtilsTest {
   @Test
   fun refreshTokenTest() {
     val userId = "1"
-    val userRoles = listOf(AccountRole.USER.name)
+    val userRoles = listOf(UserRole.USER.name)
     val refreshToken = jwtUtils.generateRefreshToken(userId, userRoles)
     assertTrue(jwtUtils.validateRefreshToken(refreshToken))
 
@@ -46,7 +46,7 @@ class JwtUtilsTest {
   @Test
   fun validateTokenTest() {
     val userId = "1"
-    val userRole = listOf(AccountRole.USER.name)
+    val userRole = listOf(UserRole.USER.name)
     val token = jwtUtils.generateToken(userId, userRole)
 
     assertTrue(jwtUtils.validateToken(token))
@@ -55,7 +55,7 @@ class JwtUtilsTest {
   @Test
   fun getUserIdFromTokenTest() {
     val userId = "1"
-    val userRole = listOf(AccountRole.USER.name)
+    val userRole = listOf(UserRole.USER.name)
     val token = jwtUtils.generateToken(userId, userRole)
 
     assertEquals(userId, jwtUtils.getUserIdFromToken(token))
@@ -64,7 +64,7 @@ class JwtUtilsTest {
   @Test
   fun getAuthoritiesFromJwtTest() {
     val userId = "testUser"
-    val roles = listOf(AccountRole.USER.name, AccountRole.ADMIN.name)
+    val roles = listOf(UserRole.USER.name, UserRole.ADMIN.name)
 
     // JWT 토큰에 역할을 포함하여 생성
     val token = jwtUtils.generateToken(userId, roles)

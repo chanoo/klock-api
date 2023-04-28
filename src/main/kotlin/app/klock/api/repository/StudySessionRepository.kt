@@ -9,6 +9,6 @@ import java.time.LocalDateTime
 @Repository
 interface StudySessionRepository : ReactiveCrudRepository<StudySession, Long> {
 
-    // userid와 startTime 으로 studySession 찾기
-    fun findByAccountIdAndStartTimeBetween(userId: Long, start: LocalDateTime, end: LocalDateTime): Flux<StudySession>
+  // userid와 startTime 으로 studySession 찾기
+  fun findByUserIdAndStartTimeBetween(userId: Long, start: LocalDateTime, end: LocalDateTime): Flux<StudySession>
 }

@@ -4,9 +4,9 @@ import app.klock.api.config.TestConfig
 import app.klock.api.domain.entity.*
 import app.klock.api.functional.auth.dto.LoginRequest
 import app.klock.api.functional.auth.dto.SignUpReqDTO
-import app.klock.api.service.AccountService
-import app.klock.api.service.AccountTagService
 import app.klock.api.service.AuthService
+import app.klock.api.service.UserService
+import app.klock.api.service.UserTagService
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -29,39 +29,39 @@ class AuthRouterTest @Autowired constructor(
   private val client: WebTestClient
 ) {
   @MockBean
-  private lateinit var accountService: AccountService
+  private lateinit var userService: UserService
 
   @MockBean
   private lateinit var authService: AuthService
 
   @MockBean
-  private lateinit var accountTagService: AccountTagService
+  private lateinit var userTagService: UserTagService
 
   // 테스트 데이터 설정
-  lateinit var account: Account
-  lateinit var newAccount: Account
+  lateinit var user: User
+  lateinit var newUser: User
 
   @BeforeEach
   fun setUp() {
     // 테스트에 사용할 사용자 데이터를 설정합니다.
-    account = Account(
+    user = User(
       username = "user1",
       email = "user1@example.com",
       totalStudyTime = 0,
-      accountLevelId = 1,
-      role = AccountRole.USER,
+      userLevelId = 1,
+      role = UserRole.USER,
       active = true,
       createdAt = LocalDateTime.now(),
       updatedAt = LocalDateTime.now())
 
-    newAccount = Account(
+    newUser = User(
       id = 1L,
       username = "user1",
       email = "user1@example.com",
       hashedPassword = "password",
       totalStudyTime = 0,
-      accountLevelId = 1,
-      role = AccountRole.USER,
+      userLevelId = 1,
+      role = UserRole.USER,
       active = true,
       createdAt = LocalDateTime.now(),
       updatedAt = LocalDateTime.now())
@@ -70,55 +70,55 @@ class AuthRouterTest @Autowired constructor(
   @Test
   fun `회원 가입`() {
     // Prepare test data
-    val accountToSave = Account(
+    val userToSave = User(
       username = "user1",
       email = "user1@example.com",
       hashedPassword = "encoded_test_password",
-      role = AccountRole.USER,
+      role = UserRole.USER,
       active = true,
       totalStudyTime = 0,
-      accountLevelId = 1,
+      userLevelId = 1,
       createdAt = LocalDateTime.now(),
       updatedAt = LocalDateTime.now()
     )
-    val savedAccount = accountToSave.copy(id = 1L)
+    val savedAccount = userToSave.copy(id = 1L)
 
     var socialLoginToSave = SocialLogin(
       provider = SocialProvider.APPLE,
       providerUserId = "1234",
-      accountId = savedAccount.id!!,
+      userId = savedAccount.id!!,
       createdAt = LocalDateTime.now(),
       updatedAt = LocalDateTime.now())
 
     val savedSocialLogin = socialLoginToSave.copy(id = 1L)
 
-    val accountTagToSave = AccountTag(
-      accountId = savedAccount.id!!,
+    val userTagToSave = UserTag(
+      userId = savedAccount.id!!,
       tagId = 1L
     )
 
-    val savedAccountTag = accountTagToSave.copy(id = 1L)
+    val savedAccountTag = userTagToSave.copy(id = 1L)
 
     // Save user mock
-    Mockito.`when`(authService.createAccount(
-      username = accountToSave.username,
-      email = accountToSave.email,
-      password = accountToSave.hashedPassword)).thenReturn(Mono.just(savedAccount))
+    Mockito.`when`(authService.signup(
+      username = userToSave.username,
+      email = userToSave.email,
+      password = userToSave.hashedPassword)).thenReturn(Mono.just(savedAccount))
 
     Mockito.`when`(authService.createSocialLogin(
-      accountId = savedAccount.id!!,
+      userId = savedAccount.id!!,
       provider = SocialProvider.APPLE,
       providerUserId = "1234")).thenReturn(Mono.just(savedSocialLogin))
 
-    Mockito.`when`(accountTagService.create(accountTagToSave)).thenReturn(Mono.just(savedAccountTag))
+    Mockito.`when`(userTagService.create(userTagToSave)).thenReturn(Mono.just(savedAccountTag))
 
     // 요청 테스트
     val signUpReqDTO = SignUpReqDTO(
-      username = accountToSave.username,
+      username = userToSave.username,
       provider = SocialProvider.APPLE,
       providerUserId = "1234",
-      email = accountToSave.email,
-      password = accountToSave.hashedPassword,
+      email = userToSave.email,
+      password = userToSave.hashedPassword,
       tagId = 1L
     )
 
@@ -141,8 +141,8 @@ class AuthRouterTest @Autowired constructor(
       password = "password"
     )
 
-    Mockito.`when`(accountService.findByEmail(loginRequest.email)).thenReturn(Mono.just(account))
-    Mockito.`when`(accountService.validatePassword(loginRequest.password, account.hashedPassword)).thenReturn(true)
+    Mockito.`when`(userService.findByEmail(loginRequest.email)).thenReturn(Mono.just(user))
+    Mockito.`when`(userService.validatePassword(loginRequest.password, user.hashedPassword)).thenReturn(true)
 
     client.post().uri("/api/auth/signin")
       .contentType(MediaType.APPLICATION_JSON)
@@ -161,7 +161,7 @@ class AuthRouterTest @Autowired constructor(
       password = "password"
     )
 
-    Mockito.`when`(accountService.findByEmail(loginRequest.email)).thenReturn(Mono.empty())
+    Mockito.`when`(userService.findByEmail(loginRequest.email)).thenReturn(Mono.empty())
 
     client.post().uri("/api/auth/signin")
       .contentType(MediaType.APPLICATION_JSON)
@@ -180,8 +180,8 @@ class AuthRouterTest @Autowired constructor(
       password = "wrongpassword"
     )
 
-    Mockito.`when`(accountService.findByEmail(loginRequest.email)).thenReturn(Mono.just(account))
-    Mockito.`when`(accountService.validatePassword(loginRequest.password, account.hashedPassword)).thenReturn(false)
+    Mockito.`when`(userService.findByEmail(loginRequest.email)).thenReturn(Mono.just(user))
+    Mockito.`when`(userService.validatePassword(loginRequest.password, user.hashedPassword)).thenReturn(false)
 
     client.post().uri("/api/auth/signin")
       .contentType(MediaType.APPLICATION_JSON)

@@ -1,10 +1,10 @@
-import app.klock.api.domain.entity.Account
-import app.klock.api.domain.entity.AccountRole
 import app.klock.api.domain.entity.SocialLogin
 import app.klock.api.domain.entity.SocialProvider
+import app.klock.api.domain.entity.User
+import app.klock.api.domain.entity.UserRole
 import app.klock.api.functional.auth.dto.SocialLoginRequest
-import app.klock.api.repository.AccountRepository
 import app.klock.api.repository.SocialLoginRepository
+import app.klock.api.repository.UserRepository
 import app.klock.api.service.AuthService
 import app.klock.api.utils.JwtUtils
 import org.junit.jupiter.api.BeforeEach
@@ -29,7 +29,7 @@ class AuthServiceTest {
   private lateinit var passwordEncoder: PasswordEncoder
 
   @Mock
-  private lateinit var accountRepository: AccountRepository
+  private lateinit var userRepository: UserRepository
 
   @Mock
   private lateinit var socialLoginRepository: SocialLoginRepository
@@ -38,49 +38,49 @@ class AuthServiceTest {
 
   @BeforeEach
   fun setUp() {
-    authService = AuthService(jwtUtils, passwordEncoder, accountRepository, socialLoginRepository)
+    authService = AuthService(jwtUtils, passwordEncoder, userRepository, socialLoginRepository)
   }
 
   @Test
   fun `사용자 등록`() {
-    val savedAccount = Account(
+    val savedUser = User(
       id = 1L,
       username = "testuser",
       email = "test@example.com",
       hashedPassword = "encoded_password",
-      role = AccountRole.USER,
+      role = UserRole.USER,
       active = true,
       totalStudyTime = 0,
-      accountLevelId = 1,
+      userLevelId = 1,
       createdAt = LocalDateTime.now(),
       updatedAt = LocalDateTime.now()
     )
 
     val socialLogin = SocialLogin(
       id = 1L,
-      accountId = savedAccount.id!!,
+      userId = savedUser.id!!,
       provider = SocialProvider.APPLE,
       providerUserId = "1234"
     )
 
-    // Account 생성 관련 mock
-    Mockito.`when`(passwordEncoder.encode(savedAccount.hashedPassword)).thenReturn("encoded_password")
-    Mockito.`when`(accountRepository.save(any(Account::class.java))).thenReturn(Mono.just(savedAccount))
+    // User 생성 관련 mock
+    Mockito.`when`(passwordEncoder.encode(savedUser.hashedPassword)).thenReturn("encoded_password")
+    Mockito.`when`(userRepository.save(any(User::class.java))).thenReturn(Mono.just(savedUser))
 
     // SocialLogin 생성 관련 mock
     Mockito.`when`(socialLoginRepository.save(any(SocialLogin::class.java))).thenReturn(Mono.just(socialLogin))
 
-    // Account 생성 테스트
-    StepVerifier.create(authService.createAccount(
-      username = savedAccount.username,
-      email = savedAccount.email,
-      password = savedAccount.hashedPassword))
-      .expectNext(savedAccount)
+    // User 생성 테스트
+    StepVerifier.create(authService.signup(
+      username = savedUser.username,
+      email = savedUser.email,
+      password = savedUser.hashedPassword))
+      .expectNext(savedUser)
       .verifyComplete()
 
     // SocialLogin 생성 테스트
     StepVerifier.create(authService.createSocialLogin(
-      accountId = savedAccount.id!!,
+      userId = savedUser.id!!,
       provider = SocialProvider.APPLE,
       providerUserId = "1234"))
       .expectNext(socialLogin)
@@ -93,22 +93,22 @@ class AuthServiceTest {
     val socialLoginRequest = SocialLoginRequest(accessToken = "apple_access_token")
     val jwtToken = "jwt_token"
     val userEmail = "apple@example.com"
-    val account = Account(
+    val user = User(
       username = "testuser",
       email = "apple@example.com",
       hashedPassword = "password",
-      role = AccountRole.USER,
+      role = UserRole.USER,
       active = true,
       totalStudyTime = 0,
-      accountLevelId = 1,
+      userLevelId = 1,
       createdAt = LocalDateTime.now(),
       updatedAt = LocalDateTime.now()
     )
 
     Mockito.`when`(jwtUtils.getUserIdFromToken(anyString())).thenReturn(userEmail)
     Mockito.`when`(jwtUtils.generateToken(anyString(), anyList())).thenReturn(jwtToken)
-    Mockito.`when`(accountRepository.findByEmail(anyString())).thenReturn(Mono.empty())
-    Mockito.`when`(accountRepository.save(any(Account::class.java))).thenReturn(Mono.just(account))
+    Mockito.`when`(userRepository.findByEmail(anyString())).thenReturn(Mono.empty())
+    Mockito.`when`(userRepository.save(any(User::class.java))).thenReturn(Mono.just(user))
 
     StepVerifier.create(authService.authenticateApple(Mono.just(socialLoginRequest)))
       .expectNext(jwtToken)
@@ -119,7 +119,6 @@ class AuthServiceTest {
   fun `토큰 새로 고침`() {
     val refreshToken = "refresh_token"
     val jwtToken = "jwt_token"
-    val userId = "56"
 
     Mockito.`when`(jwtUtils.validateTokenAndGetUserId(anyString())).thenReturn(jwtToken)
     Mockito.`when`(jwtUtils.generateToken(anyString(), anyList())).thenReturn(jwtToken)

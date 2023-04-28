@@ -15,48 +15,49 @@ import java.time.LocalDate
 @Component
 class StudySessionHandler(private val studySessionService: StudySessionService) {
 
-    // userid 로 studySession 찾기
-    fun getStudySessionByUserIdAndDate(request: ServerRequest): Mono<ServerResponse> {
-        val userId = request.queryParam("accountId").orElse(null)?.toLongOrNull()
-        val date = request.queryParam("date").orElse(null)?.let { LocalDate.parse(it) }
+  // userid 로 studySession 찾기
+  fun getStudySessionByUserIdAndDate(request: ServerRequest): Mono<ServerResponse> {
+    val userId = request.queryParam("userId").orElse(null)?.toLongOrNull()
+    val date = request.queryParam("date").orElse(null)?.let { LocalDate.parse(it) }
 
-        return if (userId != null && date != null) {
-            studySessionService.findByAccountIdAndStartTimeBetween(userId, date)
-                .map { studySession -> StudySessionDTO(
-                    id = studySession.id,
-                    startTime = studySession.startTime,
-                    endTime = studySession.endTime,
-                    accountId = studySession.accountId)
-                }
-                .collectList()
-                .flatMap { studySessions -> ServerResponse.ok().body(BodyInserters.fromValue(studySessions)) }
-        } else {
-            ServerResponse.badRequest()
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(mapOf("error" to "Invalid query parameters"))
+    return if (userId != null && date != null) {
+      studySessionService.findByUserIdAndStartTimeBetween(userId, date)
+        .map { studySession ->
+          StudySessionDTO(
+            id = studySession.id,
+            startTime = studySession.startTime,
+            endTime = studySession.endTime,
+            userId = studySession.userId)
         }
+        .collectList()
+        .flatMap { studySessions -> ServerResponse.ok().body(BodyInserters.fromValue(studySessions)) }
+    } else {
+      ServerResponse.badRequest()
+        .contentType(MediaType.APPLICATION_JSON)
+        .bodyValue(mapOf("error" to "Invalid query parameters"))
     }
+  }
 
-    fun create(request: ServerRequest): Mono<ServerResponse> {
-        return request.bodyToMono(StudySession::class.java)
-            .flatMap { studySession ->
-                studySessionService.create(studySession)
-                    .flatMap { createdSession ->
-                        ServerResponse.status(HttpStatus.CREATED).body(BodyInserters.fromValue(createdSession))
-                    }
-            }
-    }
+  fun create(request: ServerRequest): Mono<ServerResponse> {
+    return request.bodyToMono(StudySession::class.java)
+      .flatMap { studySession ->
+        studySessionService.create(studySession)
+          .flatMap { createdSession ->
+            ServerResponse.status(HttpStatus.CREATED).body(BodyInserters.fromValue(createdSession))
+          }
+      }
+  }
 
-    fun update(request: ServerRequest): Mono<ServerResponse> {
-        val id = request.pathVariable("id").toLong()
+  fun update(request: ServerRequest): Mono<ServerResponse> {
+    val id = request.pathVariable("id").toLong()
 
-        return request.bodyToMono(StudySession::class.java)
-            .flatMap { studySession ->
-                studySessionService.update(id, studySession)
-                    .flatMap { updatedSession ->
-                        ServerResponse.ok().body(BodyInserters.fromValue(updatedSession))
-                    }
-            }
-    }
+    return request.bodyToMono(StudySession::class.java)
+      .flatMap { studySession ->
+        studySessionService.update(id, studySession)
+          .flatMap { updatedSession ->
+            ServerResponse.ok().body(BodyInserters.fromValue(updatedSession))
+          }
+      }
+  }
 
 }

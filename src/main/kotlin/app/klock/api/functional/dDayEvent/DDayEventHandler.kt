@@ -8,39 +8,39 @@ import org.springframework.web.reactive.function.server.*
 @Component
 class DDayEventHandler(private val dDayEventService: DDayEventService) {
 
-    // GET /api/d-day?accountId={accountId}
-    suspend fun getByAccountId(request: ServerRequest): ServerResponse {
-        val accountId = request.queryParam("accountId").get().toLong()
-        val events = dDayEventService.getByAccountId(accountId)
-        return ServerResponse.ok().json().bodyValueAndAwait(events)
-    }
+  // GET /api/d-day?userId={userId}
+  suspend fun getByUserId(request: ServerRequest): ServerResponse {
+    val userId = request.queryParam("userId").get().toLong()
+    val events = dDayEventService.getByUserId(userId)
+    return ServerResponse.ok().json().bodyValueAndAwait(events)
+  }
 
-    // GET /api/d-day/{id}
-    suspend fun getById(request: ServerRequest): ServerResponse {
-        val id = request.pathVariable("id").toLong()
-        val event = dDayEventService.getById(id)
-        return ServerResponse.ok().json().bodyValueAndAwait(event)
-    }
+  // GET /api/d-day/{id}
+  suspend fun getById(request: ServerRequest): ServerResponse {
+    val id = request.pathVariable("id").toLong()
+    val event = dDayEventService.getById(id)
+    return ServerResponse.ok().json().bodyValueAndAwait(event)
+  }
 
-    // POST /api/d-day
-    suspend fun create(request: ServerRequest): ServerResponse {
-        val event = request.awaitBody<DDayEventDto>()
-        val createdEvent = dDayEventService.create(event)
-        return ServerResponse.ok().json().bodyValueAndAwait(createdEvent)
-    }
+  // POST /api/d-day
+  suspend fun create(request: ServerRequest): ServerResponse {
+    val event = request.awaitBody<DDayEventDto>()
+    val createdEvent = dDayEventService.create(event)
+    return ServerResponse.ok().json().bodyValueAndAwait(createdEvent)
+  }
 
-    // PUT /api/d-day/{id}
-    suspend fun update(request: ServerRequest): ServerResponse {
-        val id = request.pathVariable("id").toLong()
-        val event = request.awaitBody<DDayEventDto>()
-        val updatedEvent = dDayEventService.update(id, event)
-        return ServerResponse.ok().json().bodyValueAndAwait(updatedEvent)
-    }
+  // PUT /api/d-day/{id}
+  suspend fun update(request: ServerRequest): ServerResponse {
+    val id = request.pathVariable("id").toLong()
+    val event = request.awaitBody<DDayEventDto>()
+    val updatedEvent = dDayEventService.update(id, event)
+    return ServerResponse.ok().json().bodyValueAndAwait(updatedEvent)
+  }
 
-    // DELETE /api/d-day/{id}
-    suspend fun delete(request: ServerRequest): ServerResponse {
-        val id = request.pathVariable("id").toLong()
-        dDayEventService.delete(id)
-        return ServerResponse.noContent().buildAndAwait()
-    }
+  // DELETE /api/d-day/{id}
+  suspend fun delete(request: ServerRequest): ServerResponse {
+    val id = request.pathVariable("id").toLong()
+    dDayEventService.delete(id)
+    return ServerResponse.noContent().buildAndAwait()
+  }
 }

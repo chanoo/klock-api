@@ -5,21 +5,25 @@ import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
 import java.time.LocalDateTime
 
-@Table("klk_chat_bot")
-data class ChatBot(
+@Table("klk_user")
+data class User(
   @Id
   val id: Long? = null,
 
-  val subject: String,
+  val email: String?,
 
-  val name: String,
+  @Column("hashed_password")
+  var hashedPassword: String? = null,
 
-  val title: String,
+  val username: String,
 
-  @Column("chat_bot_image_url")
-  val chatBotImageUrl: String,
+  @Column("total_study_time")
+  val totalStudyTime: Int,
 
-  val persona: String,
+  @Column("user_level_id")
+  val userLevelId: Long,
+
+  val role: UserRole,
 
   val active: Boolean,
 

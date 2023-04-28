@@ -16,8 +16,6 @@ data class LoginResponse(val token: String)
 data class SocialLoginRequest(val accessToken: String)
 data class SocialLoginResponse(val accessToken: String, val refreshToken: String)
 
-data class UserResponse(val id: Long?, override val name: String, override val email: String?) : BaseUserDTO(name, email)
-
 data class SignUpReqDTO(val username: String, val providerUserId: String, val provider: SocialProvider, val email: String?, val password: String?, val tagId: Long?)
 data class SignUpResDTO(val id: Long, val accessToken: String, val refreshToken: String, val username: String, val providerUserId: String, val provider: SocialProvider, val email: String?, val tagId: Long?)
 

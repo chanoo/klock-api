@@ -1,12 +1,12 @@
 package app.klock.api.service
 
-import app.klock.api.domain.entity.Account
-import app.klock.api.domain.entity.AccountRole
 import app.klock.api.domain.entity.SocialLogin
 import app.klock.api.domain.entity.SocialProvider
+import app.klock.api.domain.entity.User
+import app.klock.api.domain.entity.UserRole
 import app.klock.api.functional.auth.dto.SocialLoginRequest
-import app.klock.api.repository.AccountRepository
 import app.klock.api.repository.SocialLoginRepository
+import app.klock.api.repository.UserRepository
 import app.klock.api.utils.JwtUtils
 import com.fasterxml.jackson.databind.JsonNode
 import com.nimbusds.jose.JWSAlgorithm
@@ -28,7 +28,7 @@ import java.time.LocalDateTime
 class AuthService(
   private val jwtUtils: JwtUtils,
   private val passwordEncoder: PasswordEncoder,
-  private val accountRepository: AccountRepository,
+  private val userRepository: UserRepository,
   private var socialLoginRepository: SocialLoginRepository) {
 
   private val facebookAppId = "your_facebook_app_id"
@@ -36,29 +36,29 @@ class AuthService(
   private val appleClientId = "your_apple_client_id"
 
 
-  fun createAccount(username: String,
-                    email: String? = null,
-                    password: String? = null): Mono<Account> {
-    val account = Account(
+  fun signup(username: String,
+             email: String? = null,
+             password: String? = null): Mono<User> {
+    val user = User(
       username = username,
       email = email,
       hashedPassword = password?.let { passwordEncoder.encode(it) },
-      role = AccountRole.USER,
+      role = UserRole.USER,
       active = true,
       totalStudyTime = 0,
-      accountLevelId = 1,
+      userLevelId = 1,
       createdAt = LocalDateTime.now(),
       updatedAt = LocalDateTime.now()
     )
 
-    return accountRepository.save(account)
+    return userRepository.save(user)
   }
 
-  fun createSocialLogin(accountId: Long,
+  fun createSocialLogin(userId: Long,
                         provider: SocialProvider,
                         providerUserId: String): Mono<SocialLogin> {
     val socialLogin = SocialLogin(
-      accountId = accountId,
+      userId = userId,
       provider = provider,
       providerUserId = providerUserId
     )
@@ -69,10 +69,10 @@ class AuthService(
   private fun authenticateSocial(socialProvider: SocialProvider, providerUserId: String): Mono<String> {
     return socialLoginRepository.findByProviderAndProviderUserId(socialProvider, providerUserId)
       .flatMap { socialLogin ->
-        accountRepository.findById(socialLogin.accountId)
-          .flatMap { account ->
+        userRepository.findById(socialLogin.userId)
+          .flatMap { user ->
             // JWT 토큰을 생성합니다.
-            Mono.just(jwtUtils.generateToken(account.id.toString(), listOf(account.role.name)))
+            Mono.just(jwtUtils.generateToken(user.id.toString(), listOf(user.role.name)))
           }
       }
   }
@@ -86,7 +86,7 @@ class AuthService(
         .flatMap { userInfo ->
           val userId = userInfo.get("id").asText()
 
-          // accountId로 Account가 있는지 확인해서 가져와서 JWT 토큰을 생성하고 반환 한다.
+          // userId로 User가 있는지 확인해서 가져와서 JWT 토큰을 생성하고 반환 한다.
           authenticateSocial(SocialProvider.FACEBOOK, userId)
         }
     }.switchIfEmpty(Mono.error(NoSuchElementException("Authentication failed")))
@@ -103,7 +103,7 @@ class AuthService(
         // JWT에서 사용자 ID를 가져옵니다.
         val appleUserId = jwtClaimsSet.subject
 
-        // accountId로 Account가 있는지 확인해서 가져와서 JWT 토큰을 생성하고 반환한다.
+        // userId로 User가 있는지 확인해서 가져와서 JWT 토큰을 생성하고 반환한다.
         authenticateSocial(SocialProvider.APPLE, appleUserId)
       }
     }.switchIfEmpty(Mono.error(NoSuchElementException("Authentication failed")))
@@ -113,10 +113,10 @@ class AuthService(
     return Mono.fromCallable {
       jwtUtils.validateTokenAndGetUserId(refreshToken)
     }.flatMap { userId ->
-      accountRepository.findById(userId.toLong())
-        .flatMap { account ->
-          // Account 역할을 가져옵니다.
-          val roles = listOf(account.role.name)
+      userRepository.findById(userId.toLong())
+        .flatMap { user ->
+          // User 역할을 가져옵니다.
+          val roles = listOf(user.role.name)
 
           // 새 JWT 토큰을 생성하고 반환합니다.
           val newToken = jwtUtils.generateToken(userId, roles)

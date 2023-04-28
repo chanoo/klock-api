@@ -1,9 +1,12 @@
-package app.klock.api.functional.account
+package app.klock.api.functional.user
 
-import app.klock.api.domain.entity.Account
-import app.klock.api.domain.entity.AccountRole
-import app.klock.api.functional.auth.dto.*
-import app.klock.api.service.AccountService
+import app.klock.api.domain.entity.User
+import app.klock.api.domain.entity.UserRole
+import app.klock.api.functional.auth.dto.ChangePasswordRequest
+import app.klock.api.functional.auth.dto.UpdateUserRequest
+import app.klock.api.functional.auth.dto.UpdateUserResponse
+import app.klock.api.functional.auth.dto.UserResponse
+import app.klock.api.service.UserService
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.BodyInserters
@@ -13,11 +16,11 @@ import reactor.core.publisher.Mono
 import java.time.LocalDateTime
 
 @Component
-class AccountHandler(private val accountService: AccountService) {
+class UserHandler(private val userService: UserService) {
 
   // 사용자 목록 조회
   fun getAllUsers(request: ServerRequest): Mono<ServerResponse> {
-    val usersFlux = accountService.findAll()
+    val usersFlux = userService.findAll()
     return usersFlux.map { user -> UserResponse(user.id, user.username, user.email) }
       .collectList()
       .flatMap { users -> ServerResponse.ok().body(BodyInserters.fromValue(users)) }
@@ -33,7 +36,7 @@ class AccountHandler(private val accountService: AccountService) {
           ServerResponse.status(HttpStatus.FORBIDDEN)
             .bodyValue(mapOf("error" to "You are not authorized to access this user information."))
         } else {
-          accountService.findById(requestedUserId)
+          userService.findById(requestedUserId)
             .flatMap { user ->
               ServerResponse.ok().bodyValue(UserResponse(user.id, user.username, user.email))
             }
@@ -47,17 +50,17 @@ class AccountHandler(private val accountService: AccountService) {
     request.bodyToMono(UpdateUserRequest::class.java)
       .flatMap { userRequest ->
         val userId = request.pathVariable("id").toLong()
-        accountService.update(
+        userService.update(
           id = userId,
-          user = Account(
+          user = User(
             id = userRequest.id,
             username = userRequest.name,
             email = userRequest.email,
             hashedPassword = userRequest.password,
-            role = AccountRole.USER,
+            role = UserRole.USER,
             active = true,
             totalStudyTime = 0,
-            accountLevelId = 1,
+            userLevelId = 1,
             createdAt = LocalDateTime.now(),
             updatedAt = LocalDateTime.now()
           )
@@ -70,18 +73,18 @@ class AccountHandler(private val accountService: AccountService) {
 
   // 사용자 삭제
   fun deleteUser(request: ServerRequest): Mono<ServerResponse> =
-    accountService.deleteById(request.pathVariable("id").toLong())
+    userService.deleteById(request.pathVariable("id").toLong())
       .then(ServerResponse.noContent().build())
 
   // 계정 비밀번호 변경
   fun changePassword(request: ServerRequest): Mono<ServerResponse> =
     request.bodyToMono(ChangePasswordRequest::class.java)
       .flatMap { changePasswordRequest ->
-        val accountId = request.pathVariable("id").toLong()
-        accountService.changePassword(accountId, changePasswordRequest.currentPassword, changePasswordRequest.newPassword)
+        val userId = request.pathVariable("id").toLong()
+        userService.changePassword(userId, changePasswordRequest.currentPassword, changePasswordRequest.newPassword)
       }
-      .flatMap { account ->
-        ServerResponse.ok().bodyValue(AccountResponse.from(account))
+      .flatMap { user ->
+        ServerResponse.ok().bodyValue(UserResponse.from(user))
       }
       .switchIfEmpty(ServerResponse.notFound().build())
 

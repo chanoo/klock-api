@@ -1,6 +1,6 @@
 package app.klock.api.service
 
-import app.klock.api.repository.AccountRepository
+import app.klock.api.repository.UserRepository
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService
 import org.springframework.security.core.userdetails.User
 import org.springframework.security.core.userdetails.UserDetails
@@ -10,10 +10,10 @@ import reactor.core.publisher.Mono
 import java.lang.Long.parseLong
 
 @Service
-class CustomReactiveUserDetailsService(private val accountRepository: AccountRepository) : ReactiveUserDetailsService {
+class CustomReactiveUserDetailsService(private val userRepository: UserRepository) : ReactiveUserDetailsService {
 
   override fun findByUsername(username: String): Mono<UserDetails> {
-    return accountRepository.findById(parseLong(username))
+    return userRepository.findById(parseLong(username))
       .map { user ->
         User.withUsername(username)
           .password("!password!")

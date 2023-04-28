@@ -7,6 +7,6 @@ import reactor.core.publisher.Flux
 
 @Repository
 interface DDayEventRepository : ReactiveCrudRepository<DDayEvent, Long> {
-    fun findByAccountId(accountId: Long): Flux<DDayEvent>
+  fun findByUserId(userId: Long): Flux<DDayEvent>
 }
 

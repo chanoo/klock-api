@@ -1,10 +1,10 @@
 package app.klock.api.functional.auth
 
-import app.klock.api.domain.entity.AccountTag
+import app.klock.api.domain.entity.UserTag
 import app.klock.api.functional.auth.dto.*
-import app.klock.api.service.AccountService
-import app.klock.api.service.AccountTagService
 import app.klock.api.service.AuthService
+import app.klock.api.service.UserService
+import app.klock.api.service.UserTagService
 import app.klock.api.utils.JwtUtils
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -16,8 +16,8 @@ import reactor.core.publisher.Mono
 @Component
 class AuthHandler(
   private val authService: AuthService,
-  private val accountService: AccountService,
-  private val accountTagService: AccountTagService,
+  private val userService: UserService,
+  private val userTagService: UserTagService,
   private val jwtUtils: JwtUtils
 ) {
 
@@ -25,32 +25,32 @@ class AuthHandler(
   fun signup(request: ServerRequest): Mono<ServerResponse> =
     request.bodyToMono(SignUpReqDTO::class.java)
       .flatMap { signUpRequest ->
-        authService.createAccount(
+        authService.signup(
           username = signUpRequest.username,
           email = signUpRequest.email,
           password = signUpRequest.password
-        ).flatMap { savedAccount ->
+        ).flatMap { savedUser ->
           authService.createSocialLogin(
-            accountId = savedAccount.id!!,
+            userId = savedUser.id!!,
             provider = signUpRequest.provider,
             providerUserId = signUpRequest.providerUserId
           ).flatMap { savedSocialLogin ->
             if (signUpRequest.tagId != null) {
-              accountTagService.create(
-                AccountTag(
-                  accountId = savedAccount.id,
+              userTagService.create(
+                UserTag(
+                  userId = savedUser.id,
                   tagId = signUpRequest.tagId
                 )
-              ).map { savedAccountTag ->
-                Triple(savedAccount, savedSocialLogin, savedAccountTag)
+              ).map { savedUserTag ->
+                Triple(savedUser, savedSocialLogin, savedUserTag)
               }
             } else {
-              Mono.just(Triple(savedAccount, savedSocialLogin, null))
+              Mono.just(Triple(savedUser, savedSocialLogin, null))
             }
           }
         }
       }
-      .flatMap { (user, socialLogin, accountTag) ->
+      .flatMap { (user, socialLogin, userTag) ->
         val accessToken = jwtUtils.generateToken(user.id.toString(), listOf(user.role.name))
         val refreshToken = jwtUtils.generateRefreshToken(user.id.toString(), listOf(user.role.name))
         ServerResponse.status(HttpStatus.CREATED).bodyValue(
@@ -61,7 +61,7 @@ class AuthHandler(
             provider = socialLogin.provider,
             providerUserId = socialLogin.providerUserId,
             email = user.email,
-            tagId = accountTag?.tagId)
+            tagId = userTag?.tagId)
         )
       }
       .onErrorResume { error ->
@@ -74,9 +74,9 @@ class AuthHandler(
   fun signin(request: ServerRequest): Mono<ServerResponse> {
     return request.bodyToMono(LoginRequest::class.java)
       .flatMap { loginRequest ->
-        accountService.findByEmail(loginRequest.email)
+        userService.findByEmail(loginRequest.email)
           .filter { user ->
-            accountService.validatePassword(loginRequest
+            userService.validatePassword(loginRequest
               .password, user.hashedPassword)
           }
           .switchIfEmpty(Mono.error(Exception("Invalid username or password")))
