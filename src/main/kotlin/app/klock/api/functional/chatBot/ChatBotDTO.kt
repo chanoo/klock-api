@@ -1,4 +1,4 @@
-package app.klock.api.functional.chatbot
+package app.klock.api.functional.chatBot
 
 data class ChatBotDTO(
   val id: Long? = null,

@@ -1,4 +1,4 @@
-package app.klock.api.functional.chatbot
+package app.klock.api.functional.chatBot
 
 import app.klock.api.handler.ChatBotHandler
 import org.springframework.context.annotation.Bean
@@ -10,7 +10,7 @@ class ChatBotRouter(private val chatBotHandler: ChatBotHandler) {
 
   @Bean
   fun chatBotRoutes() = router {
-    "/api/chatbots".nest {
+    "/api/chat-bots".nest {
       GET("", chatBotHandler::getByActiveChatBots)
     }
   }

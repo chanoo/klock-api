@@ -1,7 +1,7 @@
 package app.klock.api.handler
 
 import app.klock.api.domain.entity.ChatBot
-import app.klock.api.functional.chatbot.ChatBotDTO
+import app.klock.api.functional.chatBot.ChatBotDTO
 import app.klock.api.service.ChatBotService
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.BodyInserters

@@ -58,12 +58,15 @@ main/kotlin/app.klock.api
 │   └── entity
 ├── exception
 ├── functional
-│   ├── user
 │   ├── auth
+│   ├── chatBot
 │   ├── dDayEvent
+│   ├── echo
 │   ├── friemdRelation
 │   ├── studySession
-│   └── tag
+│   ├── tag
+│   ├── user
+│   └── userTag
 ├── repository
 ├── security
 ├── service

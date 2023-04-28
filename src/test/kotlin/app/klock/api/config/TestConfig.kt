@@ -2,7 +2,7 @@ package app.klock.api.config
 
 import app.klock.api.functional.FriendRelationRouter
 import app.klock.api.functional.auth.AuthRouter
-import app.klock.api.functional.chatbot.ChatBotRouter
+import app.klock.api.functional.chatBot.ChatBotRouter
 import app.klock.api.functional.echo.EchoRouter
 import app.klock.api.functional.studySession.StudySessionRouter
 import app.klock.api.functional.tag.TagRouter
