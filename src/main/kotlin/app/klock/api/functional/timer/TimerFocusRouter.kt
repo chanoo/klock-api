@@ -10,7 +10,7 @@ import org.springframework.web.reactive.function.server.coRouter
 class TimerFocusRouter(private val timerFocusHandler: TimerFocusHandler) {
 
   @Bean
-  fun timerRoutes(): RouterFunction<ServerResponse> = coRouter {
+  fun timerFocusRoutes(): RouterFunction<ServerResponse> = coRouter {
     "/api/focus-timers".nest {
       POST("").invoke(timerFocusHandler::createFocusTimer)
       POST("/{id}").invoke(timerFocusHandler::updateFocusTimer)
