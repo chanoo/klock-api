@@ -7,14 +7,14 @@ import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.reactive.function.server.coRouter
 
 @Configuration
-class TimerStudyRouter(private val timerHandler: TimerHandler) {
+class TimerFocusRouter(private val timerFocusHandler: TimerFocusHandler) {
 
   @Bean
   fun timerRoutes(): RouterFunction<ServerResponse> = coRouter {
-    "/api/study-timers".nest {
-      POST("").invoke(timerHandler::getAllTimersByUserId)
-      POST("/{id}").invoke(timerHandler::getAllTimersByUserId)
-      DELETE("/{id}").invoke(timerHandler::getAllTimersByUserId)
+    "/api/focus-timers".nest {
+      POST("").invoke(timerFocusHandler::createFocusTimer)
+      POST("/{id}").invoke(timerFocusHandler::updateFocusTimer)
+      DELETE("/{id}").invoke(timerFocusHandler::deleteFocusTimer)
     }
   }
 }
