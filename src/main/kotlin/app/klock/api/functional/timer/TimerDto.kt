@@ -33,6 +33,14 @@ data class TimerExamDto(
       domain.questionCount
     )
   }
+
+  fun validate() {
+    require(name.isNotBlank()) { "name must not be blank" }
+    require(duration > 0) { "duration must be greater than 0" }
+    require(questionCount > 0) { "questionCount must be greater than 0" }
+    require(seq > 0) { "seq must be greater than 0" }
+    require(userId > 0) { "userId must be greater than 0" }
+  }
 }
 
 data class TimerPomodoroDto(
@@ -81,5 +89,11 @@ data class TimerFocusDto(
       domain.seq,
       domain.name
     )
+  }
+
+  fun validate() {
+    require(name.isNotBlank()) { "name must not be blank" }
+    require(seq > 0) { "seq must be greater than 0" }
+    require(userId > 0) { "userId must be greater than 0" }
   }
 }

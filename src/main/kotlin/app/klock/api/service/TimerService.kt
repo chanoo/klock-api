@@ -1,9 +1,9 @@
 package app.klock.api.service
 
-import TimerDto
-import TimerExamDto
-import TimerFocusDto
-import TimerPomodoroDto
+import app.klock.api.functional.timer.TimerDto
+import app.klock.api.functional.timer.TimerExamDto
+import app.klock.api.functional.timer.TimerFocusDto
+import app.klock.api.functional.timer.TimerPomodoroDto
 import app.klock.api.repository.TimerExamRepository
 import app.klock.api.repository.TimerFocusRepository
 import app.klock.api.repository.TimerPomodoroRepository
