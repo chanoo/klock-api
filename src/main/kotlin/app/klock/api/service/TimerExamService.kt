@@ -11,23 +11,17 @@ class TimerExamService(
   private val timerExamRepository: TimerExamRepository
 ) {
   // Create TimerExam
-  suspend fun createTimerExam(timerExam: TimerExam): TimerExam {
-    return timerExamRepository.save(timerExam).awaitSingle()
-  }
+  suspend fun create(timerExam: TimerExam): TimerExam = timerExamRepository.save(timerExam).awaitSingle()
 
   // Read TimerExam by id
-  suspend fun getTimerExamById(id: Long): TimerExam? {
-    return timerExamRepository.findById(id).awaitFirstOrNull()
-  }
+  suspend fun get(id: Long): TimerExam? = timerExamRepository.findById(id).awaitFirstOrNull()
 
   // Update TimerExam
-  suspend fun updateTimerExam(timerExam: TimerExam): TimerExam {
-    return timerExamRepository.save(timerExam).awaitSingle()
-  }
+  suspend fun update(timerExam: TimerExam): TimerExam = timerExamRepository.save(timerExam).awaitSingle()
 
   // Delete TimerExam by id
-  suspend fun deleteTimerExamById(id: Long): Boolean {
-    val deletedRows = timerExamRepository.deleteById(id).awaitFirstOrNull()
-    return deletedRows != null
+  suspend fun delete(id: Long): Boolean {
+    timerExamRepository.deleteById(id).awaitFirstOrNull()
+    return get(id) == null
   }
 }
