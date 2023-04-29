@@ -11,17 +11,17 @@ class TimerFocusService(
   private val timerFocusRepository: TimerFocusRepository
 ) {
   // Create TimerFocus
-  suspend fun createTimerFocus(timerFocus: TimerFocus): TimerFocus = timerFocusRepository.save(timerFocus).awaitSingle()
+  suspend fun create(timerFocus: TimerFocus): TimerFocus = timerFocusRepository.save(timerFocus).awaitSingle()
 
   // Read TimerFocus by id
-  suspend fun getTimerFocusById(id: Long): TimerFocus? = timerFocusRepository.findById(id).awaitFirstOrNull()
+  suspend fun get(id: Long): TimerFocus? = timerFocusRepository.findById(id).awaitFirstOrNull()
 
   // Update TimerFocus
-  suspend fun updateTimerFocus(timerFocus: TimerFocus): TimerFocus = timerFocusRepository.save(timerFocus).awaitSingle()
+  suspend fun update(timerFocus: TimerFocus): TimerFocus = timerFocusRepository.save(timerFocus).awaitSingle()
 
   // Delete TimerFocus by id
-  suspend fun deleteTimerStudyById(id: Long): Boolean {
-    val deletedRows = timerFocusRepository.deleteById(id).awaitFirstOrNull()
-    return deletedRows != null
+  suspend fun delete(id: Long): Boolean {
+    timerFocusRepository.deleteById(id).awaitFirstOrNull()
+    return get(id) == null
   }
 }
