@@ -1,8 +1,6 @@
 package app.klock.api.domain.entity
 
-import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.Id
-import org.springframework.data.annotation.LastModifiedDate
 import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
 import java.time.LocalDateTime
@@ -30,11 +28,10 @@ data class TimerPomodoro(
   @Column("cycle_count")
   val cycleCount: Int,
 
-  @CreatedDate
   @Column("created_at")
-  val createdAt: LocalDateTime = LocalDateTime.now(),
+  val createdAt: LocalDateTime? = null,
 
-  @LastModifiedDate
   @Column("updated_at")
-  val updatedAt: LocalDateTime = LocalDateTime.now()
+  val updatedAt: LocalDateTime? = null
+
 )

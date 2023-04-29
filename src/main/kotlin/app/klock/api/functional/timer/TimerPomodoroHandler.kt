@@ -1,4 +1,4 @@
-// TimerPomodoroHandler
+package app.klock.api.functional.timer
 
 import app.klock.api.service.TimerPomodoroService
 import org.springframework.http.HttpStatus
@@ -11,6 +11,7 @@ class TimerPomodoroHandler(private val timerPomodoroService: TimerPomodoroServic
   // Pomodoro timer 생성
   suspend fun createPomodoroTimer(request: ServerRequest): ServerResponse {
     val timerDto = request.awaitBody<TimerPomodoroDto>()
+    timerDto.validate()
     val timer = timerDto.toDomain()
 
     val createdTimer = timerPomodoroService.create(timer)
@@ -23,13 +24,23 @@ class TimerPomodoroHandler(private val timerPomodoroService: TimerPomodoroServic
   suspend fun updatePomodoroTimer(request: ServerRequest): ServerResponse {
     val timerId = request.pathVariable("id").toLong()
     val timerDto = request.awaitBody<TimerPomodoroDto>()
+    timerDto.validate()
 
-    val timer = timerDto.toDomain().copy(id = timerId)
-    val updatedTimer = timerPomodoroService.update(timer)
+    val existingTimer = timerPomodoroService.get(timerId)
 
-    val updatedTimerDto = TimerPomodoroDto.from(updatedTimer)
-    return ServerResponse.ok().bodyValueAndAwait(updatedTimerDto)
+    return if (existingTimer != null) {
+      val timer = timerDto.toDomain().copy(
+        id = timerId
+      )
+      val updatedTimer = timerPomodoroService.update(timer)
+
+      val updatedTimerDto = TimerPomodoroDto.from(updatedTimer)
+      ServerResponse.ok().bodyValueAndAwait(updatedTimerDto)
+    } else {
+      ServerResponse.status(HttpStatus.NOT_FOUND).bodyValueAndAwait("Pomodoro timer not found")
+    }
   }
+
 
   // Pomodoro timer 삭제
   suspend fun deletePomodoroTimer(request: ServerRequest): ServerResponse {

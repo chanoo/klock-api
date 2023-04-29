@@ -49,6 +49,7 @@ class SecurityConfig(
       .authorizeExchange { exchanges ->
         exchanges
           .pathMatchers("/echo/**", "/api/auth/**", "/api/chatbots/**", "/ws/**", "/api/tags").permitAll() // 인증이 필요 없는 경로
+          .pathMatchers("/api/pomodoro-timers/**", "/api/exam-timers/**", "/api/focus-timers/**").permitAll() // 인증이 필요 없는 경로
           .anyExchange().authenticated() // 나머지 경로는 인증 필요
       }
       .addFilterAt(jwtAuthenticationWebFilter(), SecurityWebFiltersOrder.AUTHENTICATION) // JWT 인증 필터 추가

@@ -1,16 +1,18 @@
+package app.klock.api.functional.timer
+
 import app.klock.api.domain.entity.TimerExam
 import app.klock.api.domain.entity.TimerFocus
 import app.klock.api.domain.entity.TimerPomodoro
 import java.time.LocalDateTime
 
 interface TimerDto {
-  val id: Long
+  val id: Long?
   val userId: Long
   val seq: Int
 }
 
 data class TimerExamDto(
-  override val id: Long,
+  override val id: Long? = null,
   override val userId: Long,
   override val seq: Int,
   val name: String,
@@ -22,7 +24,7 @@ data class TimerExamDto(
 
   companion object {
     fun from(domain: TimerExam) = TimerExamDto(
-      domain.id!!,
+      domain.id,
       domain.userId,
       domain.seq,
       domain.name,
@@ -34,7 +36,7 @@ data class TimerExamDto(
 }
 
 data class TimerPomodoroDto(
-  override val id: Long,
+  override val id: Long? = null,
   override val userId: Long,
   override val seq: Int,
   val name: String,
@@ -46,7 +48,7 @@ data class TimerPomodoroDto(
 
   companion object {
     fun from(domain: TimerPomodoro) = TimerPomodoroDto(
-      domain.id!!,
+      domain.id,
       domain.userId,
       domain.seq,
       domain.name,
@@ -55,10 +57,17 @@ data class TimerPomodoroDto(
       domain.cycleCount
     )
   }
+
+  fun validate() {
+    require(name.isNotBlank()) { "name must not be blank" }
+    require(focusTime > 0) { "focusTime must be greater than 0" }
+    require(restTime > 0) { "restTime must be greater than 0" }
+    require(cycleCount > 0) { "cycleCount must be greater than 0" }
+  }
 }
 
 data class TimerFocusDto(
-  override val id: Long,
+  override val id: Long? = null,
   override val userId: Long,
   override val seq: Int,
   val name: String
@@ -67,7 +76,7 @@ data class TimerFocusDto(
 
   companion object {
     fun from(domain: TimerFocus) = TimerFocusDto(
-      domain.id!!,
+      domain.id,
       domain.userId,
       domain.seq,
       domain.name

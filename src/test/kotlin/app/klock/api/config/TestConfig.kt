@@ -41,9 +41,9 @@ class TestConfig(
         .andOther(studySessionRouter.studySessionRoutes())
         .andOther(echoRouter.echoRoutes())
         .andOther(timerRouter.timerRoutes())
-        .andOther(timerPomodoroRouter.timerRoutes())
-        .andOther(timerExamRouter.timerRoutes())
-        .andOther(timerFocusRouter.timerRoutes())
+        .andOther(timerPomodoroRouter.timerPomodoroRoutes())
+        .andOther(timerExamRouter.timerExamRoutes())
+        .andOther(timerFocusRouter.timerFocusRoutes())
         .andOther(tagRouter.tagRoutes()) // TagRouter를 추가합니다.
         .andOther(chatBotRouter.chatBotRoutes()) // ChatBotRouter를 추가합니다.
         .andOther(friendRelationRouter.friendRelationRoutes())

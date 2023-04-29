@@ -30,7 +30,6 @@ class TimerPomodoroServiceTest {
   fun `타이머 생성 테스트`() {
     // Given
     val timerPomodoro = TimerPomodoro(
-      id = 1L,
       userId = 1L,
       name = "Pomodoro 1",
       seq = 1,
