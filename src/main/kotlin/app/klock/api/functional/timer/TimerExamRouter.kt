@@ -7,14 +7,14 @@ import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.reactive.function.server.coRouter
 
 @Configuration
-class TimerExamRouter(private val timerHandler: TimerHandler) {
+class TimerExamRouter(private val timerExamHandler: TimerExamHandler) {
 
   @Bean
   fun timerRoutes(): RouterFunction<ServerResponse> = coRouter {
     "/api/exam-timers".nest {
-      POST("").invoke(timerHandler::getAllTimersByUserId)
-      POST("/{id}").invoke(timerHandler::getAllTimersByUserId)
-      DELETE("/{id}").invoke(timerHandler::getAllTimersByUserId)
+      POST("").invoke(timerExamHandler::createExamTimer)
+      POST("/{id}").invoke(timerExamHandler::updateExamTimer)
+      DELETE("/{id}").invoke(timerExamHandler::deleteExamTimer)
     }
   }
 }
