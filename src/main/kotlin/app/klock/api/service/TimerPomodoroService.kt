@@ -21,7 +21,7 @@ class TimerPomodoroService(
 
   // Delete TimerPomodoro by id
   suspend fun delete(id: Long): Boolean {
-    val deletedRows = timerPomodoroRepository.deleteById(id).awaitFirstOrNull()
-    return deletedRows != null
+    timerPomodoroRepository.deleteById(id).awaitFirstOrNull()
+    return get(id) == null
   }
 }
