@@ -11,8 +11,8 @@ class TimerExamHandler(private val timerExamService: TimerExamService) {
   // 시험시간 타이머 생성
   suspend fun createExamTimer(request: ServerRequest): ServerResponse {
     val timerDto = request.awaitBody<TimerExamDto>()
-    timerDto.validate()
     val timer = timerDto.toDomain()
+    timer.validate()
 
     val createdTimer = timerExamService.create(timer)
     val createdTimerDto = TimerExamDto.from(createdTimer)
@@ -24,14 +24,13 @@ class TimerExamHandler(private val timerExamService: TimerExamService) {
   suspend fun updateExamTimer(request: ServerRequest): ServerResponse {
     val timerId = request.pathVariable("id").toLong()
     val timerDto = request.awaitBody<TimerExamDto>()
-    timerDto.validate()
-
     val existingTimer = timerExamService.get(timerId)
 
     return if (existingTimer != null) {
       val timer = timerDto.toDomain().copy(
         id = timerId
       )
+      timer.validate()
       val updatedTimer = timerExamService.update(timer)
 
       val updatedTimerDto = TimerExamDto.from(updatedTimer)

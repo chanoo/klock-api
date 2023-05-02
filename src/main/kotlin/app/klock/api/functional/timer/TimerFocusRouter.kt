@@ -2,19 +2,16 @@ package app.klock.api.functional.timer
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.web.reactive.function.server.RouterFunction
-import org.springframework.web.reactive.function.server.ServerResponse
-import org.springframework.web.reactive.function.server.coRouter
+import org.springframework.web.reactive.function.server.router
 
 @Configuration
 class TimerFocusRouter(private val timerFocusHandler: TimerFocusHandler) {
-
   @Bean
-  fun timerFocusRoutes(): RouterFunction<ServerResponse> = coRouter {
+  fun timerFocusRoutes() = router {
     "/api/focus-timers".nest {
-      POST("").invoke(timerFocusHandler::createFocusTimer)
-      POST("/{id}").invoke(timerFocusHandler::updateFocusTimer)
-      DELETE("/{id}").invoke(timerFocusHandler::deleteFocusTimer)
+      POST("", timerFocusHandler::createFocusTimer)
+      POST("/{id}", timerFocusHandler::updateFocusTimer)
+      DELETE("/{id}", timerFocusHandler::deleteFocusTimer)
     }
   }
 }

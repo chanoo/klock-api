@@ -8,7 +8,8 @@ import org.springframework.stereotype.Service
 
 @Service
 class TimerExamService(
-  private val timerExamRepository: TimerExamRepository
+  private val timerExamRepository: TimerExamRepository,
+  private val permissionService: PermissionService
 ) {
   // Create TimerExam
   suspend fun create(timerExam: TimerExam): TimerExam = timerExamRepository.save(timerExam).awaitSingle()

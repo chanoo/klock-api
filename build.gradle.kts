@@ -2,7 +2,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.springframework.boot.gradle.tasks.bundling.BootBuildImage
 
 plugins {
-  id("org.springframework.boot") version "3.0.4"
+  id("org.springframework.boot") version "3.0.6"
   id("io.spring.dependency-management") version "1.1.0"
   id("com.palantir.docker") version "0.34.0" // 이 플러그인을 추가
   kotlin("jvm") version "1.7.22"
@@ -23,6 +23,7 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-webflux")
   implementation("org.springframework.boot:spring-boot-starter-rsocket")
   implementation("org.springframework.boot:spring-boot-starter-security")
+  implementation("org.springframework.security:spring-security-config")
   implementation("io.jsonwebtoken:jjwt-api:0.11.5")
   implementation("io.jsonwebtoken:jjwt-impl:0.11.5")
   implementation("io.jsonwebtoken:jjwt-jackson:0.11.5")
@@ -37,8 +38,10 @@ dependencies {
   runtimeOnly("org.mariadb:r2dbc-mariadb:1.1.3")
   runtimeOnly("org.mariadb.jdbc:mariadb-java-client")
   testImplementation("org.springframework.boot:spring-boot-starter-test")
+  testImplementation("org.springframework.security:spring-security-test")
   testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test")
   testImplementation("io.projectreactor:reactor-test")
+  testImplementation("org.mockito.kotlin:mockito-kotlin:4.+")
 }
 
 tasks.named<BootBuildImage>("bootBuildImage") {
