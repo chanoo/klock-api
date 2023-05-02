@@ -11,15 +11,15 @@ class CustomReactiveAuthenticationManager(
 
   override fun authenticate(authentication: Authentication): Mono<Authentication> {
     val authToken = authentication.credentials.toString()
-    val username = authentication.name
 
-    return userDetailsService.findByUsername(username)
+    return userDetailsService.findByToken(authToken)
       .flatMap { userDetails ->
         if (userDetails.isEnabled && userDetails.isAccountNonExpired && userDetails.isAccountNonLocked && userDetails.isCredentialsNonExpired) {
-          Mono.just(CustomAuthenticationToken(username, authToken, userDetails.authorities))
+          Mono.just(CustomAuthenticationToken(userDetails.username.toLong(), authToken, userDetails.authorities))
         } else {
           Mono.empty()
         }
       }
   }
 }
+

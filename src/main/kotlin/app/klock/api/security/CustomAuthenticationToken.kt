@@ -4,16 +4,17 @@ import org.springframework.security.authentication.AbstractAuthenticationToken
 import org.springframework.security.core.GrantedAuthority
 
 class CustomAuthenticationToken(
-  private val username: String,
+  private val userId: Long,
   private val token: String,
   authorities: Collection<GrantedAuthority>
 ) : AbstractAuthenticationToken(authorities) {
+
   override fun getCredentials(): Any {
     return token
   }
 
   override fun getPrincipal(): Any {
-    return username
+    return userId
   }
 
   override fun isAuthenticated(): Boolean {
