@@ -35,18 +35,19 @@ class TestConfig(
   @Bean
   fun webTestClient(): WebTestClient {
     return WebTestClient
-      .bindToRouterFunction(authRouter.authRoutes()
-        .andOther(userRouter.userRoutes())
-        .andOther(userTagRouter.userTagRoutes())
-        .andOther(studySessionRouter.studySessionRoutes())
-        .andOther(echoRouter.echoRoutes())
-        .andOther(timerRouter.timerRoutes())
-        .andOther(timerPomodoroRouter.timerPomodoroRoutes())
-        .andOther(timerExamRouter.timerExamRoutes())
-        .andOther(timerFocusRouter.timerFocusRoutes())
-        .andOther(tagRouter.tagRoutes()) // TagRouter를 추가합니다.
-        .andOther(chatBotRouter.chatBotRoutes()) // ChatBotRouter를 추가합니다.
-        .andOther(friendRelationRouter.friendRelationRoutes())
+      .bindToRouterFunction(
+        authRouter.authRoutes()
+          .andOther(userRouter.userRoutes())
+          .andOther(userTagRouter.userTagRoutes())
+          .andOther(studySessionRouter.studySessionRoutes())
+          .andOther(echoRouter.echoRoutes())
+          .andOther(timerRouter.timerRoutes())
+          .andOther(timerPomodoroRouter.timerPomodoroRoutes())
+          .andOther(timerExamRouter.timerExamRoutes())
+          .andOther(timerFocusRouter.timerFocusRoutes())
+          .andOther(tagRouter.tagRoutes()) // TagRouter를 추가합니다.
+          .andOther(chatBotRouter.chatBotRoutes()) // ChatBotRouter를 추가합니다.
+          .andOther(friendRelationRouter.friendRelationRoutes())
       ) // FriendRelationRouter를 추가합니다.
       .configureClient()
       .build()
