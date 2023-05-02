@@ -74,7 +74,8 @@ class UserServiceTest {
       totalStudyTime = 0,
       userLevelId = 1,
       createdAt = LocalDateTime.now(),
-      updatedAt = LocalDateTime.now())
+      updatedAt = LocalDateTime.now()
+    )
     val user2 = User(
       id = 2L,
       username = "user1",
@@ -84,7 +85,8 @@ class UserServiceTest {
       totalStudyTime = 0,
       userLevelId = 1,
       createdAt = LocalDateTime.now(),
-      updatedAt = LocalDateTime.now())
+      updatedAt = LocalDateTime.now()
+    )
     `when`(userRepository.findAll()).thenReturn(Flux.just(user1, user2))
 
     // Act
@@ -109,7 +111,8 @@ class UserServiceTest {
       totalStudyTime = 0,
       userLevelId = 1,
       createdAt = LocalDateTime.now(),
-      updatedAt = LocalDateTime.now())
+      updatedAt = LocalDateTime.now()
+    )
     val savedUser = User(
       id = 1L,
       username = "user1",
@@ -119,7 +122,8 @@ class UserServiceTest {
       totalStudyTime = 0,
       userLevelId = 1,
       createdAt = LocalDateTime.now(),
-      updatedAt = LocalDateTime.now())
+      updatedAt = LocalDateTime.now()
+    )
     `when`(userRepository.save(newUser)).thenReturn(Mono.just(savedUser))
 
     // Act
@@ -143,7 +147,8 @@ class UserServiceTest {
       totalStudyTime = 0,
       userLevelId = 1,
       createdAt = LocalDateTime.now(),
-      updatedAt = LocalDateTime.now())
+      updatedAt = LocalDateTime.now()
+    )
     val updatedUser = User(
       id = 1L,
       username = "user1",
@@ -153,7 +158,8 @@ class UserServiceTest {
       totalStudyTime = 0,
       userLevelId = 1,
       createdAt = LocalDateTime.now(),
-      updatedAt = LocalDateTime.now())
+      updatedAt = LocalDateTime.now()
+    )
     `when`(userRepository.findById(1L)).thenReturn(Mono.just(existingUser))
     `when`(userRepository.save(updatedUser)).thenReturn(Mono.just(updatedUser))
 
@@ -292,7 +298,6 @@ class UserServiceTest {
       createdAt = LocalDateTime.now(),
       updatedAt = LocalDateTime.now()
     )
-    val updatedUser = existingUser.copy(hashedPassword = passwordEncoder.encode("new_password"))
     Mockito.`when`(userRepository.findById(1L)).thenReturn(Mono.just(existingUser))
 
     // Act
