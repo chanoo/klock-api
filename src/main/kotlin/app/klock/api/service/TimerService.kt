@@ -7,8 +7,8 @@ import app.klock.api.functional.timer.TimerPomodoroDto
 import app.klock.api.repository.TimerExamRepository
 import app.klock.api.repository.TimerFocusRepository
 import app.klock.api.repository.TimerPomodoroRepository
-import kotlinx.coroutines.reactive.awaitSingle
 import org.springframework.stereotype.Service
+import reactor.core.publisher.Flux
 
 @Service
 class TimerService(
@@ -16,23 +16,27 @@ class TimerService(
   private val timerPomodoroRepository: TimerPomodoroRepository,
   private val timerFocusRepository: TimerFocusRepository
 ) {
-  suspend fun getAllTimersByUserId(userId: Long): List<TimerDto> {
+  fun getAllTimersByUserId(userId: Long): Flux<TimerDto> {
     val timerExams = timerExamRepository.findAllByUserIdOrderBySeq(userId)
-      .map { TimerExamDto(it.id!!, it.userId, it.seq, it.name, it.startTime, it.duration, it.questionCount) }
-      .collectList()
-      .awaitSingle()
+      .map { TimerExamDto(it.id!!, it.userId, it.seq, "exam", it.name, it.startTime, it.duration, it.questionCount) }
 
     val timerPomodoros = timerPomodoroRepository.findAllByUserIdOrderBySeq(userId)
-      .map { TimerPomodoroDto(it.id!!, it.userId, it.seq, it.name, it.focusTime, it.restTime, it.cycleCount) }
-      .collectList()
-      .awaitSingle()
+      .map {
+        TimerPomodoroDto(
+          it.id!!,
+          it.userId,
+          it.seq,
+          "pomodoro",
+          it.name,
+          it.focusTime,
+          it.restTime,
+          it.cycleCount
+        )
+      }
 
     val timerStudies = timerFocusRepository.findAllByUserIdOrderBySeq(userId)
-      .map { TimerFocusDto(it.id!!, it.userId, it.seq, it.name) }
-      .collectList()
-      .awaitSingle()
+      .map { TimerFocusDto(it.id!!, it.userId, it.seq, "focus", it.name) }
 
-    return (timerExams + timerPomodoros + timerStudies).sortedBy { it.seq }
+    return Flux.concat(timerExams, timerPomodoros, timerStudies).sort(compareBy { it.seq })
   }
-
 }
