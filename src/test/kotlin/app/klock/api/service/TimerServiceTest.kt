@@ -6,7 +6,6 @@ import app.klock.api.domain.entity.TimerPomodoro
 import app.klock.api.repository.TimerExamRepository
 import app.klock.api.repository.TimerFocusRepository
 import app.klock.api.repository.TimerPomodoroRepository
-import kotlinx.coroutines.reactor.mono
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -49,15 +48,18 @@ class TimerServiceTest {
     `when`(timerFocusRepository.findAllByUserIdOrderBySeq(userId)).thenReturn(Flux.just(focus))
 
     // When
-    val timersMono = mono { timerService.getAllTimersByUserId(userId) }
+    val timersFlux = timerService.getAllTimersByUserId(userId)
 
     // Then
-    StepVerifier.create(timersMono)
-      .assertNext { timers ->
-        assertEquals(3, timers.size)
-        assertEquals(100, timers[0].id)
-        assertEquals(200, timers[1].id)
-        assertEquals(300, timers[2].id)
+    StepVerifier.create(timersFlux)
+      .assertNext { timer ->
+        assertEquals(100, timer.id)
+      }
+      .assertNext { timer ->
+        assertEquals(200, timer.id)
+      }
+      .assertNext { timer ->
+        assertEquals(300, timer.id)
       }
       .verifyComplete()
   }
