@@ -24,4 +24,10 @@ data class TimerFocus(
 
   @Column("updated_at")
   val updatedAt: LocalDateTime? = null
-)
+) {
+  fun validate() {
+    require(name.isNotBlank()) { "name must not be blank" }
+    require(seq > 0) { "seq must be greater than 0" }
+    require(userId > 0) { "userId must be greater than 0" }
+  }
+}

@@ -33,4 +33,12 @@ data class TimerExam(
 
   @Column("updated_at")
   val updatedAt: LocalDateTime? = null
-)
+) {
+  fun validate() {
+    require(name.isNotBlank()) { "name must not be blank" }
+    require(duration > 0) { "duration must be greater than 0" }
+    require(questionCount > 0) { "questionCount must be greater than 0" }
+    require(seq > 0) { "seq must be greater than 0" }
+    require(userId > 0) { "userId must be greater than 0" }
+  }
+}
