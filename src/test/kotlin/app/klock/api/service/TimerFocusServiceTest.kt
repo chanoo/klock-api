@@ -1,8 +1,9 @@
 package app.klock.api.service
 
 import app.klock.api.domain.entity.TimerFocus
+import app.klock.api.repository.TimerExamRepository
 import app.klock.api.repository.TimerFocusRepository
-import kotlinx.coroutines.reactor.mono
+import app.klock.api.repository.TimerPomodoroRepository
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -19,11 +20,23 @@ class TimerFocusServiceTest {
 
   private lateinit var timerFocusService: TimerFocusService
   private lateinit var timerFocusRepository: TimerFocusRepository
+  private lateinit var timerPomodoroRepository: TimerPomodoroRepository
+  private lateinit var timerExamRepository: TimerExamRepository
+  private lateinit var permissionService: PermissionService
 
   @BeforeEach
   fun setUp() {
     timerFocusRepository = Mockito.mock(TimerFocusRepository::class.java)
-    timerFocusService = TimerFocusService(timerFocusRepository)
+    timerPomodoroRepository = Mockito.mock(TimerPomodoroRepository::class.java)
+    timerExamRepository = Mockito.mock(TimerExamRepository::class.java)
+
+    permissionService = PermissionService(
+      timerFocusRepository,
+      timerPomodoroRepository,
+      timerExamRepository
+    )
+
+    timerFocusService = TimerFocusService(timerFocusRepository, permissionService)
   }
 
   @Test
@@ -34,7 +47,7 @@ class TimerFocusServiceTest {
     `when`(timerFocusRepository.save(timerFocus)).thenReturn(Mono.just(timerFocus))
 
     // When
-    val createdTimerFocusMono = mono { timerFocusService.create(timerFocus) }
+    val createdTimerFocusMono = timerFocusService.create(timerFocus)
 
     // Then
     StepVerifier.create(createdTimerFocusMono)
@@ -53,7 +66,7 @@ class TimerFocusServiceTest {
     `when`(timerFocusRepository.findById(timerFocusId)).thenReturn(Mono.just(timerFocus))
 
     // When
-    val foundTimerFocusMono = mono { timerFocusService.get(timerFocusId) }
+    val foundTimerFocusMono = timerFocusService.get(timerFocusId)
 
     // Then
     StepVerifier.create(foundTimerFocusMono)
@@ -71,7 +84,7 @@ class TimerFocusServiceTest {
     `when`(timerFocusRepository.save(timerFocus)).thenReturn(Mono.just(timerFocus))
 
     // When
-    val updatedTimerFocusMono = mono { timerFocusService.update(timerFocus) }
+    val updatedTimerFocusMono = timerFocusService.update(timerFocus)
 
     // Then
     StepVerifier.create(updatedTimerFocusMono)
@@ -90,7 +103,7 @@ class TimerFocusServiceTest {
     `when`(timerFocusRepository.findById(timerFocusId)).thenReturn(Mono.empty())
 
     // When
-    val deleteResultMono = mono { timerFocusService.delete(timerFocusId) }
+    val deleteResultMono = timerFocusService.delete(timerFocusId)
 
     // Then
     StepVerifier.create(deleteResultMono)
@@ -99,4 +112,5 @@ class TimerFocusServiceTest {
       }
       .verifyComplete()
   }
+
 }

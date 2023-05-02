@@ -2,6 +2,8 @@ package app.klock.api.service
 
 import app.klock.api.domain.entity.TimerExam
 import app.klock.api.repository.TimerExamRepository
+import app.klock.api.repository.TimerFocusRepository
+import app.klock.api.repository.TimerPomodoroRepository
 import kotlinx.coroutines.reactor.mono
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -19,12 +21,24 @@ import java.time.LocalDateTime
 class TimerExamServiceTest {
 
   private lateinit var timerExamService: TimerExamService
+  private lateinit var timerFocusRepository: TimerFocusRepository
+  private lateinit var timerPomodoroRepository: TimerPomodoroRepository
   private lateinit var timerExamRepository: TimerExamRepository
+  private lateinit var permissionService: PermissionService
 
   @BeforeEach
   fun setUp() {
+    timerFocusRepository = Mockito.mock(TimerFocusRepository::class.java)
+    timerPomodoroRepository = Mockito.mock(TimerPomodoroRepository::class.java)
     timerExamRepository = Mockito.mock(TimerExamRepository::class.java)
-    timerExamService = TimerExamService(timerExamRepository)
+
+    permissionService = PermissionService(
+      timerFocusRepository,
+      timerPomodoroRepository,
+      timerExamRepository
+    )
+
+    timerExamService = TimerExamService(timerExamRepository, permissionService)
   }
 
   @Test
@@ -100,5 +114,5 @@ class TimerExamServiceTest {
       }
       .verifyComplete()
   }
-  
+
 }
