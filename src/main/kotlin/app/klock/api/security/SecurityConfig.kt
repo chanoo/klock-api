@@ -45,7 +45,7 @@ class SecurityConfig(
       .logout().disable()
       .authorizeExchange { exchanges ->
         exchanges
-          .pathMatchers("/echo/**", "/api/auth/**", "/api/chatbots/**", "/ws/**", "/api/tags")
+          .pathMatchers("/echo/**", "/api/auth/**", "/api/chat-bots/**", "/ws/**", "/api/tags")
           .permitAll()
           .anyExchange().authenticated()
       }
