@@ -11,8 +11,8 @@ class TimerPomodoroHandler(private val timerPomodoroService: TimerPomodoroServic
   // Pomodoro timer 생성
   suspend fun createPomodoroTimer(request: ServerRequest): ServerResponse {
     val timerDto = request.awaitBody<TimerPomodoroDto>()
-    timerDto.validate()
     val timer = timerDto.toDomain()
+    timer.validate()
 
     val createdTimer = timerPomodoroService.create(timer)
     val createdTimerDto = TimerPomodoroDto.from(createdTimer)
@@ -24,7 +24,6 @@ class TimerPomodoroHandler(private val timerPomodoroService: TimerPomodoroServic
   suspend fun updatePomodoroTimer(request: ServerRequest): ServerResponse {
     val timerId = request.pathVariable("id").toLong()
     val timerDto = request.awaitBody<TimerPomodoroDto>()
-    timerDto.validate()
 
     val existingTimer = timerPomodoroService.get(timerId)
 
@@ -32,6 +31,7 @@ class TimerPomodoroHandler(private val timerPomodoroService: TimerPomodoroServic
       val timer = timerDto.toDomain().copy(
         id = timerId
       )
+      timer.validate()
       val updatedTimer = timerPomodoroService.update(timer)
 
       val updatedTimerDto = TimerPomodoroDto.from(updatedTimer)

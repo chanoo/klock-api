@@ -34,4 +34,11 @@ data class TimerPomodoro(
   @Column("updated_at")
   val updatedAt: LocalDateTime? = null
 
-)
+) {
+  fun validate() {
+    require(name.isNotBlank()) { "name must not be blank" }
+    require(focusTime > 0) { "focusTime must be greater than 0" }
+    require(restTime > 0) { "restTime must be greater than 0" }
+    require(cycleCount > 0) { "cycleCount must be greater than 0" }
+  }
+}

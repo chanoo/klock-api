@@ -57,13 +57,6 @@ data class TimerPomodoroDto(
       domain.cycleCount
     )
   }
-
-  fun validate() {
-    require(name.isNotBlank()) { "name must not be blank" }
-    require(focusTime > 0) { "focusTime must be greater than 0" }
-    require(restTime > 0) { "restTime must be greater than 0" }
-    require(cycleCount > 0) { "cycleCount must be greater than 0" }
-  }
 }
 
 data class TimerFocusDto(
