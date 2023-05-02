@@ -16,5 +16,5 @@ data class UserTimer(
   val type: UserTimerType,
 
   @Column("seq")
-  val seq: Integer,
+  val seq: Int,
 )
