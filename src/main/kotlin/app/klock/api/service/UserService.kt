@@ -2,6 +2,7 @@ package app.klock.api.service
 
 import app.klock.api.domain.entity.User
 import app.klock.api.repository.UserRepository
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
@@ -24,6 +25,7 @@ class UserService(private val userRepository: UserRepository, private val passwo
    * @param id 검색할 사용자의 ID
    * @return 검색된 사용자의 Mono를 반환하거나, 해당 ID가 없는 경우 Mono.empty()를 반환합니다.
    */
+  @PreAuthorize("authentication.principal == #id")
   fun findById(id: Long): Mono<User> = userRepository.findById(id)
 
   /**
@@ -41,7 +43,15 @@ class UserService(private val userRepository: UserRepository, private val passwo
    */
   fun update(id: Long, user: User): Mono<User> =
     userRepository.findById(id)
-      .flatMap { userRepository.save(user.copy(id = it.id, totalStudyTime = it.totalStudyTime, hashedPassword = it.hashedPassword)) }
+      .flatMap {
+        userRepository.save(
+          user.copy(
+            id = it.id,
+            totalStudyTime = it.totalStudyTime,
+            hashedPassword = it.hashedPassword
+          )
+        )
+      }
 
   /**
    * 지정된 ID를 가진 User 엔티티를 데이터베이스에서 삭제합니다.
@@ -54,7 +64,8 @@ class UserService(private val userRepository: UserRepository, private val passwo
   fun findByEmail(email: String): Mono<User> = userRepository.findByEmail(email)
 
   // BCrypt 암호화를 사용하여 검증 합니다.
-  fun validatePassword(password: String, hashedPassword: String?): Boolean = passwordEncoder.matches(password, hashedPassword)
+  fun validatePassword(password: String, hashedPassword: String?): Boolean =
+    passwordEncoder.matches(password, hashedPassword)
 
   /**
    * 사용자의 비밀번호를 변경합니다.

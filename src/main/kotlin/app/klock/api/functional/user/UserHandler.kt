@@ -7,7 +7,6 @@ import app.klock.api.functional.auth.dto.UpdateUserRequest
 import app.klock.api.functional.auth.dto.UpdateUserResponse
 import app.klock.api.functional.auth.dto.UserResponse
 import app.klock.api.service.UserService
-import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.server.ServerRequest
@@ -30,19 +29,12 @@ class UserHandler(private val userService: UserService) {
   fun getUserById(request: ServerRequest): Mono<ServerResponse> {
     val requestedUserId = request.pathVariable("id").toLong()
 
-    return request.principal()
-      .flatMap { principal ->
-        if (principal.name != requestedUserId.toString()) {
-          ServerResponse.status(HttpStatus.FORBIDDEN)
-            .bodyValue(mapOf("error" to "You are not authorized to access this user information."))
-        } else {
-          userService.findById(requestedUserId)
-            .flatMap { user ->
-              ServerResponse.ok().bodyValue(UserResponse(user.id, user.username, user.email))
-            }
-            .switchIfEmpty(ServerResponse.notFound().build())
-        }
+    return userService.findById(requestedUserId)
+      .flatMap { user ->
+        ServerResponse.ok().bodyValue(UserResponse(user.id, user.username, user.email))
       }
+      .switchIfEmpty(ServerResponse.notFound().build())
+
   }
 
   // 사용자 수정
