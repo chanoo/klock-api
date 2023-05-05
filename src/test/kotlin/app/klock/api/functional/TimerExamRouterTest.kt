@@ -1,34 +1,36 @@
 package app.klock.api.functional
 
-import app.klock.api.config.TestConfig
-import app.klock.api.functional.timer.TimerExamDto
-import app.klock.api.service.TimerExamService
-import kotlinx.coroutines.runBlocking
+import app.klock.api.functional.timer.*
+import io.mockk.coEvery
+import io.mockk.mockk
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
-import org.mockito.Mockito
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
-import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.reactive.server.WebTestClient
+import org.springframework.web.reactive.function.server.ServerResponse
+import org.springframework.web.reactive.function.server.bodyValueAndAwait
+import org.springframework.web.reactive.function.server.buildAndAwait
 import java.time.LocalDateTime
-import org.mockito.Mockito.`when` as mockitoWhen
 
-@ExtendWith(SpringExtension::class)
-@SpringBootTest(classes = [TestConfig::class])
 @ActiveProfiles("test")
-class TimerExamRouterTest @Autowired constructor(
-  private val client: WebTestClient
-) {
-  @MockBean
-  private lateinit var timerExamService: TimerExamService
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+class TimerExamRouterTest {
+
+  private lateinit var timerExamRouter: TimerExamRouter
+  private val timerExamHandler = mockk<TimerExamHandler>()
+
+  @BeforeEach
+  fun setUp() {
+    timerExamRouter = TimerExamRouter(timerExamHandler)
+  }
 
   @Test
-  fun `Create Exam Timer`() {
-    val testTimerExamDto = TimerExamDto(
+  fun `POST 요청으로 Exam 타이머 생성 테스트`() {
+    val timerExamDto = TimerExamDto(
       userId = 2L,
       seq = 1,
       name = "Test Exam Timer",
@@ -36,70 +38,76 @@ class TimerExamRouterTest @Autowired constructor(
       duration = 120,
       questionCount = 50
     )
+    val createdTimerDto = timerExamDto.copy(id = 1L)
 
-    val timerExam = testTimerExamDto.toDomain()
-    runBlocking { Mockito.`when`(timerExamService.create(timerExam)).thenReturn(timerExam.copy(id = 1L)) }
-    val timerExamDto = TimerExamDto.from(timerExam)
+    coEvery { timerExamHandler.createExamTimer(any()) } coAnswers {
+      ServerResponse.status(HttpStatus.CREATED).bodyValueAndAwait(createdTimerDto)
+    }
+
+    val client = WebTestClient.bindToRouterFunction(timerExamRouter.timerExamRoutes()).build()
 
     client.post()
       .uri("/api/exam-timers")
       .contentType(MediaType.APPLICATION_JSON)
       .bodyValue(timerExamDto)
       .exchange()
-      .expectStatus().isCreated
-      .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody()
-      .jsonPath("$.userId").isEqualTo(timerExamDto.userId.toInt())
-      .jsonPath("$.seq").isEqualTo(timerExamDto.seq)
-      .jsonPath("$.name").isEqualTo(timerExamDto.name)
-      .jsonPath("$.duration").isEqualTo(timerExamDto.duration)
-      .jsonPath("$.questionCount").isEqualTo(timerExamDto.questionCount)
+      .expectStatus().isEqualTo(HttpStatus.CREATED)
+      .expectBody(timerExamDto::class.java)
+      .value { actualTimerExamDto ->
+        Assertions.assertEquals(1L, actualTimerExamDto.id, "ID가 1이어야 합니다.")
+        Assertions.assertEquals(timerExamDto.userId, actualTimerExamDto.userId)
+        Assertions.assertEquals(timerExamDto.seq, actualTimerExamDto.seq)
+        Assertions.assertEquals(timerExamDto.type, actualTimerExamDto.type)
+        Assertions.assertEquals(timerExamDto.name, actualTimerExamDto.name)
+        Assertions.assertEquals(timerExamDto.startTime, actualTimerExamDto.startTime)
+        Assertions.assertEquals(timerExamDto.duration, actualTimerExamDto.duration)
+        Assertions.assertEquals(timerExamDto.questionCount, actualTimerExamDto.questionCount)
+      }
   }
 
   @Test
-  fun `Update Exam Timer`() {
-    val testTimerExamDto = TimerExamDto(
-      id = 1L,
-      userId = 1L,
+  fun `POST 요청으로 Exam 타이머 수정 테스트`() {
+    val timerId = 31L
+    val updatedTimerPomodoroDto = TimerPomodoroDto(
+      id = timerId,
+      userId = 2L,
       seq = 1,
-      name = "Updated Exam Timer",
-      startTime = LocalDateTime.now(),
-      duration = 120,
-      questionCount = 50
+      name = "Updated Pomodoro Timer",
+      focusTime = 30,
+      restTime = 10,
+      cycleCount = 4
     )
-    val timerExam = testTimerExamDto.toDomain()
-    runBlocking {
-      mockitoWhen(timerExamService.get(timerExam.id!!)).thenReturn(timerExam)
-      mockitoWhen(timerExamService.update(timerExam)).thenReturn(timerExam)
+
+    coEvery { timerExamHandler.updateExamTimer(any()) } coAnswers {
+      ServerResponse.ok().bodyValueAndAwait(updatedTimerPomodoroDto)
     }
-    val timerExamDto = TimerExamDto.from(timerExam)
+
+    val client = WebTestClient.bindToRouterFunction(timerExamRouter.timerExamRoutes()).build()
 
     client.post()
-      .uri("/api/exam-timers/${timerExamDto.id}")
+      .uri("/api/exam-timers/$timerId")
       .contentType(MediaType.APPLICATION_JSON)
-      .bodyValue(timerExamDto)
+      .bodyValue(updatedTimerPomodoroDto)
       .exchange()
-      .expectStatus().isOk
-      .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody()
-      .jsonPath("$.id").isEqualTo(timerExamDto.id!!.toInt())
-      .jsonPath("$.userId").isEqualTo(timerExamDto.userId.toInt())
-      .jsonPath("$.seq").isEqualTo(timerExamDto.seq)
-      .jsonPath("$.name").isEqualTo(timerExamDto.name)
-      .jsonPath("$.duration").isEqualTo(timerExamDto.duration)
-      .jsonPath("$.questionCount").isEqualTo(timerExamDto.questionCount)
+      .expectStatus().isEqualTo(HttpStatus.OK)
+      .expectBody(TimerPomodoroDto::class.java)
+      .isEqualTo(updatedTimerPomodoroDto)
   }
 
   @Test
-  fun `Delete Exam Timer`() {
-    val testTimerExamId = 1L
+  fun `DELETE 요청으로 Exam 타이머 삭제 테스트`() {
+    val timerId = 30L
 
-    runBlocking { mockitoWhen(timerExamService.delete(testTimerExamId)).thenReturn(true) }
+    coEvery { timerExamHandler.deleteExamTimer(any()) } coAnswers {
+      ServerResponse.noContent().buildAndAwait()
+    }
+
+    val client = WebTestClient.bindToRouterFunction(timerExamRouter.timerExamRoutes()).build()
 
     client.delete()
-      .uri("/api/exam-timers/$testTimerExamId")
+      .uri("/api/exam-timers/$timerId")
       .exchange()
-      .expectStatus().isNoContent
+      .expectStatus().isEqualTo(HttpStatus.NO_CONTENT)
   }
 
 }
