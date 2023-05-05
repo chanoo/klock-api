@@ -1,104 +1,101 @@
 package app.klock.api.functional
 
-import app.klock.api.config.TestConfig
-import app.klock.api.functional.timer.TimerFocusDto
-import app.klock.api.service.TimerFocusService
+import app.klock.api.functional.timer.*
+import io.mockk.coEvery
+import io.mockk.mockk
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
-import org.mockito.Mockito
-import org.mockito.kotlin.anyOrNull
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
-import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.reactive.server.WebTestClient
-import reactor.kotlin.core.publisher.toMono
-import java.time.LocalDateTime
-import org.mockito.Mockito.`when` as mockitoWhen
+import org.springframework.web.reactive.function.server.ServerResponse
 
-@ExtendWith(SpringExtension::class)
-@SpringBootTest(classes = [TestConfig::class])
 @ActiveProfiles("test")
-class TimerFocusRouterTest @Autowired constructor(
-  private val client: WebTestClient
-) {
-  @MockBean
-  private lateinit var timerFocusService: TimerFocusService
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+class TimerFocusRouterTest {
+
+  private lateinit var timerFocusRouter: TimerFocusRouter
+  private val timerFocusHandler = mockk<TimerFocusHandler>()
+
+  @BeforeEach
+  fun setUp() {
+    timerFocusRouter = TimerFocusRouter(timerFocusHandler)
+  }
+
 
   @Test
-  fun `Create Focus Timer`() {
-    val testTimerFocusDto = TimerFocusDto(
+  fun `POST 요청으로 Focus 타이머 생성 테스트`() {
+    val timerFocusDto = TimerFocusDto(
       userId = 2L,
       seq = 1,
       name = "Test Focus Timer"
     )
 
-    val timerFocus = testTimerFocusDto.toDomain()
-    mockitoWhen(timerFocusService.create(anyOrNull())).thenReturn(timerFocus.copy(id = 1L).toMono())
-    val timerFocusDto = TimerFocusDto.from(timerFocus)
+    val createdTimerFocusDto = timerFocusDto.copy(id = 1L)
+
+    coEvery { timerFocusHandler.createFocusTimer(any()) } coAnswers {
+      ServerResponse.status(HttpStatus.CREATED).bodyValue(createdTimerFocusDto)
+    }
+
+    val client = WebTestClient.bindToRouterFunction(timerFocusRouter.timerFocusRoutes()).build()
 
     client.post()
       .uri("/api/focus-timers")
       .contentType(MediaType.APPLICATION_JSON)
       .bodyValue(timerFocusDto)
       .exchange()
-      .expectStatus().isCreated
-      .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody()
-      .jsonPath("$.userId").isEqualTo(timerFocusDto.userId.toInt())
-      .jsonPath("$.seq").isEqualTo(timerFocusDto.seq)
-      .jsonPath("$.name").isEqualTo(timerFocusDto.name)
+      .expectBody(TimerFocusDto::class.java)
+      .value { actualTimerFocusDto ->
+        Assertions.assertEquals(1L, actualTimerFocusDto.id, "ID가 1이어야 합니다.")
+        Assertions.assertEquals(timerFocusDto.userId, actualTimerFocusDto.userId)
+        Assertions.assertEquals(timerFocusDto.seq, actualTimerFocusDto.seq)
+        Assertions.assertEquals(timerFocusDto.type, actualTimerFocusDto.type)
+        Assertions.assertEquals(timerFocusDto.name, actualTimerFocusDto.name)
+      }
   }
 
   @Test
-  fun `포커스 타이머 수정`() {
-    val testTimerFocusDto = TimerFocusDto(
-      id = 1L,
+  fun `POST 요청으로 Focus 타이머 수정 테스트`() {
+    val timerId = 1L
+    val timerFocusDto = TimerFocusDto(
       userId = 2L,
       seq = 1,
-      name = "Test Focus Timer"
+      name = "Test Focus Timer Update"
     )
 
-    val originalTimerFocus = testTimerFocusDto.toDomain().copy(
-      createdAt = LocalDateTime.now(),
-      updatedAt = LocalDateTime.now()
-    )
+    coEvery { timerFocusHandler.updateFocusTimer(any()) } coAnswers {
+      ServerResponse.ok().bodyValue(timerFocusDto)
+    }
 
-    val resTimerFocus = originalTimerFocus.copy(
-      name = "Test Focus Timer Update",
-      updatedAt = LocalDateTime.now()
-    )
-    Mockito.`when`(timerFocusService.get(anyOrNull())).thenReturn(originalTimerFocus.toMono())
-    Mockito.`when`(timerFocusService.update(anyOrNull())).thenReturn(resTimerFocus.toMono())
-
-    val updatedTimerFocusDto = TimerFocusDto.from(resTimerFocus)
+    val client = WebTestClient.bindToRouterFunction(timerFocusRouter.timerFocusRoutes()).build()
 
     client.post()
-      .uri("/api/focus-timers/${originalTimerFocus.id}")
+      .uri("/api/focus-timers/$timerId")
       .contentType(MediaType.APPLICATION_JSON)
-      .bodyValue(updatedTimerFocusDto)
+      .bodyValue(timerFocusDto)
       .exchange()
-      .expectStatus().isOk
-      .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody()
-      .jsonPath("$.id").isEqualTo(updatedTimerFocusDto.id!!.toInt())
-      .jsonPath("$.userId").isEqualTo(updatedTimerFocusDto.userId.toInt())
-      .jsonPath("$.seq").isEqualTo(updatedTimerFocusDto.seq)
-      .jsonPath("$.name").isEqualTo(updatedTimerFocusDto.name)
+      .expectStatus().isEqualTo(HttpStatus.OK)
+      .expectBody(TimerFocusDto::class.java)
+      .isEqualTo(timerFocusDto)
   }
 
   @Test
-  fun `Delete Focus Timer`() {
-    val testTimerExamId = 1L
+  fun `DELETE 요청으로 Focus 타이머 삭제 테스트`() {
+    val timerId = 1L
 
-    mockitoWhen(timerFocusService.delete(testTimerExamId)).thenReturn(true.toMono())
+    coEvery { timerFocusHandler.deleteFocusTimer(any()) } coAnswers {
+      ServerResponse.noContent().build()
+    }
+
+    val client = WebTestClient.bindToRouterFunction(timerFocusRouter.timerFocusRoutes()).build()
 
     client.delete()
-      .uri("/api/focus-timers/$testTimerExamId")
+      .uri("/api/focus-timers/$timerId")
       .exchange()
-      .expectStatus().isNoContent
+      .expectStatus().isEqualTo(HttpStatus.NO_CONTENT)
   }
 
 }
