@@ -1,33 +1,37 @@
 package app.klock.api.functional
 
-import app.klock.api.config.TestConfig
 import app.klock.api.functional.timer.TimerPomodoroDto
-import app.klock.api.service.TimerPomodoroService
-import kotlinx.coroutines.runBlocking
+import app.klock.api.functional.timer.TimerPomodoroHandler
+import app.klock.api.functional.timer.TimerPomodoroRouter
+import io.mockk.coEvery
+import io.mockk.mockk
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
-import org.mockito.Mockito
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
-import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.reactive.server.WebTestClient
-import org.mockito.Mockito.`when` as mockitoWhen
+import org.springframework.web.reactive.function.server.ServerResponse
+import org.springframework.web.reactive.function.server.bodyValueAndAwait
+import org.springframework.web.reactive.function.server.buildAndAwait
 
-@ExtendWith(SpringExtension::class)
-@SpringBootTest(classes = [TestConfig::class])
 @ActiveProfiles("test")
-class TimerPomodoroRouterTest @Autowired constructor(
-  private val client: WebTestClient
-) {
-  @MockBean
-  private lateinit var timerPomodoroService: TimerPomodoroService
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+class TimerPomodoroRouterTest {
+
+  private lateinit var timerPomodoroRouter: TimerPomodoroRouter
+  private val timerPomodoroHandler = mockk<TimerPomodoroHandler>()
+
+  @BeforeEach
+  fun setUp() {
+    timerPomodoroRouter = TimerPomodoroRouter(timerPomodoroHandler)
+  }
 
   @Test
-  fun `Create TimerPomodoro`() {
-    val srcTimerPomodoroDto = TimerPomodoroDto(
+  fun `POST 요청으로 Pomodoro 타이머 생성 테스트`() {
+    val timerPomodoroDto = TimerPomodoroDto(
       userId = 2L,
       seq = 1,
       name = "Pomodoro Timer",
@@ -36,73 +40,75 @@ class TimerPomodoroRouterTest @Autowired constructor(
       cycleCount = 4
     )
 
-    val timerPomodoro = srcTimerPomodoroDto.toDomain()
-    runBlocking { Mockito.`when`(timerPomodoroService.create(timerPomodoro)).thenReturn(timerPomodoro.copy(id = 3L)) }
-    val timerPomodoroDto = TimerPomodoroDto.from(timerPomodoro)
+    val createdTimerPomodoroDto = timerPomodoroDto.copy(id = 1L)
+
+    coEvery { timerPomodoroHandler.createPomodoroTimer(any()) } coAnswers {
+      ServerResponse.status(HttpStatus.CREATED).bodyValueAndAwait(createdTimerPomodoroDto)
+    }
+
+    val client = WebTestClient.bindToRouterFunction(timerPomodoroRouter.timerPomodoroRoutes()).build()
 
     client.post()
       .uri("/api/pomodoro-timers")
       .contentType(MediaType.APPLICATION_JSON)
       .bodyValue(timerPomodoroDto)
       .exchange()
-      .expectStatus().isCreated
-      .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody()
-      .jsonPath("$.userId").isEqualTo(timerPomodoroDto.userId.toInt())
-      .jsonPath("$.seq").isEqualTo(timerPomodoroDto.seq)
-      .jsonPath("$.name").isEqualTo(timerPomodoroDto.name)
-      .jsonPath("$.focusTime").isEqualTo(timerPomodoroDto.focusTime)
-      .jsonPath("$.restTime").isEqualTo(timerPomodoroDto.restTime)
-      .jsonPath("$.cycleCount").isEqualTo(timerPomodoroDto.cycleCount)
+      .expectStatus().isEqualTo(HttpStatus.CREATED)
+      .expectBody(TimerPomodoroDto::class.java)
+      .value { actualTimerPomodoroDto ->
+        assertEquals(1L, actualTimerPomodoroDto.id, "ID가 1이어야 합니다.")
+        assertEquals(timerPomodoroDto.userId, actualTimerPomodoroDto.userId)
+        assertEquals(timerPomodoroDto.seq, actualTimerPomodoroDto.seq)
+        assertEquals(timerPomodoroDto.type, actualTimerPomodoroDto.type)
+        assertEquals(timerPomodoroDto.name, actualTimerPomodoroDto.name)
+        assertEquals(timerPomodoroDto.focusTime, actualTimerPomodoroDto.focusTime)
+        assertEquals(timerPomodoroDto.restTime, actualTimerPomodoroDto.restTime)
+        assertEquals(timerPomodoroDto.cycleCount, actualTimerPomodoroDto.cycleCount)
+      }
   }
 
-  // Update TimerPomodoro
   @Test
-  fun `Update TimerPomodoro`() {
-    val srcTimerPomodoroDto = TimerPomodoroDto(
-      id = 3L,
+  fun `POST 요청으로 Pomodoro 타이머 수정 테스트`() {
+    val timerId = 31L
+    val updatedTimerPomodoroDto = TimerPomodoroDto(
+      id = timerId,
       userId = 2L,
       seq = 1,
-      name = "Pomodoro Timer",
-      focusTime = 25,
-      restTime = 5,
+      name = "Updated Pomodoro Timer",
+      focusTime = 30,
+      restTime = 10,
       cycleCount = 4
     )
-    val timerPomodoro = srcTimerPomodoroDto.toDomain()
-    runBlocking {
-      mockitoWhen(timerPomodoroService.get(timerPomodoro.id!!)).thenReturn(timerPomodoro)
-      mockitoWhen(timerPomodoroService.update(timerPomodoro)).thenReturn(timerPomodoro)
+
+    coEvery { timerPomodoroHandler.updatePomodoroTimer(any()) } coAnswers {
+      ServerResponse.ok().bodyValueAndAwait(updatedTimerPomodoroDto)
     }
-    val timerPomodoroDto = TimerPomodoroDto.from(timerPomodoro)
+
+    val client = WebTestClient.bindToRouterFunction(timerPomodoroRouter.timerPomodoroRoutes()).build()
 
     client.post()
-      .uri("/api/pomodoro-timers/${timerPomodoroDto.id}")
+      .uri("/api/pomodoro-timers/$timerId")
       .contentType(MediaType.APPLICATION_JSON)
-      .bodyValue(timerPomodoroDto)
+      .bodyValue(updatedTimerPomodoroDto)
       .exchange()
-      .expectStatus().isOk
-      .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody()
-      .jsonPath("$.id").isEqualTo(timerPomodoroDto.id!!.toInt())
-      .jsonPath("$.userId").isEqualTo(timerPomodoroDto.userId.toInt())
-      .jsonPath("$.seq").isEqualTo(timerPomodoroDto.seq)
-      .jsonPath("$.name").isEqualTo(timerPomodoroDto.name)
-      .jsonPath("$.focusTime").isEqualTo(timerPomodoroDto.focusTime)
-      .jsonPath("$.restTime").isEqualTo(timerPomodoroDto.restTime)
-      .jsonPath("$.cycleCount").isEqualTo(timerPomodoroDto.cycleCount)
+      .expectStatus().isEqualTo(HttpStatus.OK)
+      .expectBody(TimerPomodoroDto::class.java)
+      .isEqualTo(updatedTimerPomodoroDto)
   }
 
-  // Delete TimerPomodoro
   @Test
-  fun `Delete TimerPomodoro`() {
-    val testTimerPomodoroId = 1L
+  fun `DELETE 요청으로 Pomodoro 타이머 삭제 테스트`() {
+    val timerId = 30L
 
-    runBlocking { mockitoWhen(timerPomodoroService.delete(testTimerPomodoroId)).thenReturn(true) }
+    coEvery { timerPomodoroHandler.deletePomodoroTimer(any()) } coAnswers {
+      ServerResponse.noContent().buildAndAwait()
+    }
+
+    val client = WebTestClient.bindToRouterFunction(timerPomodoroRouter.timerPomodoroRoutes()).build()
 
     client.delete()
-      .uri("/api/pomodoro-timers/${testTimerPomodoroId}")
+      .uri("/api/pomodoro-timers/$timerId")
       .exchange()
-      .expectStatus().isNoContent
+      .expectStatus().isEqualTo(HttpStatus.NO_CONTENT)
   }
-
 }
