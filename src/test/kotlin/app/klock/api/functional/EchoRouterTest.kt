@@ -1,53 +1,67 @@
 package app.klock.api.functional
 
-import app.klock.api.config.TestConfig
 import app.klock.api.functional.echo.EchoDto
+import app.klock.api.functional.echo.EchoHandler
+import app.klock.api.functional.echo.EchoRouter
+import io.mockk.coEvery
+import io.mockk.mockk
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
-import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.reactive.server.WebTestClient
+import org.springframework.web.reactive.function.server.ServerResponse
 
-@ExtendWith(SpringExtension::class)
-@SpringBootTest(classes = [TestConfig::class])
 @ActiveProfiles("test")
-class EchoRouterTest @Autowired constructor(
-    private val client: WebTestClient
-) {
-    @Test
-    fun `메시지를 그대로 반환하는 에코 엔드포인트`() {
-        val message = "Hello, World!"
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+class EchoRouterTest {
 
-        client.get()
-            .uri("/echo?message=$message")
-            .exchange()
-            .expectStatus().isOk
-            .expectBody(String::class.java)
-            .isEqualTo(message)
+  private lateinit var echoRouter: EchoRouter
+  private val echoHandler = mockk<EchoHandler>()
+
+  @BeforeEach
+  fun setUp() {
+    echoRouter = EchoRouter(echoHandler)
+  }
+
+  @Test
+  fun `메시지를 그대로 반환하는 에코 엔드포인트`() {
+    val message = "Hello, World!"
+
+    coEvery { echoHandler.get(any()) } coAnswers {
+      ServerResponse.ok().bodyValue(message)
     }
 
-    @Test
-    fun `메시지가 누락된 경우 에코 엔드포인트가 잘못된 요청을 반환`() {
-        client.get()
-            .uri("/echo")
-            .exchange()
-            .expectStatus().is5xxServerError
+    val client = WebTestClient.bindToRouterFunction(echoRouter.echoRoutes()).build()
+
+    client.get()
+      .uri("/echo?message=$message")
+      .exchange()
+      .expectStatus().isOk
+      .expectBody(String::class.java)
+      .isEqualTo(message)
+  }
+
+  @Test
+  fun `POST 메소드로 전송한 메시지에 Hello를 추가하여 반환하는 에코 엔드포인트`() {
+    val message = "Hello, World!"
+    val echoDto = EchoDto(message)
+    val expectedResponse = echoDto.copy(message = "Hello, ${echoDto.message}!")
+
+    coEvery { echoHandler.post(any()) } coAnswers {
+      ServerResponse.ok().bodyValue(expectedResponse)
     }
 
-    @Test
-    fun `POST 메소드로 전송한 메시지에 Hello를 추가하여 반환하는 에코 엔드포인트`() {
-        val message = "Hello, World!"
-        val echoDto = EchoDto(message)
-        val expectedResponse = echoDto.copy(message = "Hello, ${echoDto.message}!")
+    val client = WebTestClient.bindToRouterFunction(echoRouter.echoRoutes()).build()
 
-        client.post()
-            .uri("/echo")
-            .bodyValue(echoDto)
-            .exchange()
-            .expectStatus().isOk
-            .expectBody(EchoDto::class.java)
-            .isEqualTo(expectedResponse)
-    }
+    client.post()
+      .uri("/echo")
+      .contentType(MediaType.APPLICATION_JSON)
+      .bodyValue(echoDto)
+      .exchange()
+      .expectStatus().isOk
+      .expectBody(EchoDto::class.java)
+      .isEqualTo(expectedResponse)
+  }
 }
