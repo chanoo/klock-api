@@ -22,9 +22,13 @@ class ChatBotRouterTest {
   private lateinit var chatbotRouter: ChatBotRouter
   private val chatBotHandler = mockk<ChatBotHandler>()
 
+  private lateinit var client: WebTestClient
+
   @BeforeEach
   fun setUp() {
     chatbotRouter = ChatBotRouter(chatBotHandler)
+
+    client = WebTestClient.bindToRouterFunction(chatbotRouter.chatBotRoutes()).build()
   }
 
   @Test
@@ -44,8 +48,6 @@ class ChatBotRouterTest {
     coEvery { chatBotHandler.getByActiveChatBots(any()) } coAnswers {
       ServerResponse.ok().bodyValue(testChatBots)
     }
-
-    val client = WebTestClient.bindToRouterFunction(chatbotRouter.chatBotRoutes()).build()
 
     // Test the GET API
     client.get()

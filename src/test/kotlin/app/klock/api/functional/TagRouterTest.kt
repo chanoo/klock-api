@@ -20,12 +20,16 @@ class TagRouterTest {
   private lateinit var tagRouter: TagRouter
   private val tagHandler = mockk<TagHandler>()
 
+  private lateinit var client: WebTestClient
+
   private lateinit var tag1: Tag
   private lateinit var tag2: Tag
 
   @BeforeEach
   fun setUp() {
     tagRouter = TagRouter(tagHandler)
+
+    client = WebTestClient.bindToRouterFunction(tagRouter.tagRoutes()).build()
 
     tag1 = Tag(id = 1L, name = "Tag1")
     tag2 = Tag(id = 2L, name = "Tag2")
@@ -37,8 +41,6 @@ class TagRouterTest {
     coEvery { tagHandler.getall(any()) } coAnswers {
       ServerResponse.ok().bodyValue(listOf(tag1, tag2))
     }
-
-    val client = WebTestClient.bindToRouterFunction(tagRouter.tagRoutes()).build()
 
     client.get().uri("/api/tags")
       .exchange()
@@ -57,8 +59,6 @@ class TagRouterTest {
       ServerResponse.status(201).bodyValue(tag1.copy(name = "NewTag"))
     }
 
-    val client = WebTestClient.bindToRouterFunction(tagRouter.tagRoutes()).build()
-
     client.post().uri("/api/tags")
       .contentType(MediaType.APPLICATION_JSON)
       .bodyValue(newTag)
@@ -76,8 +76,6 @@ class TagRouterTest {
       ServerResponse.ok().bodyValue(tag1)
     }
 
-    val client = WebTestClient.bindToRouterFunction(tagRouter.tagRoutes()).build()
-
     client.get().uri("/api/tags/${tag1.id}")
       .exchange()
       .expectStatus().isOk
@@ -93,8 +91,6 @@ class TagRouterTest {
     coEvery { tagHandler.update(any()) } coAnswers {
       ServerResponse.ok().bodyValue(tag1.copy(name = "UpdatedTag"))
     }
-
-    val client = WebTestClient.bindToRouterFunction(tagRouter.tagRoutes()).build()
 
     client.put().uri("/api/tags/${updatedTag.id}")
       .contentType(MediaType.APPLICATION_JSON)
@@ -113,8 +109,6 @@ class TagRouterTest {
     coEvery { tagHandler.delete(any()) } coAnswers {
       ServerResponse.noContent().build()
     }
-
-    val client = WebTestClient.bindToRouterFunction(tagRouter.tagRoutes()).build()
 
     client.delete().uri("/api/tags/${tagId}")
       .exchange()

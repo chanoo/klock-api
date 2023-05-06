@@ -21,9 +21,13 @@ class StudySessionRouterTest {
   private lateinit var studySessionRouter: StudySessionRouter
   private val studySessionHandler = mockk<StudySessionHandler>()
 
+  private lateinit var client: WebTestClient
+
   @BeforeEach
   fun setUp() {
     studySessionRouter = StudySessionRouter(studySessionHandler)
+
+    client = WebTestClient.bindToRouterFunction(studySessionRouter.studySessionRoutes()).build()
   }
 
   @Test
@@ -50,8 +54,6 @@ class StudySessionRouterTest {
       ServerResponse.ok().bodyValue(studySessions)
     }
 
-    val client = WebTestClient.bindToRouterFunction(studySessionRouter.studySessionRoutes()).build()
-
     client.get()
       .uri("/api/study-sessions?userId=$userId&date=$startDate")
       .accept(MediaType.APPLICATION_JSON)
@@ -77,8 +79,6 @@ class StudySessionRouterTest {
       ServerResponse.status(201).bodyValue(createdStudySession)
     }
 
-    val client = WebTestClient.bindToRouterFunction(studySessionRouter.studySessionRoutes()).build()
-
     client.post()
       .uri("/api/study-sessions")
       .contentType(MediaType.APPLICATION_JSON)
@@ -102,8 +102,6 @@ class StudySessionRouterTest {
     coEvery { studySessionHandler.update(any()) } coAnswers {
       ServerResponse.ok().bodyValue(studySessionDTO)
     }
-
-    val client = WebTestClient.bindToRouterFunction(studySessionRouter.studySessionRoutes()).build()
 
     client.put()
       .uri("/api/study-sessions/${studySessionDTO.id}")

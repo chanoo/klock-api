@@ -20,11 +20,14 @@ class TimerFocusRouterTest {
   private lateinit var timerFocusRouter: TimerFocusRouter
   private val timerFocusHandler = mockk<TimerFocusHandler>()
 
+  private lateinit var client: WebTestClient
+
   @BeforeEach
   fun setUp() {
     timerFocusRouter = TimerFocusRouter(timerFocusHandler)
-  }
 
+    client = WebTestClient.bindToRouterFunction(timerFocusRouter.timerFocusRoutes()).build()
+  }
 
   @Test
   fun `POST 요청으로 Focus 타이머 생성 테스트`() {
@@ -39,8 +42,6 @@ class TimerFocusRouterTest {
     coEvery { timerFocusHandler.createFocusTimer(any()) } coAnswers {
       ServerResponse.status(HttpStatus.CREATED).bodyValue(createdTimerFocusDto)
     }
-
-    val client = WebTestClient.bindToRouterFunction(timerFocusRouter.timerFocusRoutes()).build()
 
     client.post()
       .uri("/api/focus-timers")
@@ -70,8 +71,6 @@ class TimerFocusRouterTest {
       ServerResponse.ok().bodyValue(timerFocusDto)
     }
 
-    val client = WebTestClient.bindToRouterFunction(timerFocusRouter.timerFocusRoutes()).build()
-
     client.post()
       .uri("/api/focus-timers/$timerId")
       .contentType(MediaType.APPLICATION_JSON)
@@ -89,8 +88,6 @@ class TimerFocusRouterTest {
     coEvery { timerFocusHandler.deleteFocusTimer(any()) } coAnswers {
       ServerResponse.noContent().build()
     }
-
-    val client = WebTestClient.bindToRouterFunction(timerFocusRouter.timerFocusRoutes()).build()
 
     client.delete()
       .uri("/api/focus-timers/$timerId")

@@ -26,9 +26,13 @@ class AuthRouterTest {
   private lateinit var authRouter: AuthRouter
   private val authHandler = mockk<AuthHandler>()
 
+  private lateinit var client: WebTestClient
+
   @BeforeEach
   fun setUp() {
     authRouter = AuthRouter(authHandler)
+
+    client = WebTestClient.bindToRouterFunction(authRouter.authRoutes()).build()
   }
 
   @Test
@@ -57,8 +61,6 @@ class AuthRouterTest {
     coEvery { authHandler.signup(any()) } coAnswers {
       ServerResponse.status(HttpStatus.CREATED).bodyValue(signUpResDTO)
     }
-
-    val client = WebTestClient.bindToRouterFunction(authRouter.authRoutes()).build()
 
     client.post()
       .uri("/api/auth/signup")
@@ -90,8 +92,6 @@ class AuthRouterTest {
       ServerResponse.ok().bodyValue(loginResponse)
     }
 
-    val client = WebTestClient.bindToRouterFunction(authRouter.authRoutes()).build()
-
     client.post()
       .uri("/api/auth/signin")
       .contentType(MediaType.APPLICATION_JSON)
@@ -112,8 +112,6 @@ class AuthRouterTest {
     coEvery { authHandler.refreshToken(any()) } coAnswers {
       ServerResponse.ok().bodyValue(mapOf("token" to newAccessToken))
     }
-
-    val client = WebTestClient.bindToRouterFunction(authRouter.authRoutes()).build()
 
     client.post().uri("/api/auth/refresh-token")
       .contentType(MediaType.APPLICATION_JSON)

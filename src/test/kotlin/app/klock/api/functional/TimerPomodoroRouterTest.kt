@@ -24,9 +24,13 @@ class TimerPomodoroRouterTest {
   private lateinit var timerPomodoroRouter: TimerPomodoroRouter
   private val timerPomodoroHandler = mockk<TimerPomodoroHandler>()
 
+  private lateinit var client: WebTestClient
+
   @BeforeEach
   fun setUp() {
     timerPomodoroRouter = TimerPomodoroRouter(timerPomodoroHandler)
+
+    client = WebTestClient.bindToRouterFunction(timerPomodoroRouter.timerPomodoroRoutes()).build()
   }
 
   @Test
@@ -45,8 +49,6 @@ class TimerPomodoroRouterTest {
     coEvery { timerPomodoroHandler.createPomodoroTimer(any()) } coAnswers {
       ServerResponse.status(HttpStatus.CREATED).bodyValueAndAwait(createdTimerPomodoroDto)
     }
-
-    val client = WebTestClient.bindToRouterFunction(timerPomodoroRouter.timerPomodoroRoutes()).build()
 
     client.post()
       .uri("/api/pomodoro-timers")
@@ -84,8 +86,6 @@ class TimerPomodoroRouterTest {
       ServerResponse.ok().bodyValueAndAwait(updatedTimerPomodoroDto)
     }
 
-    val client = WebTestClient.bindToRouterFunction(timerPomodoroRouter.timerPomodoroRoutes()).build()
-
     client.post()
       .uri("/api/pomodoro-timers/$timerId")
       .contentType(MediaType.APPLICATION_JSON)
@@ -103,8 +103,6 @@ class TimerPomodoroRouterTest {
     coEvery { timerPomodoroHandler.deletePomodoroTimer(any()) } coAnswers {
       ServerResponse.noContent().buildAndAwait()
     }
-
-    val client = WebTestClient.bindToRouterFunction(timerPomodoroRouter.timerPomodoroRoutes()).build()
 
     client.delete()
       .uri("/api/pomodoro-timers/$timerId")

@@ -23,9 +23,13 @@ class TimerExamRouterTest {
   private lateinit var timerExamRouter: TimerExamRouter
   private val timerExamHandler = mockk<TimerExamHandler>()
 
+  private lateinit var client: WebTestClient
+
   @BeforeEach
   fun setUp() {
     timerExamRouter = TimerExamRouter(timerExamHandler)
+
+    client = WebTestClient.bindToRouterFunction(timerExamRouter.timerExamRoutes()).build()
   }
 
   @Test
@@ -43,8 +47,6 @@ class TimerExamRouterTest {
     coEvery { timerExamHandler.createExamTimer(any()) } coAnswers {
       ServerResponse.status(HttpStatus.CREATED).bodyValueAndAwait(createdTimerDto)
     }
-
-    val client = WebTestClient.bindToRouterFunction(timerExamRouter.timerExamRoutes()).build()
 
     client.post()
       .uri("/api/exam-timers")
@@ -82,8 +84,6 @@ class TimerExamRouterTest {
       ServerResponse.ok().bodyValueAndAwait(updatedTimerPomodoroDto)
     }
 
-    val client = WebTestClient.bindToRouterFunction(timerExamRouter.timerExamRoutes()).build()
-
     client.post()
       .uri("/api/exam-timers/$timerId")
       .contentType(MediaType.APPLICATION_JSON)
@@ -101,8 +101,6 @@ class TimerExamRouterTest {
     coEvery { timerExamHandler.deleteExamTimer(any()) } coAnswers {
       ServerResponse.noContent().buildAndAwait()
     }
-
-    val client = WebTestClient.bindToRouterFunction(timerExamRouter.timerExamRoutes()).build()
 
     client.delete()
       .uri("/api/exam-timers/$timerId")

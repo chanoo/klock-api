@@ -21,9 +21,13 @@ class FriendRelationRouterTest {
   private lateinit var friendRelationRouter: FriendRelationRouter
   private val friendRelationHandler = mockk<FriendRelationHandler>()
 
+  private lateinit var client: WebTestClient
+
   @BeforeEach
   fun setUp() {
     friendRelationRouter = FriendRelationRouter(friendRelationHandler)
+
+    client = WebTestClient.bindToRouterFunction(friendRelationRouter.friendRelationRoutes()).build()
   }
 
   @Test
@@ -33,8 +37,6 @@ class FriendRelationRouterTest {
     coEvery { friendRelationHandler.create(any()) } coAnswers {
       ServerResponse.status(201).bodyValue(createFriendRelationRequest)
     }
-
-    val client = WebTestClient.bindToRouterFunction(friendRelationRouter.friendRelationRoutes()).build()
 
     client.post().uri("/api/friend-relations")
       .contentType(MediaType.APPLICATION_JSON)
@@ -55,8 +57,6 @@ class FriendRelationRouterTest {
     coEvery { friendRelationHandler.getFriendRelationsByRequesterId(any()) } coAnswers {
       ServerResponse.ok().bodyValue(friendRelations)
     }
-
-    val client = WebTestClient.bindToRouterFunction(friendRelationRouter.friendRelationRoutes()).build()
 
     client.get().uri("/api/friend-relations?requesterId=1")
       .exchange()

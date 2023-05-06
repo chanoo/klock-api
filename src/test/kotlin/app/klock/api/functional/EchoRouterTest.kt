@@ -20,9 +20,13 @@ class EchoRouterTest {
   private lateinit var echoRouter: EchoRouter
   private val echoHandler = mockk<EchoHandler>()
 
+  private lateinit var client: WebTestClient
+
   @BeforeEach
   fun setUp() {
     echoRouter = EchoRouter(echoHandler)
+
+    client = WebTestClient.bindToRouterFunction(echoRouter.echoRoutes()).build()
   }
 
   @Test
@@ -32,8 +36,6 @@ class EchoRouterTest {
     coEvery { echoHandler.get(any()) } coAnswers {
       ServerResponse.ok().bodyValue(message)
     }
-
-    val client = WebTestClient.bindToRouterFunction(echoRouter.echoRoutes()).build()
 
     client.get()
       .uri("/echo?message=$message")
@@ -52,8 +54,6 @@ class EchoRouterTest {
     coEvery { echoHandler.post(any()) } coAnswers {
       ServerResponse.ok().bodyValue(expectedResponse)
     }
-
-    val client = WebTestClient.bindToRouterFunction(echoRouter.echoRoutes()).build()
 
     client.post()
       .uri("/echo")
