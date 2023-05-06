@@ -1,52 +1,51 @@
 package app.klock.api.functional
 
-import app.klock.api.config.TestConfig
 import app.klock.api.domain.entity.UserTag
-import app.klock.api.service.UserTagService
+import app.klock.api.functional.userTag.UserTagHandler
+import app.klock.api.functional.userTag.UserTagRouter
+import io.mockk.coEvery
+import io.mockk.mockk
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
-import org.mockito.Mockito
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
-import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.web.reactive.function.BodyInserters
-import reactor.core.publisher.Flux
-import reactor.core.publisher.Mono
+import org.springframework.web.reactive.function.server.ServerResponse
 
-@ExtendWith(SpringExtension::class)
-@SpringBootTest(classes = [TestConfig::class])
 @ActiveProfiles("test")
-class UserTagRouterTest @Autowired constructor(
-  private val client: WebTestClient
-) {
-  @MockBean
-  private lateinit var userTagService: UserTagService
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+class UserTagRouterTest {
 
-  // 테스트 데이터 설정
+  private lateinit var userTagRouter: UserTagRouter
+  private val userTagHandler = mockk<UserTagHandler>()
+  
   private lateinit var userTag: UserTag
+  private lateinit var client: WebTestClient
 
   @BeforeEach
   fun setUp() {
-    // 테스트에 사용할 데이터를 설정합니다.
+    userTagRouter = UserTagRouter(userTagHandler)
+
+    userTagRouter = UserTagRouter(userTagHandler)
     userTag = UserTag(
       id = 1L,
       userId = 1L,
       tagId = 1L
     )
 
-    // Mock the accountTagService
-    Mockito.`when`(userTagService.findByUserId(1L)).thenReturn(Flux.just(userTag))
-    Mockito.`when`(userTagService.create(userTag)).thenReturn(Mono.just(userTag))
+    client = WebTestClient.bindToRouterFunction(userTagRouter.userTagRoutes()).build()
   }
 
   @Test
   fun `계정 태그 조회`() {
-    // Test the GET request to retrieve all tags for an account
+
+    coEvery { userTagHandler.getUserTags(any()) } coAnswers {
+      ServerResponse.ok().bodyValue(userTag)
+    }
+
     client.get().uri("/api/user-tags?userId=1")
       .exchange()
       .expectStatus().isOk
@@ -56,7 +55,11 @@ class UserTagRouterTest @Autowired constructor(
 
   @Test
   fun `계정 태그 생성`() {
-    // Test the POST request to create a new account tag
+
+    coEvery { userTagHandler.create(any()) } coAnswers {
+      ServerResponse.status(HttpStatus.CREATED).bodyValue(userTag)
+    }
+
     client.post().uri("/api/user-tags")
       .contentType(MediaType.APPLICATION_JSON)
       .body(BodyInserters.fromValue(userTag))

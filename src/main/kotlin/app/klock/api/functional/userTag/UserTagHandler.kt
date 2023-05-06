@@ -25,7 +25,7 @@ class UserTagHandler(private val userTagService: UserTagService) {
     }
   }
 
-  fun createUserTag(request: ServerRequest): Mono<ServerResponse> {
+  fun create(request: ServerRequest): Mono<ServerResponse> {
     return request.bodyToMono(UserTag::class.java)
       .flatMap { userTag -> userTagService.create(userTag) }
       .flatMap { createdUserTag -> ServerResponse.status(HttpStatus.CREATED).bodyValue(createdUserTag) }

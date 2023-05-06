@@ -11,7 +11,7 @@ class UserTagRouter(private val userTagHandler: UserTagHandler) {
   fun userTagRoutes() = router {
     "/api/user-tags".nest {
       GET("", userTagHandler::getUserTags)
-      POST("", userTagHandler::createUserTag)
+      POST("", userTagHandler::create)
     }
   }
 }
