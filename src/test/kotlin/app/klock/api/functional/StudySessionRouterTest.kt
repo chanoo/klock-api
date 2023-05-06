@@ -1,59 +1,44 @@
-// StudySessionRouterTest.kt
-package app.klock.api.router
+package app.klock.api.functional
 
-import app.klock.api.config.TestConfig
-import app.klock.api.domain.entity.StudySession
-import app.klock.api.service.StudySessionService
+import app.klock.api.functional.studySession.StudySessionHandler
+import app.klock.api.functional.studySession.StudySessionRouter
+import app.klock.api.functional.studySession.dto.StudySessionDTO
+import io.mockk.coEvery
+import io.mockk.mockk
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
-import org.mockito.Mockito
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
-import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.reactive.server.WebTestClient
-import org.springframework.web.reactive.function.BodyInserters
-import reactor.core.publisher.Flux
-import reactor.core.publisher.Mono
-import java.time.LocalDate
+import org.springframework.web.reactive.function.server.ServerResponse
 import java.time.LocalDateTime
 
-@ExtendWith(SpringExtension::class)
-@SpringBootTest(classes = [TestConfig::class])
 @ActiveProfiles("test")
-class StudySessionRouterTest @Autowired constructor(
-  private val webTestClient: WebTestClient
-) {
-  @MockBean
-  private lateinit var studySessionService: StudySessionService
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+class StudySessionRouterTest {
 
-  private lateinit var studySession: StudySession
+  private lateinit var studySessionRouter: StudySessionRouter
+  private val studySessionHandler = mockk<StudySessionHandler>()
 
   @BeforeEach
   fun setUp() {
-    studySession = StudySession(
-      id = 1,
-      userId = 1,
-      startTime = LocalDateTime.now(),
-      endTime = LocalDateTime.now().plusHours(1)
-    )
+    studySessionRouter = StudySessionRouter(studySessionHandler)
   }
 
   @Test
   fun `특정 사용자의 공부 시간 조회`() {
     val userId = 1L
-    val startDate = LocalDate.now()
+    val startDate = LocalDateTime.now().toLocalDate()
+
     val studySessions = listOf(
-      StudySession(
+      StudySessionDTO(
         id = 1,
         userId = userId,
         startTime = LocalDateTime.now(),
         endTime = LocalDateTime.now().plusHours(1)
       ),
-      StudySession(
+      StudySessionDTO(
         id = 2,
         userId = userId,
         startTime = LocalDateTime.now(),
@@ -61,51 +46,73 @@ class StudySessionRouterTest @Autowired constructor(
       )
     )
 
-    Mockito.`when`(studySessionService.findByUserIdAndStartTimeBetween(userId, startDate)).thenReturn(Flux.just(studySessions[0], studySessions[1]))
+    coEvery { studySessionHandler.getStudySessionByUserIdAndDate(any()) } coAnswers {
+      ServerResponse.ok().bodyValue(studySessions)
+    }
 
-    webTestClient.get()
+    val client = WebTestClient.bindToRouterFunction(studySessionRouter.studySessionRoutes()).build()
+
+    client.get()
       .uri("/api/study-sessions?userId=$userId&date=$startDate")
+      .accept(MediaType.APPLICATION_JSON)
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBodyList(StudySession::class.java)
+      .expectBodyList(StudySessionDTO::class.java)
       .hasSize(2)
       .contains(studySessions[0], studySessions[1])
   }
 
   @Test
   fun `공부 시간 추가`() {
-    val studySession =
-      StudySession(userId = 3, startTime = LocalDateTime.now(), endTime = LocalDateTime.now().plusHours(1))
+    val studySessionDTO = StudySessionDTO(
+      userId = 3,
+      startTime = LocalDateTime.now(),
+      endTime = LocalDateTime.now().plusHours(1)
+    )
 
-    Mockito.`when`(studySessionService.create(studySession)).thenReturn(Mono.just(studySession.copy(id = 3)))
+    val createdStudySession = studySessionDTO.copy(id = 3)
 
-    webTestClient.post()
+    coEvery { studySessionHandler.create(any()) } coAnswers {
+      ServerResponse.status(201).bodyValue(createdStudySession)
+    }
+
+    val client = WebTestClient.bindToRouterFunction(studySessionRouter.studySessionRoutes()).build()
+
+    client.post()
       .uri("/api/study-sessions")
       .contentType(MediaType.APPLICATION_JSON)
-      .body(BodyInserters.fromValue(studySession))
+      .bodyValue(studySessionDTO)
       .exchange()
       .expectStatus().isCreated
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(StudySession::class.java)
-      .isEqualTo(studySession.copy(id = 3))
+      .expectBody(StudySessionDTO::class.java)
+      .isEqualTo(createdStudySession)
   }
 
   @Test
   fun `공부 시간 수정`() {
-    val studySession =
-      StudySession(id = 1L, userId = 3, startTime = LocalDateTime.now(), endTime = LocalDateTime.now().plusHours(1))
+    val studySessionDTO = StudySessionDTO(
+      id = 1L,
+      userId = 3,
+      startTime = LocalDateTime.now(),
+      endTime = LocalDateTime.now().plusHours(1)
+    )
 
-    Mockito.`when`(studySessionService.update(studySession.id!!, studySession)).thenReturn(Mono.just(studySession))
+    coEvery { studySessionHandler.update(any()) } coAnswers {
+      ServerResponse.ok().bodyValue(studySessionDTO)
+    }
 
-    webTestClient.put()
-      .uri("/api/study-sessions/${studySession.id}")
+    val client = WebTestClient.bindToRouterFunction(studySessionRouter.studySessionRoutes()).build()
+
+    client.put()
+      .uri("/api/study-sessions/${studySessionDTO.id}")
       .contentType(MediaType.APPLICATION_JSON)
-      .body(BodyInserters.fromValue(studySession))
+      .bodyValue(studySessionDTO)
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(StudySession::class.java)
-      .isEqualTo(studySession)
+      .expectBody(StudySessionDTO::class.java)
+      .isEqualTo(studySessionDTO)
   }
 }
