@@ -11,34 +11,34 @@ import java.net.URI
 
 @Component
 class FriendRelationHandler(
-    private val friendRelationService: FriendRelationService
+  private val friendRelationService: FriendRelationService
 ) {
 
-    fun createFriendRelation(request: ServerRequest): Mono<ServerResponse> {
-        return request.bodyToMono(FriendRelationRequest::class.java)
-            .flatMap { friendRelationRequest ->
-                friendRelationService.create(
-                    requesterId = friendRelationRequest.requesterId,
-                    friendId = friendRelationRequest.friendId
-                )
-            }
-            .flatMap { friendRelation ->
-                ServerResponse.created(URI.create("/api/friendrelation/${friendRelation.id}"))
-                    .bodyValue(friendRelation)
-            }
-            .switchIfEmpty(ServerResponse.status(HttpStatus.BAD_REQUEST).build())
-    }
+  fun create(request: ServerRequest): Mono<ServerResponse> {
+    return request.bodyToMono(FriendRelationRequest::class.java)
+      .flatMap { friendRelationRequest ->
+        friendRelationService.create(
+          requesterId = friendRelationRequest.requesterId,
+          friendId = friendRelationRequest.friendId
+        )
+      }
+      .flatMap { friendRelation ->
+        ServerResponse.created(URI.create("/api/friendrelation/${friendRelation.id}"))
+          .bodyValue(friendRelation)
+      }
+      .switchIfEmpty(ServerResponse.status(HttpStatus.BAD_REQUEST).build())
+  }
 
-    fun getFriendRelationsByRequesterId(request: ServerRequest): Mono<ServerResponse> {
-        val requesterId = request.queryParam("requesterId").orElse(null)?.toLongOrNull()
-        return if (requesterId != null) {
-            friendRelationService.getFriendRelationsByRequesterId(requesterId)
-                .collectList()
-                .flatMap { friendRelations ->
-                    ServerResponse.ok().bodyValue(friendRelations)
-                }
-        } else {
-            ServerResponse.badRequest().build()
+  fun getFriendRelationsByRequesterId(request: ServerRequest): Mono<ServerResponse> {
+    val requesterId = request.queryParam("requesterId").orElse(null)?.toLongOrNull()
+    return if (requesterId != null) {
+      friendRelationService.getFriendRelationsByRequesterId(requesterId)
+        .collectList()
+        .flatMap { friendRelations ->
+          ServerResponse.ok().bodyValue(friendRelations)
         }
+    } else {
+      ServerResponse.badRequest().build()
     }
+  }
 }

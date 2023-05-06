@@ -8,12 +8,12 @@ import org.springframework.web.reactive.function.server.router
 @Configuration
 class FriendRelationRouter(private val friendRelationHandler: FriendRelationHandler) {
 
-    @Bean
-    fun friendRelationRoutes() = router {
-        "/api/friend-relations".nest {
-            POST("", friendRelationHandler::createFriendRelation)
-            GET("", friendRelationHandler::getFriendRelationsByRequesterId)
-        }
+  @Bean
+  fun friendRelationRoutes() = router {
+    "/api/friend-relations".nest {
+      POST("", friendRelationHandler::create)
+      GET("", friendRelationHandler::getFriendRelationsByRequesterId)
     }
+  }
 
 }
