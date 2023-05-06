@@ -41,7 +41,6 @@ dependencies {
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test")
   testImplementation("io.projectreactor:reactor-test")
-  testImplementation("org.mockito.kotlin:mockito-kotlin:4.+")
   testImplementation("io.mockk:mockk:1.+")
 }
 
