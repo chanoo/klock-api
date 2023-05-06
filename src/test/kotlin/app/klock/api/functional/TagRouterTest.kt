@@ -1,104 +1,124 @@
 package app.klock.api.functional
 
-import app.klock.api.config.TestConfig
 import app.klock.api.domain.entity.Tag
-import app.klock.api.service.TagService
+import app.klock.api.functional.tag.TagHandler
+import app.klock.api.functional.tag.TagRouter
+import io.mockk.coEvery
+import io.mockk.mockk
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
-import org.mockito.Mockito
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
-import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.reactive.server.WebTestClient
-import org.springframework.web.reactive.function.BodyInserters
-import reactor.core.publisher.Flux
-import reactor.core.publisher.Mono
+import org.springframework.web.reactive.function.server.ServerResponse
 
-@ExtendWith(SpringExtension::class)
-@SpringBootTest(classes = [TestConfig::class])
 @ActiveProfiles("test")
-class TagRouterTest @Autowired constructor(
-    private val client: WebTestClient
-) {
-    @MockBean
-    private lateinit var tagService: TagService
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+class TagRouterTest {
 
-    private lateinit var tag1: Tag
-    private lateinit var tag2: Tag
+  private lateinit var tagRouter: TagRouter
+  private val tagHandler = mockk<TagHandler>()
 
-    @BeforeEach
-    fun setUp() {
-        tag1 = Tag(name = "Tag1")
-        tag2 = Tag(name = "Tag2")
+  private lateinit var tag1: Tag
+  private lateinit var tag2: Tag
+
+  @BeforeEach
+  fun setUp() {
+    tagRouter = TagRouter(tagHandler)
+
+    tag1 = Tag(id = 1L, name = "Tag1")
+    tag2 = Tag(id = 2L, name = "Tag2")
+  }
+
+  @Test
+  fun `전체 태그 조회`() {
+
+    coEvery { tagHandler.getall(any()) } coAnswers {
+      ServerResponse.ok().bodyValue(listOf(tag1, tag2))
     }
 
-    @Test
-    fun `전체 태그 조회`() {
-        Mockito.`when`(tagService.findAll()).thenReturn(Flux.just(tag1, tag2))
+    val client = WebTestClient.bindToRouterFunction(tagRouter.tagRoutes()).build()
 
-        client.get().uri("/api/tags")
-            .exchange()
-            .expectStatus().isOk
-            .expectHeader().contentType(MediaType.APPLICATION_JSON)
-            .expectBody()
-            .jsonPath("$.[0].name").isEqualTo("Tag1")
-            .jsonPath("$.[1].name").isEqualTo("Tag2")
+    client.get().uri("/api/tags")
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody()
+      .jsonPath("$.[0].name").isEqualTo("Tag1")
+      .jsonPath("$.[1].name").isEqualTo("Tag2")
+  }
+
+  @Test
+  fun `태그 생성`() {
+    val newTag = Tag(name = "NewTag")
+
+    coEvery { tagHandler.create(any()) } coAnswers {
+      ServerResponse.status(201).bodyValue(tag1.copy(name = "NewTag"))
     }
 
-    @Test
-    fun `태그 생성`() {
-        val newTag = Tag(name = "NewTag")
-        Mockito.`when`(tagService.create(newTag)).thenReturn(Mono.just(newTag.copy(id = 3L)))
+    val client = WebTestClient.bindToRouterFunction(tagRouter.tagRoutes()).build()
 
-        client.post().uri("/api/tags")
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(BodyInserters.fromValue(newTag))
-            .exchange()
-            .expectStatus().isCreated
-            .expectHeader().contentType(MediaType.APPLICATION_JSON)
-            .expectBody()
-            .jsonPath("$.name").isEqualTo("NewTag")
+    client.post().uri("/api/tags")
+      .contentType(MediaType.APPLICATION_JSON)
+      .bodyValue(newTag)
+      .exchange()
+      .expectStatus().isCreated
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody()
+      .jsonPath("$.name").isEqualTo("NewTag")
+  }
+
+  @Test
+  fun `태그 조회`() {
+
+    coEvery { tagHandler.get(any()) } coAnswers {
+      ServerResponse.ok().bodyValue(tag1)
     }
 
-    @Test
-    fun `태그 조회`() {
-        val tag = Tag(id = 1L, name = "Tag1")
-        Mockito.`when`(tagService.findById(tag.id!!)).thenReturn(Mono.just(tag))
+    val client = WebTestClient.bindToRouterFunction(tagRouter.tagRoutes()).build()
 
-        client.get().uri("/api/tags/${tag.id}")
-            .exchange()
-            .expectStatus().isOk
-            .expectHeader().contentType(MediaType.APPLICATION_JSON)
-            .expectBody()
-            .jsonPath("$.name").isEqualTo("Tag1")
-    }
-    @Test
-    fun `태그 업데이트`() {
-        val tag = Tag(id = 1L, name = "Original Tag")
-        val updatedTag = Tag(id = 1L, name = "UpdatedTag")
-        Mockito.`when`(tagService.update(tag.id!!, updatedTag)).thenReturn(Mono.just(tag.copy(name = "UpdatedTag")))
+    client.get().uri("/api/tags/${tag1.id}")
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody()
+      .jsonPath("$.name").isEqualTo("Tag1")
+  }
 
-        client.put().uri("/api/tags/${tag.id}")
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(BodyInserters.fromValue(updatedTag))
-            .exchange()
-            .expectStatus().isOk
-            .expectHeader().contentType(MediaType.APPLICATION_JSON)
-            .expectBody()
-            .jsonPath("$.name").isEqualTo("UpdatedTag")
+  @Test
+  fun `태그 업데이트`() {
+    val updatedTag = Tag(id = 1L, name = "UpdatedTag")
+
+    coEvery { tagHandler.update(any()) } coAnswers {
+      ServerResponse.ok().bodyValue(tag1.copy(name = "UpdatedTag"))
     }
 
-    @Test
-    fun `태그 삭제`() {
-        val deleteTag = Tag(id = 1L, name = "UpdatedTag")
-        Mockito.`when`(tagService.deleteById(deleteTag.id!!)).thenReturn(Mono.empty<Void>())
+    val client = WebTestClient.bindToRouterFunction(tagRouter.tagRoutes()).build()
 
-        client.delete().uri("/api/tags/${deleteTag.id}")
-            .exchange()
-            .expectStatus().isNoContent
+    client.put().uri("/api/tags/${updatedTag.id}")
+      .contentType(MediaType.APPLICATION_JSON)
+      .bodyValue(updatedTag)
+      .exchange()
+      .expectStatus().isOk
+      .expectHeader().contentType(MediaType.APPLICATION_JSON)
+      .expectBody()
+      .jsonPath("$.name").isEqualTo("UpdatedTag")
+  }
+
+  @Test
+  fun `태그 삭제`() {
+    val tagId = 1L
+
+    coEvery { tagHandler.delete(any()) } coAnswers {
+      ServerResponse.noContent().build()
     }
+
+    val client = WebTestClient.bindToRouterFunction(tagRouter.tagRoutes()).build()
+
+    client.delete().uri("/api/tags/${tagId}")
+      .exchange()
+      .expectStatus().isNoContent
+  }
+
 }

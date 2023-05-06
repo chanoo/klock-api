@@ -7,14 +7,14 @@ import org.springframework.web.reactive.function.server.router
 @Configuration
 class TagRouter(private val tagHandler: TagHandler) {
 
-    @Bean
-    fun tagRoutes() = router {
-        "/api/tags".nest {
-            GET("", tagHandler::findAll)
-            GET("/{id}", tagHandler::findById)
-            POST("", tagHandler::create)
-            PUT("/{id}", tagHandler::update)
-            DELETE("/{id}", tagHandler::deleteById)
-        }
+  @Bean
+  fun tagRoutes() = router {
+    "/api/tags".nest {
+      GET("", tagHandler::getall)
+      GET("/{id}", tagHandler::get)
+      POST("", tagHandler::create)
+      PUT("/{id}", tagHandler::update)
+      DELETE("/{id}", tagHandler::delete)
     }
+  }
 }
