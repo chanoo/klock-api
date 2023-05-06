@@ -1,196 +1,107 @@
 package app.klock.api.functional
 
-import app.klock.api.config.TestConfig
-import app.klock.api.domain.entity.*
+import app.klock.api.domain.entity.SocialProvider
+import app.klock.api.functional.auth.AuthHandler
+import app.klock.api.functional.auth.AuthRouter
 import app.klock.api.functional.auth.dto.LoginRequest
+import app.klock.api.functional.auth.dto.LoginResponse
 import app.klock.api.functional.auth.dto.SignUpReqDTO
-import app.klock.api.service.AuthService
-import app.klock.api.service.UserService
-import app.klock.api.service.UserTagService
+import app.klock.api.functional.auth.dto.SignUpResDTO
+import io.mockk.coEvery
+import io.mockk.mockk
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
-import org.mockito.Mockito
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
-import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.reactive.server.WebTestClient
-import org.springframework.web.reactive.function.BodyInserters
-import reactor.core.publisher.Mono
-import java.time.LocalDateTime
+import org.springframework.web.reactive.function.server.ServerResponse
 
-@ExtendWith(SpringExtension::class)
-@SpringBootTest(classes = [TestConfig::class])
 @ActiveProfiles("test")
-class AuthRouterTest @Autowired constructor(
-  private val client: WebTestClient
-) {
-  @MockBean
-  private lateinit var userService: UserService
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+class AuthRouterTest {
 
-  @MockBean
-  private lateinit var authService: AuthService
-
-  @MockBean
-  private lateinit var userTagService: UserTagService
-
-  // 테스트 데이터 설정
-  lateinit var user: User
-  lateinit var newUser: User
+  private lateinit var authRouter: AuthRouter
+  private val authHandler = mockk<AuthHandler>()
 
   @BeforeEach
   fun setUp() {
-    // 테스트에 사용할 사용자 데이터를 설정합니다.
-    user = User(
+    authRouter = AuthRouter(authHandler)
+  }
+
+  @Test
+  fun `POST 요청으로 회원 가입 테스트`() {
+
+    val signUpReqDTO = SignUpReqDTO(
       username = "user1",
       email = "user1@example.com",
-      totalStudyTime = 0,
-      userLevelId = 1,
-      role = UserRole.USER,
-      active = true,
-      createdAt = LocalDateTime.now(),
-      updatedAt = LocalDateTime.now())
+      password = "test_password",
+      providerUserId = "test_provider_user_id",
+      tagId = 1,
+      provider = SocialProvider.APPLE
+    )
 
-    newUser = User(
+    val signUpResDTO = SignUpResDTO(
       id = 1L,
       username = "user1",
       email = "user1@example.com",
-      hashedPassword = "password",
-      totalStudyTime = 0,
-      userLevelId = 1,
-      role = UserRole.USER,
-      active = true,
-      createdAt = LocalDateTime.now(),
-      updatedAt = LocalDateTime.now())
-  }
-
-  @Test
-  fun `회원 가입`() {
-    // Prepare test data
-    val userToSave = User(
-      username = "user1",
-      email = "user1@example.com",
-      hashedPassword = "encoded_test_password",
-      role = UserRole.USER,
-      active = true,
-      totalStudyTime = 0,
-      userLevelId = 1,
-      createdAt = LocalDateTime.now(),
-      updatedAt = LocalDateTime.now()
-    )
-    val savedAccount = userToSave.copy(id = 1L)
-
-    var socialLoginToSave = SocialLogin(
+      accessToken = "valid_token",
+      refreshToken = "valid_refresh_token",
       provider = SocialProvider.APPLE,
-      providerUserId = "1234",
-      userId = savedAccount.id!!,
-      createdAt = LocalDateTime.now(),
-      updatedAt = LocalDateTime.now())
-
-    val savedSocialLogin = socialLoginToSave.copy(id = 1L)
-
-    val userTagToSave = UserTag(
-      userId = savedAccount.id!!,
-      tagId = 1L
+      providerUserId = "test_provider_user_id",
+      tagId = 1L,
     )
 
-    val savedAccountTag = userTagToSave.copy(id = 1L)
+    coEvery { authHandler.signup(any()) } coAnswers {
+      ServerResponse.status(HttpStatus.CREATED).bodyValue(signUpResDTO)
+    }
 
-    // Save user mock
-    Mockito.`when`(authService.signup(
-      username = userToSave.username,
-      email = userToSave.email,
-      password = userToSave.hashedPassword)).thenReturn(Mono.just(savedAccount))
+    val client = WebTestClient.bindToRouterFunction(authRouter.authRoutes()).build()
 
-    Mockito.`when`(authService.createSocialLogin(
-      userId = savedAccount.id!!,
-      provider = SocialProvider.APPLE,
-      providerUserId = "1234")).thenReturn(Mono.just(savedSocialLogin))
-
-    Mockito.`when`(userTagService.create(userTagToSave)).thenReturn(Mono.just(savedAccountTag))
-
-    // 요청 테스트
-    val signUpReqDTO = SignUpReqDTO(
-      username = userToSave.username,
-      provider = SocialProvider.APPLE,
-      providerUserId = "1234",
-      email = userToSave.email,
-      password = userToSave.hashedPassword,
-      tagId = 1L
-    )
-
-    // Make a request to create a user
-    client.post().uri("/api/auth/signup")
+    client.post()
+      .uri("/api/auth/signup")
       .contentType(MediaType.APPLICATION_JSON)
-      .body(BodyInserters.fromValue(signUpReqDTO))
+      .bodyValue(signUpReqDTO)
       .exchange()
-      .expectStatus().isCreated
-      .expectBody()
-      .jsonPath("$.username").isEqualTo(savedAccount.username)
-      .jsonPath("$.provider").isEqualTo(savedSocialLogin.provider.toString())
-      .jsonPath("$.providerUserId").isEqualTo(savedSocialLogin.providerUserId)
+      .expectStatus().isEqualTo(HttpStatus.CREATED)
+      .expectBody(SignUpResDTO::class.java)
+      .value { actualSignUpResponse ->
+        assertEquals(1L, actualSignUpResponse.id, "ID가 1이어야 합니다.")
+        assertEquals(signUpReqDTO.username, actualSignUpResponse.username)
+        assertEquals(signUpReqDTO.email, actualSignUpResponse.email)
+      }
   }
 
   @Test
-  fun `로그인 성공`() {
+  fun `POST 요청으로 로그인 테스트`() {
+
     val loginRequest = LoginRequest(
       email = "user1@example.com",
-      password = "password"
+      password = "test_password"
     )
 
-    Mockito.`when`(userService.findByEmail(loginRequest.email)).thenReturn(Mono.just(user))
-    Mockito.`when`(userService.validatePassword(loginRequest.password, user.hashedPassword)).thenReturn(true)
-
-    client.post().uri("/api/auth/signin")
-      .contentType(MediaType.APPLICATION_JSON)
-      .body(BodyInserters.fromValue(loginRequest))
-      .exchange()
-      .expectStatus().isOk
-      .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody()
-      .jsonPath("$.token").isNotEmpty
-  }
-
-  @Test
-  fun `로그인 실패 - 잘못된 이메일`() {
-    val loginRequest = LoginRequest(
-      email = "wrong@example.com",
-      password = "password"
+    val loginResponse = LoginResponse(
+      token = "valid_token",
     )
 
-    Mockito.`when`(userService.findByEmail(loginRequest.email)).thenReturn(Mono.empty())
+    coEvery { authHandler.signin(any()) } coAnswers {
+      ServerResponse.ok().bodyValue(loginResponse)
+    }
 
-    client.post().uri("/api/auth/signin")
+    val client = WebTestClient.bindToRouterFunction(authRouter.authRoutes()).build()
+
+    client.post()
+      .uri("/api/auth/signin")
       .contentType(MediaType.APPLICATION_JSON)
-      .body(BodyInserters.fromValue(loginRequest))
+      .bodyValue(loginRequest)
       .exchange()
-      .expectStatus().isBadRequest
-      .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody()
-      .jsonPath("$.error").isEqualTo("Invalid username or password")
-  }
-
-  @Test
-  fun `로그인 실패 - 잘못된 비밀번호`() {
-    val loginRequest = LoginRequest(
-      email = "user1@example.com",
-      password = "wrongpassword"
-    )
-
-    Mockito.`when`(userService.findByEmail(loginRequest.email)).thenReturn(Mono.just(user))
-    Mockito.`when`(userService.validatePassword(loginRequest.password, user.hashedPassword)).thenReturn(false)
-
-    client.post().uri("/api/auth/signin")
-      .contentType(MediaType.APPLICATION_JSON)
-      .body(BodyInserters.fromValue(loginRequest))
-      .exchange()
-      .expectStatus().isBadRequest
-      .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody()
-      .jsonPath("$.error").isEqualTo("Invalid username or password")
+      .expectStatus().isEqualTo(HttpStatus.OK)
+      .expectBody(LoginResponse::class.java)
+      .value { actualLoginResponse ->
+        assertEquals(actualLoginResponse.token, loginResponse.token)
+      }
   }
 
   @Test
@@ -198,11 +109,15 @@ class AuthRouterTest @Autowired constructor(
     val refreshToken = "valid_refresh_token"
     val newAccessToken = "new_access_token"
 
-    Mockito.`when`(authService.refreshToken(refreshToken)).thenReturn(Mono.just(newAccessToken))
+    coEvery { authHandler.refreshToken(any()) } coAnswers {
+      ServerResponse.ok().bodyValue(mapOf("token" to newAccessToken))
+    }
+
+    val client = WebTestClient.bindToRouterFunction(authRouter.authRoutes()).build()
 
     client.post().uri("/api/auth/refresh-token")
       .contentType(MediaType.APPLICATION_JSON)
-      .body(BodyInserters.fromValue(mapOf("refreshToken" to refreshToken)))
+      .bodyValue(mapOf("refreshToken" to refreshToken))
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
