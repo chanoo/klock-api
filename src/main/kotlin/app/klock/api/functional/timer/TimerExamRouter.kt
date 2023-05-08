@@ -13,7 +13,7 @@ class TimerExamRouter(private val timerExamHandler: TimerExamHandler) {
   fun timerExamRoutes(): RouterFunction<ServerResponse> = coRouter {
     "/api/exam-timers".nest {
       POST("").invoke(timerExamHandler::createExamTimer)
-      POST("/{id}").invoke(timerExamHandler::updateExamTimer)
+      PUT("/{id}").invoke(timerExamHandler::updateExamTimer)
       DELETE("/{id}").invoke(timerExamHandler::deleteExamTimer)
     }
   }

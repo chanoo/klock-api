@@ -68,7 +68,7 @@ class TimerExamRouterTest {
   }
 
   @Test
-  fun `POST 요청으로 Exam 타이머 수정 테스트`() {
+  fun `PUT 요청으로 Exam 타이머 수정 테스트`() {
     val timerId = 31L
     val updatedTimerPomodoroDto = TimerPomodoroDto(
       id = timerId,
@@ -84,7 +84,7 @@ class TimerExamRouterTest {
       ServerResponse.ok().bodyValueAndAwait(updatedTimerPomodoroDto)
     }
 
-    client.post()
+    client.put()
       .uri("/api/exam-timers/$timerId")
       .contentType(MediaType.APPLICATION_JSON)
       .bodyValue(updatedTimerPomodoroDto)

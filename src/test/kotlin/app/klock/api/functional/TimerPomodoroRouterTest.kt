@@ -70,7 +70,7 @@ class TimerPomodoroRouterTest {
   }
 
   @Test
-  fun `POST 요청으로 Pomodoro 타이머 수정 테스트`() {
+  fun `PUT 요청으로 Pomodoro 타이머 수정 테스트`() {
     val timerId = 31L
     val updatedTimerPomodoroDto = TimerPomodoroDto(
       id = timerId,
@@ -86,7 +86,7 @@ class TimerPomodoroRouterTest {
       ServerResponse.ok().bodyValueAndAwait(updatedTimerPomodoroDto)
     }
 
-    client.post()
+    client.put()
       .uri("/api/pomodoro-timers/$timerId")
       .contentType(MediaType.APPLICATION_JSON)
       .bodyValue(updatedTimerPomodoroDto)

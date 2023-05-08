@@ -30,13 +30,7 @@ class TimerFocusServiceTest {
     timerPomodoroRepository = Mockito.mock(TimerPomodoroRepository::class.java)
     timerExamRepository = Mockito.mock(TimerExamRepository::class.java)
 
-    permissionService = PermissionService(
-      timerFocusRepository,
-      timerPomodoroRepository,
-      timerExamRepository
-    )
-
-    timerFocusService = TimerFocusService(timerFocusRepository, permissionService)
+    timerFocusService = TimerFocusService(timerFocusRepository)
   }
 
   @Test

@@ -10,7 +10,7 @@ class TimerFocusRouter(private val timerFocusHandler: TimerFocusHandler) {
   fun timerFocusRoutes() = router {
     "/api/focus-timers".nest {
       POST("", timerFocusHandler::createFocusTimer)
-      POST("/{id}", timerFocusHandler::updateFocusTimer)
+      PUT("/{id}", timerFocusHandler::updateFocusTimer)
       DELETE("/{id}", timerFocusHandler::deleteFocusTimer)
     }
   }

@@ -59,7 +59,7 @@ class TimerFocusRouterTest {
   }
 
   @Test
-  fun `POST 요청으로 Focus 타이머 수정 테스트`() {
+  fun `PUT 요청으로 Focus 타이머 수정 테스트`() {
     val timerId = 1L
     val timerFocusDto = TimerFocusDto(
       userId = 2L,
@@ -71,7 +71,7 @@ class TimerFocusRouterTest {
       ServerResponse.ok().bodyValue(timerFocusDto)
     }
 
-    client.post()
+    client.put()
       .uri("/api/focus-timers/$timerId")
       .contentType(MediaType.APPLICATION_JSON)
       .bodyValue(timerFocusDto)

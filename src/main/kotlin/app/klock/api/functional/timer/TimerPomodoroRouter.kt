@@ -13,7 +13,7 @@ class TimerPomodoroRouter(private val timerPomodoroHandler: TimerPomodoroHandler
   fun timerPomodoroRoutes(): RouterFunction<ServerResponse> = coRouter {
     "/api/pomodoro-timers".nest {
       POST("").invoke(timerPomodoroHandler::createPomodoroTimer)
-      POST("/{id}").invoke(timerPomodoroHandler::updatePomodoroTimer)
+      PUT("/{id}").invoke(timerPomodoroHandler::updatePomodoroTimer)
       DELETE("/{id}").invoke(timerPomodoroHandler::deletePomodoroTimer)
     }
   }
