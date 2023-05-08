@@ -13,7 +13,7 @@
 * MySQL
 * JWT
 * JUnit 5
-* Mockito
+* Mockk
 * Docker
 * Kubernetes
 * Github Actions
@@ -65,6 +65,7 @@ main/kotlin/app.klock.api
 │   ├── friemdRelation
 │   ├── studySession
 │   ├── tag
+│   ├── timer
 │   ├── user
 │   └── userTag
 ├── repository
@@ -120,6 +121,20 @@ text/kotlin/app.klock.api
 4. [x] 나의 D-Day 수정
 5. [x] 나의 D-Day 조회
 
+## 타이머
+
+* [x] 타이머 목록
+* [ ] 타이머 순서 변경
+* [x] 포커스 타이머 등록
+* [x] 포커스 타이머 수정
+* [x] 포커스 타이머 삭제
+* [x] 시험시간 타이머 등록
+* [x] 시험시간 타이머 수정
+* [x] 시험시간 타이머 삭제
+* [x] 뽀모도로 타이머 등록
+* [x] 뽀모도로 타이머 수정
+* [x] 뽀모도로 타이머 삭제
+
 ## 태그
 
 1. [x] 나의 태그 다량 등록
@@ -133,4 +148,3 @@ text/kotlin/app.klock.api
 ## Todo
 
 1. RSocket or GRPC
-2. 리액티브 프로그래밍 스타일을 가독성을 위해 코루틴 스파일로 변경
