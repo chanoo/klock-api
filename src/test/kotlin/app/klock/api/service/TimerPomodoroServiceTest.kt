@@ -2,19 +2,15 @@ package app.klock.api.service
 
 import app.klock.api.domain.entity.TimerPomodoro
 import app.klock.api.repository.TimerPomodoroRepository
-import kotlinx.coroutines.reactor.mono
+import io.mockk.every
+import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
-import org.mockito.Mockito
-import org.mockito.Mockito.`when`
-import org.mockito.junit.jupiter.MockitoExtension
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 
-@ExtendWith(MockitoExtension::class)
 class TimerPomodoroServiceTest {
 
   private lateinit var timerPomodoroService: TimerPomodoroService
@@ -22,7 +18,7 @@ class TimerPomodoroServiceTest {
 
   @BeforeEach
   fun setUp() {
-    timerPomodoroRepository = Mockito.mock(TimerPomodoroRepository::class.java)
+    timerPomodoroRepository = mockk()
     timerPomodoroService = TimerPomodoroService(timerPomodoroRepository)
   }
 
@@ -38,10 +34,10 @@ class TimerPomodoroServiceTest {
       cycleCount = 4
     )
 
-    `when`(timerPomodoroRepository.save(timerPomodoro)).thenReturn(Mono.just(timerPomodoro))
+    every { timerPomodoroRepository.save(timerPomodoro) } returns Mono.just(timerPomodoro)
 
     // When
-    val createdTimerPomodoroMono = mono { timerPomodoroService.create(timerPomodoro) }
+    val createdTimerPomodoroMono = timerPomodoroService.create(timerPomodoro)
 
     // Then
     StepVerifier.create(createdTimerPomodoroMono)
@@ -64,10 +60,10 @@ class TimerPomodoroServiceTest {
       cycleCount = 4
     )
 
-    `when`(timerPomodoroRepository.findById(1L)).thenReturn(Mono.justOrEmpty(timerPomodoro))
+    every { timerPomodoroRepository.findById(1L) } returns Mono.justOrEmpty(timerPomodoro)
 
     // When
-    val foundTimerPomodoroMono = mono { timerPomodoroService.get(1L) }
+    val foundTimerPomodoroMono = timerPomodoroService.get(1L)
 
     // Then
     StepVerifier.create(foundTimerPomodoroMono)
@@ -90,10 +86,10 @@ class TimerPomodoroServiceTest {
       cycleCount = 4
     )
 
-    `when`(timerPomodoroRepository.save(timerPomodoro)).thenReturn(Mono.just(timerPomodoro))
+    every { timerPomodoroRepository.save(timerPomodoro) } returns Mono.just(timerPomodoro)
 
     // When
-    val updatedTimerPomodoroMono = mono { timerPomodoroService.update(timerPomodoro) }
+    val updatedTimerPomodoroMono = timerPomodoroService.update(timerPomodoro)
 
     // Then
     StepVerifier.create(updatedTimerPomodoroMono)
@@ -108,11 +104,11 @@ class TimerPomodoroServiceTest {
     // Given
     val timerPomodoroId = 1L
 
-    `when`(timerPomodoroRepository.deleteById(timerPomodoroId)).thenReturn(Mono.empty<Void>())
-    `when`(timerPomodoroRepository.findById(timerPomodoroId)).thenReturn(Mono.empty())
+    every { timerPomodoroRepository.deleteById(timerPomodoroId) } returns Mono.empty<Void>()
+    every { timerPomodoroRepository.findById(timerPomodoroId) } returns Mono.empty()
 
     // When
-    val deleteResultMono = mono { timerPomodoroService.delete(timerPomodoroId) }
+    val deleteResultMono = timerPomodoroService.delete(timerPomodoroId)
 
     // Then
     StepVerifier.create(deleteResultMono)

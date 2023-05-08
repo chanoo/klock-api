@@ -14,8 +14,6 @@ import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.web.reactive.function.server.ServerResponse
-import org.springframework.web.reactive.function.server.bodyValueAndAwait
-import org.springframework.web.reactive.function.server.buildAndAwait
 
 @ActiveProfiles("test")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -47,7 +45,7 @@ class TimerPomodoroRouterTest {
     val createdTimerPomodoroDto = timerPomodoroDto.copy(id = 1L)
 
     coEvery { timerPomodoroHandler.createPomodoroTimer(any()) } coAnswers {
-      ServerResponse.status(HttpStatus.CREATED).bodyValueAndAwait(createdTimerPomodoroDto)
+      ServerResponse.status(HttpStatus.CREATED).bodyValue(createdTimerPomodoroDto)
     }
 
     client.post()
@@ -83,7 +81,7 @@ class TimerPomodoroRouterTest {
     )
 
     coEvery { timerPomodoroHandler.updatePomodoroTimer(any()) } coAnswers {
-      ServerResponse.ok().bodyValueAndAwait(updatedTimerPomodoroDto)
+      ServerResponse.ok().bodyValue(updatedTimerPomodoroDto)
     }
 
     client.put()
@@ -101,7 +99,7 @@ class TimerPomodoroRouterTest {
     val timerId = 30L
 
     coEvery { timerPomodoroHandler.deletePomodoroTimer(any()) } coAnswers {
-      ServerResponse.noContent().buildAndAwait()
+      ServerResponse.noContent().build()
     }
 
     client.delete()

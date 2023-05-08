@@ -5,16 +5,17 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.web.reactive.function.server.RouterFunction
 import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.reactive.function.server.coRouter
+import org.springframework.web.reactive.function.server.router
 
 @Configuration
 class TimerPomodoroRouter(private val timerPomodoroHandler: TimerPomodoroHandler) {
-
+  
   @Bean
-  fun timerPomodoroRoutes(): RouterFunction<ServerResponse> = coRouter {
+  fun timerPomodoroRoutes() = router {
     "/api/pomodoro-timers".nest {
-      POST("").invoke(timerPomodoroHandler::createPomodoroTimer)
-      PUT("/{id}").invoke(timerPomodoroHandler::updatePomodoroTimer)
-      DELETE("/{id}").invoke(timerPomodoroHandler::deletePomodoroTimer)
+      POST("", timerPomodoroHandler::createPomodoroTimer)
+      PUT("/{id}", timerPomodoroHandler::updatePomodoroTimer)
+      DELETE("/{id}", timerPomodoroHandler::deletePomodoroTimer)
     }
   }
 }
