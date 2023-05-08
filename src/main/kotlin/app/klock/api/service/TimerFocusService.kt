@@ -8,8 +8,7 @@ import reactor.core.publisher.Mono
 
 @Service
 class TimerFocusService(
-  private val timerFocusRepository: TimerFocusRepository,
-  private val permissionService: PermissionService
+  private val timerFocusRepository: TimerFocusRepository
 ) {
   // Create TimerFocus
   fun create(timerFocus: TimerFocus): Mono<TimerFocus> = timerFocusRepository.save(timerFocus)

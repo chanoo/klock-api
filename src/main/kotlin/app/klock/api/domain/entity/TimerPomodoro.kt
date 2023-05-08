@@ -5,6 +5,18 @@ import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
 import java.time.LocalDateTime
 
+/**
+ * TimerPomodoro 엔티티는 사용자의 타이머 포모도로 정보를 저장하는 클래스입니다.
+ * @property id 데이터베이스에서 자동 생성되는 기본 키 값
+ * @property userId 해당 사용자의 고유 식별자
+ * @property name 타이머 포모도로의 이름
+ * @property seq 타이머 포모도로의 순서
+ * @property focusTime 집중 시간 (분 단위)
+ * @property restTime 휴식 시간 (분 단위)
+ * @property cycleCount 포모도로 사이클 횟수
+ * @property createdAt 레코드 생성 시간
+ * @property updatedAt 레코드 수정 시간
+ */
 @Table("klk_timer_pomodoro")
 data class TimerPomodoro(
   @Id
