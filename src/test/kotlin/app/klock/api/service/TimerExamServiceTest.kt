@@ -2,43 +2,25 @@ package app.klock.api.service
 
 import app.klock.api.domain.entity.TimerExam
 import app.klock.api.repository.TimerExamRepository
-import app.klock.api.repository.TimerFocusRepository
-import app.klock.api.repository.TimerPomodoroRepository
-import kotlinx.coroutines.reactor.mono
+import io.mockk.every
+import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
-import org.mockito.Mockito
-import org.mockito.Mockito.`when`
-import org.mockito.junit.jupiter.MockitoExtension
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
 import java.time.LocalDateTime
 
-@ExtendWith(MockitoExtension::class)
 class TimerExamServiceTest {
 
   private lateinit var timerExamService: TimerExamService
-  private lateinit var timerFocusRepository: TimerFocusRepository
-  private lateinit var timerPomodoroRepository: TimerPomodoroRepository
   private lateinit var timerExamRepository: TimerExamRepository
-  private lateinit var permissionService: PermissionService
 
   @BeforeEach
   fun setUp() {
-    timerFocusRepository = Mockito.mock(TimerFocusRepository::class.java)
-    timerPomodoroRepository = Mockito.mock(TimerPomodoroRepository::class.java)
-    timerExamRepository = Mockito.mock(TimerExamRepository::class.java)
-
-    permissionService = PermissionService(
-      timerFocusRepository,
-      timerPomodoroRepository,
-      timerExamRepository
-    )
-
-    timerExamService = TimerExamService(timerExamRepository, permissionService)
+    timerExamRepository = mockk<TimerExamRepository>()
+    timerExamService = TimerExamService(timerExamRepository)
   }
 
   @Test
@@ -46,10 +28,10 @@ class TimerExamServiceTest {
     // Given
     val timerExam = TimerExam(1L, 1, "Exam 1", 1, LocalDateTime.now(), 60, 30)
 
-    `when`(timerExamRepository.save(timerExam)).thenReturn(Mono.just(timerExam))
+    every { timerExamRepository.save(timerExam) } returns Mono.just(timerExam)
 
     // When
-    val createdTimerExamMono = mono { timerExamService.create(timerExam) }
+    val createdTimerExamMono = timerExamService.create(timerExam)
 
     // Then
     StepVerifier.create(createdTimerExamMono)
@@ -65,10 +47,10 @@ class TimerExamServiceTest {
     val timerExamId = 1L
     val timerExam = TimerExam(timerExamId, 1, "Exam 1", 1, LocalDateTime.now(), 60, 30)
 
-    `when`(timerExamRepository.findById(timerExamId)).thenReturn(Mono.just(timerExam))
+    every { timerExamRepository.findById(timerExamId) } returns Mono.just(timerExam)
 
     // When
-    val foundTimerExamMono = mono { timerExamService.get(timerExamId) }
+    val foundTimerExamMono = timerExamService.get(timerExamId)
 
     // Then
     StepVerifier.create(foundTimerExamMono)
@@ -83,10 +65,10 @@ class TimerExamServiceTest {
     // Given
     val timerExam = TimerExam(1L, 1, "Exam 1 Updated", 1, LocalDateTime.now(), 60, 30)
 
-    `when`(timerExamRepository.save(timerExam)).thenReturn(Mono.just(timerExam))
+    every { timerExamRepository.save(timerExam) } returns Mono.just(timerExam)
 
     // When
-    val updatedTimerExamMono = mono { timerExamService.update(timerExam) }
+    val updatedTimerExamMono = timerExamService.update(timerExam)
 
     // Then
     StepVerifier.create(updatedTimerExamMono)
@@ -101,11 +83,11 @@ class TimerExamServiceTest {
     // Given
     val timerExamId = 1L
 
-    `when`(timerExamRepository.deleteById(timerExamId)).thenReturn(Mono.empty<Void>())
-    `when`(timerExamRepository.findById(timerExamId)).thenReturn(Mono.empty())
+    every { timerExamRepository.deleteById(timerExamId) } returns Mono.empty<Void>()
+    every { timerExamRepository.findById(timerExamId) } returns Mono.empty()
 
     // When
-    val deleteResultMono = mono { timerExamService.delete(timerExamId) }
+    val deleteResultMono = timerExamService.delete(timerExamId)
 
     // Then
     StepVerifier.create(deleteResultMono)

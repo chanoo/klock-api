@@ -2,27 +2,29 @@ package app.klock.api.service
 
 import app.klock.api.domain.entity.TimerExam
 import app.klock.api.repository.TimerExamRepository
-import kotlinx.coroutines.reactive.awaitFirstOrNull
-import kotlinx.coroutines.reactive.awaitSingle
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.stereotype.Service
+import reactor.core.publisher.Mono
 
 @Service
 class TimerExamService(
-  private val timerExamRepository: TimerExamRepository,
-  private val permissionService: PermissionService
+  private val timerExamRepository: TimerExamRepository
 ) {
   // Create TimerExam
-  suspend fun create(timerExam: TimerExam): TimerExam = timerExamRepository.save(timerExam).awaitSingle()
+  fun create(timerExam: TimerExam): Mono<TimerExam> = timerExamRepository.save(timerExam)
 
   // Read TimerExam by id
-  suspend fun get(id: Long): TimerExam? = timerExamRepository.findById(id).awaitFirstOrNull()
+  @PreAuthorize("@permissionService.hasTimerExamPermission(#id, principal)")
+  fun get(id: Long): Mono<TimerExam> = timerExamRepository.findById(id)
 
   // Update TimerExam
-  suspend fun update(timerExam: TimerExam): TimerExam = timerExamRepository.save(timerExam).awaitSingle()
+  @PreAuthorize("@permissionService.hasTimerFocusPermission(#timerExam.id, principal)")
+  fun update(timerExam: TimerExam): Mono<TimerExam> = timerExamRepository.save(timerExam)
 
   // Delete TimerExam by id
-  suspend fun delete(id: Long): Boolean {
-    timerExamRepository.deleteById(id).awaitFirstOrNull()
-    return get(id) == null
+  @PreAuthorize("@permissionService.hasTimerExamPermission(#id, principal)")
+  fun delete(id: Long): Mono<Boolean> {
+    return timerExamRepository.deleteById(id)
+      .then(timerExamRepository.findById(id).hasElement().map { !it })
   }
 }

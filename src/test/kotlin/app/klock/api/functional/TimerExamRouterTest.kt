@@ -12,8 +12,6 @@ import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.web.reactive.function.server.ServerResponse
-import org.springframework.web.reactive.function.server.bodyValueAndAwait
-import org.springframework.web.reactive.function.server.buildAndAwait
 import java.time.LocalDateTime
 
 @ActiveProfiles("test")
@@ -45,7 +43,7 @@ class TimerExamRouterTest {
     val createdTimerDto = timerExamDto.copy(id = 1L)
 
     coEvery { timerExamHandler.createExamTimer(any()) } coAnswers {
-      ServerResponse.status(HttpStatus.CREATED).bodyValueAndAwait(createdTimerDto)
+      ServerResponse.status(HttpStatus.CREATED).bodyValue(createdTimerDto)
     }
 
     client.post()
@@ -81,7 +79,7 @@ class TimerExamRouterTest {
     )
 
     coEvery { timerExamHandler.updateExamTimer(any()) } coAnswers {
-      ServerResponse.ok().bodyValueAndAwait(updatedTimerPomodoroDto)
+      ServerResponse.ok().bodyValue(updatedTimerPomodoroDto)
     }
 
     client.put()
@@ -99,7 +97,7 @@ class TimerExamRouterTest {
     val timerId = 30L
 
     coEvery { timerExamHandler.deleteExamTimer(any()) } coAnswers {
-      ServerResponse.noContent().buildAndAwait()
+      ServerResponse.noContent().build()
     }
 
     client.delete()
