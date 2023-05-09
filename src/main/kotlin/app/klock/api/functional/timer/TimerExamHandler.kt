@@ -7,7 +7,6 @@ import org.springframework.web.reactive.function.server.ServerRequest
 import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.reactive.function.server.bodyToMono
 import reactor.core.publisher.Mono
-import java.time.LocalDateTime
 
 @Component
 class TimerExamHandler(private val timerExamService: TimerExamService) {
@@ -33,25 +32,15 @@ class TimerExamHandler(private val timerExamService: TimerExamService) {
   // 시험시간 타이머 수정
   fun updateExamTimer(request: ServerRequest): Mono<ServerResponse> {
     val timerId = request.pathVariable("id").toLong()
-
-    return timerExamService.get(timerId).flatMap { existingTimer ->
-      request.bodyToMono<TimerExamDto>().flatMap { timerDto ->
-        val timer = existingTimer.copy(
-          name = timerDto.name,
-          seq = timerDto.seq,
-          startTime = timerDto.startTime,
-          duration = timerDto.duration,
-          questionCount = timerDto.questionCount,
-          updatedAt = LocalDateTime.now()
-        )
-        timer.validate()
-
-        timerExamService.update(timer).flatMap { updatedTimer ->
-          val updatedTimerDto = TimerExamDto.from(updatedTimer)
-          ServerResponse.ok().bodyValue(updatedTimerDto)
-        }
+    return request.bodyToMono<TimerExamDto>().flatMap { timerDto ->
+      timerExamService.update(
+        id = timerId,
+        timerExam = timerDto.toDomain()
+      ).flatMap { updatedTimer ->
+        val updatedTimerDto = TimerExamDto.from(updatedTimer)
+        ServerResponse.ok().bodyValue(updatedTimerDto)
       }
-    }.switchIfEmpty(ServerResponse.status(HttpStatus.NOT_FOUND).bodyValue("Exam timer not found"))
+    }
   }
 
   // 시험시간 타이머 삭제
