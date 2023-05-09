@@ -19,6 +19,8 @@
 * Github Actions
 * AWS ECR
 * AWS EKS
+* AWS RDS
+* AWS Fargate
 * Terraform
 
 ## Getting started
