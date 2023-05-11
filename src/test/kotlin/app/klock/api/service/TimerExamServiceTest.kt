@@ -63,17 +63,20 @@ class TimerExamServiceTest {
   @Test
   fun `TimerExam 업데이트 테스트`() {
     // Given
-    val timerExam = TimerExam(1L, 1, "Exam 1 Updated", 1, LocalDateTime.now(), 60, 30)
+    val id = 1L
+    val timerExam = TimerExam(id, 1, "Exam 1", 1, LocalDateTime.now(), 60, 30)
+    val updatedTimerExam = TimerExam(id, 1, "Exam 1 Updated", 1, LocalDateTime.now(), 60, 30)
 
-    every { timerExamRepository.save(timerExam) } returns Mono.just(timerExam)
+    every { timerExamRepository.findById(id) } returns Mono.just(timerExam)
+    every { timerExamRepository.save(timerExam) } returns Mono.just(updatedTimerExam)
 
     // When
-    val updatedTimerExamMono = timerExamService.update(timerExam)
+    val updatedTimerExamMono = timerExamService.update(id, timerExam)
 
     // Then
     StepVerifier.create(updatedTimerExamMono)
       .assertNext { updatedTimerExam ->
-        assertEquals(timerExam, updatedTimerExam)
+        assertEquals("Exam 1 Updated", updatedTimerExam.name)
       }
       .verifyComplete()
   }
