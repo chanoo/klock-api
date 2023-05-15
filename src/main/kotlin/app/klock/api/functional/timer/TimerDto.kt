@@ -83,3 +83,15 @@ data class TimerFocusDto(
     )
   }
 }
+
+data class TimerSeqDto(
+  val type: TimerType,
+  val id: Long,
+  val seq: Int
+)
+
+enum class TimerType {
+  FOCUS,
+  EXAM,
+  POMODORO;
+}

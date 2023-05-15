@@ -52,5 +52,6 @@ data class TimerPomodoro(
     require(focusTime > 0) { "focusTime must be greater than 0" }
     require(restTime > 0) { "restTime must be greater than 0" }
     require(cycleCount > 0) { "cycleCount must be greater than 0" }
+    require(seq > 0) { "seq must be greater than 0" }
   }
 }
