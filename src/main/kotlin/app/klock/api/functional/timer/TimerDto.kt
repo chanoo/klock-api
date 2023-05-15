@@ -9,14 +9,14 @@ interface TimerDto {
   val id: Long?
   val userId: Long
   val seq: Int
-  val type: String?
+  val type: TimerType?
 }
 
 data class TimerExamDto(
   override val id: Long? = null,
   override val userId: Long,
   override val seq: Int,
-  override val type: String = "exam",
+  override val type: TimerType = TimerType.EXAM,
   val name: String,
   val startTime: LocalDateTime,
   val duration: Int,
@@ -29,7 +29,7 @@ data class TimerExamDto(
       domain.id,
       domain.userId,
       domain.seq,
-      "exam",
+      TimerType.EXAM,
       domain.name,
       domain.startTime,
       domain.duration,
@@ -42,7 +42,7 @@ data class TimerPomodoroDto(
   override val id: Long? = null,
   override val userId: Long,
   override val seq: Int,
-  override val type: String = "pomodoro",
+  override val type: TimerType = TimerType.POMODORO,
   val name: String,
   val focusTime: Int,
   val restTime: Int,
@@ -55,7 +55,7 @@ data class TimerPomodoroDto(
       domain.id,
       domain.userId,
       domain.seq,
-      "pomodoro",
+      TimerType.POMODORO,
       domain.name,
       domain.focusTime,
       domain.restTime,
@@ -68,7 +68,7 @@ data class TimerFocusDto(
   override val id: Long? = null,
   override val userId: Long,
   override val seq: Int,
-  override val type: String = "focus",
+  override val type: TimerType = TimerType.FOCUS,
   val name: String
 ) : TimerDto {
   fun toDomain() = TimerFocus(id, userId, seq, name)
@@ -78,7 +78,7 @@ data class TimerFocusDto(
       domain.id,
       domain.userId,
       domain.seq,
-      "focus",
+      TimerType.FOCUS,
       domain.name
     )
   }
