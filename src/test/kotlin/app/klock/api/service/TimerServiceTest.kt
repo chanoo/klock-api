@@ -3,21 +3,16 @@ package app.klock.api.service
 import app.klock.api.domain.entity.TimerExam
 import app.klock.api.domain.entity.TimerFocus
 import app.klock.api.domain.entity.TimerPomodoro
-import app.klock.api.functional.timer.TimerDto
 import app.klock.api.functional.timer.TimerSeqDto
 import app.klock.api.functional.timer.TimerType
 import app.klock.api.repository.TimerExamRepository
 import app.klock.api.repository.TimerFocusRepository
 import app.klock.api.repository.TimerPomodoroRepository
-import io.mockk.every
-import io.mockk.mockk
+import io.mockk.*
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
-import org.mockito.Mockito
-import org.mockito.Mockito.`when`
-import org.mockito.junit.jupiter.MockitoExtension
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
@@ -32,16 +27,20 @@ class TimerServiceTest {
   private lateinit var timerPomodoroRepository: TimerPomodoroRepository
   private lateinit var timerFocusRepository: TimerFocusRepository
 
+  private lateinit var slotFocus: CapturingSlot<TimerFocus>
+  private lateinit var slotExam: CapturingSlot<TimerExam>
+  private lateinit var slotPomodoro: CapturingSlot<TimerPomodoro>
+
   @BeforeEach
   fun setUp() {
-//    timerExamRepository = Mockito.mock(TimerExamRepository::class.java)
-//    timerPomodoroRepository = Mockito.mock(TimerPomodoroRepository::class.java)
-//    timerFocusRepository = Mockito.mock(TimerFocusRepository::class.java)
     timerFocusRepository = mockk()
     timerExamRepository = mockk()
     timerPomodoroRepository = mockk()
 
-    timerService = TimerService(timerExamRepository, timerPomodoroRepository, timerFocusRepository)
+    timerService = spyk(
+      objToCopy = TimerService(timerExamRepository, timerPomodoroRepository, timerFocusRepository),
+      recordPrivateCalls = true
+    )
   }
 
   @Test
@@ -79,7 +78,7 @@ class TimerServiceTest {
     val timerFocusSeq = TimerSeqDto(
       type = TimerType.FOCUS,
       id = 1L,
-      seq = 1
+      seq = 2
     )
     val timerExamSeq = TimerSeqDto(
       type = TimerType.EXAM,
@@ -108,5 +107,103 @@ class TimerServiceTest {
     StepVerifier.create(resultMono)
       .expectNext(true)
       .verifyComplete()
+
+    verify(exactly = 1) { timerService.updateTimersSeq(timerSeqArray) }
+  }
+
+  @Test
+  fun `공부시간 타이머 순서 업데이트 테스트`() {
+    // Given
+    val timerFocusSeq = TimerSeqDto(
+      type = TimerType.FOCUS,
+      id = 1L,
+      seq = 2
+    )
+
+    val timerFocus = TimerFocus(1L, 1L, 1, "Focus 1")
+
+    slotFocus = slot()
+    every { timerFocusRepository.findById(1L) } returns Mono.just(timerFocus)
+    every { timerFocusRepository.save(capture(slotFocus)) } answers { Mono.just(firstArg()) }
+
+    // When
+    val updatedFocus: Mono<TimerFocus> = timerService.updateFocus(timerFocusSeq)
+
+    // Then
+    StepVerifier.create(updatedFocus)
+      .expectNextMatches { updatedTimer ->
+        timerFocusSeq.seq == updatedTimer.seq
+      }
+      .verifyComplete()
+
+    verify(exactly = 1) { timerService.updateFocus(timerFocusSeq) }
+    verify(exactly = 1) { timerFocusRepository.save(any()) }
+
+    assertTrue(slotFocus.isCaptured)
+    assertEquals(timerFocusSeq.seq, slotFocus.captured.seq)
+  }
+
+  @Test
+  fun `시험시간 타이머 순서 업데이트 테스트`() {
+    // Given
+    val timerExamSeq = TimerSeqDto(
+      type = TimerType.EXAM,
+      id = 1L,
+      seq = 2
+    )
+
+    val timerExam = TimerExam(1L, 1L, "Exam 1", 1, LocalDateTime.now(), 60, 30)
+
+    slotExam = slot()
+    every { timerExamRepository.findById(1L) } returns Mono.just(timerExam)
+    every { timerExamRepository.save(capture(slotExam)) } answers { Mono.just(firstArg()) }
+
+    // When
+    val updatedExam: Mono<TimerExam> = timerService.updateExam(timerExamSeq)
+
+    // Then
+    StepVerifier.create(updatedExam)
+      .expectNextMatches { updatedTimer ->
+        timerExamSeq.seq == updatedTimer.seq
+      }
+      .verifyComplete()
+
+    verify(exactly = 1) { timerService.updateExam(timerExamSeq) }
+    verify(exactly = 1) { timerExamRepository.save(any()) }
+
+    assertTrue(slotExam.isCaptured)
+    assertEquals(timerExamSeq.seq, slotExam.captured.seq)
+  }
+
+  @Test
+  fun `뽀모도로 타이머 순서 업데이트 테스트`() {
+    // Given
+    val timerPomodoroSeq = TimerSeqDto(
+      type = TimerType.POMODORO,
+      id = 1L,
+      seq = 3
+    )
+
+    val timerPomodoro = TimerPomodoro(1L, 1L, "Pomodoro 1", 1, 25, 5, 4)
+
+    slotPomodoro = slot()
+    every { timerPomodoroRepository.findById(1L) } returns Mono.just(timerPomodoro)
+    every { timerPomodoroRepository.save(capture(slotPomodoro)) } answers { Mono.just(firstArg()) }
+
+    // When
+    val updatedPomodoro: Mono<TimerPomodoro> = timerService.updatePomodoro(timerPomodoroSeq)
+
+    // Then
+    StepVerifier.create(updatedPomodoro)
+      .expectNextMatches { updatedTimer ->
+        timerPomodoroSeq.seq == updatedTimer.seq
+      }
+      .verifyComplete()
+
+    verify(exactly = 1) { timerService.updatePomodoro(timerPomodoroSeq) }
+    verify(exactly = 1) { timerPomodoroRepository.save(any()) }
+
+    assertTrue(slotPomodoro.isCaptured)
+    assertEquals(timerPomodoroSeq.seq, slotPomodoro.captured.seq)
   }
 }

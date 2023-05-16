@@ -10,6 +10,7 @@ import app.klock.api.repository.TimerPomodoroRepository
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import java.time.LocalDateTime
 
 @Service
 class TimerService(
@@ -24,7 +25,7 @@ class TimerService(
           it.id!!,
           it.userId,
           it.seq,
-          "exam",
+          TimerType.EXAM,
           it.name,
           it.startTime,
           it.duration,
@@ -38,7 +39,7 @@ class TimerService(
           it.id!!,
           it.userId,
           it.seq,
-          "pomodoro",
+          TimerType.POMODORO,
           it.name,
           it.focusTime,
           it.restTime,
@@ -52,7 +53,7 @@ class TimerService(
           it.id!!,
           it.userId,
           it.seq,
-          "focus",
+          TimerType.FOCUS,
           it.name
         )
       }
@@ -66,7 +67,7 @@ class TimerService(
 
   fun updateTimersSeq(timerSeqArray: Array<TimerSeqDto>): Mono<Boolean> {
     timerSeqArray.iterator().forEach { timerSeq ->
-      val result = when (timerSeq.type) {
+      when (timerSeq.type) {
         TimerType.FOCUS -> updateFocus(timerSeq)
         TimerType.EXAM -> updateExam(timerSeq)
         TimerType.POMODORO -> updatePomodoro(timerSeq)
@@ -75,43 +76,43 @@ class TimerService(
     return Mono.just(true)
   }
 
-  private fun updateFocus(timerSeq: TimerSeqDto): Mono<TimerFocus> {
+  fun updateFocus(timerSeq: TimerSeqDto): Mono<TimerFocus> {
     return timerFocusRepository.findById(timerSeq.id)
-      .switchIfEmpty(Mono.empty())
       .filter { existingTimer ->
-      timerSeq.seq != existingTimer.seq
-    }.flatMap { existingTimer ->
-      val timer = existingTimer.copy(
-        seq = timerSeq.seq
-      )
+        timerSeq.seq != existingTimer.seq
+      }.flatMap { existingTimer ->
+        val timer = existingTimer.copy(
+          seq = timerSeq.seq,
+          updatedAt = LocalDateTime.now()
+        )
       timer.validate()
       timerFocusRepository.save(timer)
     }
   }
 
-  private fun updateExam(timerSeq: TimerSeqDto): Mono<TimerExam> {
+  fun updateExam(timerSeq: TimerSeqDto): Mono<TimerExam> {
     return timerExamRepository.findById(timerSeq.id)
-      .switchIfEmpty(Mono.empty())
       .filter { existingTimer ->
-      timerSeq.seq != existingTimer.seq
-    }.flatMap { existingTimer ->
-      val timer = existingTimer.copy(
-        seq = timerSeq.seq
-      )
+        timerSeq.seq != existingTimer.seq
+      }.flatMap { existingTimer ->
+        val timer = existingTimer.copy(
+          seq = timerSeq.seq,
+          updatedAt = LocalDateTime.now()
+        )
       timer.validate()
       timerExamRepository.save(timer)
     }
   }
 
-  private fun updatePomodoro(timerSeq: TimerSeqDto): Mono<TimerPomodoro> {
+  fun updatePomodoro(timerSeq: TimerSeqDto): Mono<TimerPomodoro> {
     return timerPomodoroRepository.findById(timerSeq.id)
-      .switchIfEmpty(Mono.empty())
       .filter { existingTimer ->
-      timerSeq.seq != existingTimer.seq
-    }.flatMap { existingTimer ->
-      val timer = existingTimer.copy(
-        seq = timerSeq.seq
-      )
+        timerSeq.seq != existingTimer.seq
+      }.flatMap { existingTimer ->
+        val timer = existingTimer.copy(
+          seq = timerSeq.seq,
+          updatedAt = LocalDateTime.now()
+        )
       timer.validate()
       timerPomodoroRepository.save(timer)
     }
