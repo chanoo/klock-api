@@ -42,7 +42,7 @@ class TimerService(
           TimerType.POMODORO,
           it.name,
           it.focusTime,
-          it.restTime,
+          it.breakTime,
           it.cycleCount
         )
       }

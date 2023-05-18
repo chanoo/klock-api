@@ -45,10 +45,10 @@ data class TimerPomodoroDto(
   override val type: TimerType = TimerType.POMODORO,
   val name: String,
   val focusTime: Int,
-  val restTime: Int,
+  val breakTime: Int,
   val cycleCount: Int
 ) : TimerDto {
-  fun toDomain() = TimerPomodoro(id, userId, name, seq, focusTime, restTime, cycleCount)
+  fun toDomain() = TimerPomodoro(id, userId, name, seq, focusTime, breakTime, cycleCount)
 
   companion object {
     fun from(domain: TimerPomodoro) = TimerPomodoroDto(
@@ -58,7 +58,7 @@ data class TimerPomodoroDto(
       TimerType.POMODORO,
       domain.name,
       domain.focusTime,
-      domain.restTime,
+      domain.breakTime,
       domain.cycleCount
     )
   }

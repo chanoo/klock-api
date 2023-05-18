@@ -144,7 +144,7 @@ CREATE TABLE IF NOT EXISTS klk_timer_pomodoro
     name        VARCHAR(255) NOT NULL,                                                       -- 포모도로 이름
     seq         INT          NOT NULL,                                                       -- 정렬
     focus_time  INT          NOT NULL,                                                       -- 집중 시간
-    rest_time   INT          NOT NULL,                                                       -- 휴식 시간
+    break_time   INT          NOT NULL,                                                       -- 휴식 시간
     cycle_count INT          NOT NULL,                                                       -- 사이클 수
     created_at  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,                             -- 생성일
     updated_at  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, -- 업데이트 일자

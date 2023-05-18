@@ -74,7 +74,7 @@ class TimerExamRouterTest {
       seq = 1,
       name = "Updated Pomodoro Timer",
       focusTime = 30,
-      restTime = 10,
+      breakTime = 10,
       cycleCount = 4
     )
 

@@ -40,7 +40,7 @@ class TimerPomodoroHandler(private val timerPomodoroService: TimerPomodoroServic
           name = timerDto.name,
           seq = timerDto.seq,
           focusTime = timerDto.focusTime,
-          restTime = timerDto.restTime,
+          breakTime = timerDto.breakTime,
           cycleCount = timerDto.cycleCount,
           updatedAt = LocalDateTime.now()
         )
