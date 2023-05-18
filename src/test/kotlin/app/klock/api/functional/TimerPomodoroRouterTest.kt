@@ -38,7 +38,7 @@ class TimerPomodoroRouterTest {
       seq = 1,
       name = "Pomodoro Timer",
       focusTime = 25,
-      restTime = 5,
+      breakTime = 5,
       cycleCount = 4
     )
 
@@ -62,7 +62,7 @@ class TimerPomodoroRouterTest {
         assertEquals(timerPomodoroDto.type, actualTimerPomodoroDto.type)
         assertEquals(timerPomodoroDto.name, actualTimerPomodoroDto.name)
         assertEquals(timerPomodoroDto.focusTime, actualTimerPomodoroDto.focusTime)
-        assertEquals(timerPomodoroDto.restTime, actualTimerPomodoroDto.restTime)
+        assertEquals(timerPomodoroDto.breakTime, actualTimerPomodoroDto.breakTime)
         assertEquals(timerPomodoroDto.cycleCount, actualTimerPomodoroDto.cycleCount)
       }
   }
@@ -76,7 +76,7 @@ class TimerPomodoroRouterTest {
       seq = 1,
       name = "Updated Pomodoro Timer",
       focusTime = 30,
-      restTime = 10,
+      breakTime = 10,
       cycleCount = 4
     )
 

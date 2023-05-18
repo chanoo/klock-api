@@ -5,6 +5,7 @@ import app.klock.api.repository.TimerExamRepository
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
+import java.time.LocalDateTime
 
 @Service
 class TimerExamService(
@@ -18,8 +19,22 @@ class TimerExamService(
   fun get(id: Long): Mono<TimerExam> = timerExamRepository.findById(id)
 
   // Update TimerExam
-  @PreAuthorize("@permissionService.hasTimerFocusPermission(#timerExam.id, principal)")
-  fun update(timerExam: TimerExam): Mono<TimerExam> = timerExamRepository.save(timerExam)
+  @PreAuthorize("@permissionService.hasTimerFocusPermission(#id, principal)")
+  fun update(id: Long, timerExam: TimerExam): Mono<TimerExam> {
+    return timerExamRepository.findById(id).flatMap { existingTimer ->
+      val timer = existingTimer.copy(
+        name = timerExam.name,
+        seq = timerExam.seq,
+        startTime = timerExam.startTime,
+        duration = timerExam.duration,
+        questionCount = timerExam.questionCount,
+        markingTime = timerExam.markingTime,
+        updatedAt = LocalDateTime.now()
+      )
+      timer.validate()
+      timerExamRepository.save(timerExam)
+    }
+  }
 
   // Delete TimerExam by id
   @PreAuthorize("@permissionService.hasTimerExamPermission(#id, principal)")

@@ -38,7 +38,8 @@ class TimerExamRouterTest {
       name = "Test Exam Timer",
       startTime = LocalDateTime.now(),
       duration = 120,
-      questionCount = 50
+      questionCount = 50,
+      markingTime = 10
     )
     val createdTimerDto = timerExamDto.copy(id = 1L)
 
@@ -62,34 +63,36 @@ class TimerExamRouterTest {
         Assertions.assertEquals(timerExamDto.startTime, actualTimerExamDto.startTime)
         Assertions.assertEquals(timerExamDto.duration, actualTimerExamDto.duration)
         Assertions.assertEquals(timerExamDto.questionCount, actualTimerExamDto.questionCount)
+        Assertions.assertEquals(timerExamDto.markingTime, actualTimerExamDto.markingTime)
       }
   }
 
   @Test
   fun `PUT 요청으로 Exam 타이머 수정 테스트`() {
     val timerId = 31L
-    val updatedTimerPomodoroDto = TimerPomodoroDto(
+    val updatedTimerExamDto = TimerExamDto(
       id = timerId,
       userId = 2L,
       seq = 1,
-      name = "Updated Pomodoro Timer",
-      focusTime = 30,
-      restTime = 10,
-      cycleCount = 4
+      name = "Updated Exam Timer",
+      startTime = LocalDateTime.now(),
+      duration = 120,
+      questionCount = 50,
+      markingTime = 10
     )
 
     coEvery { timerExamHandler.updateExamTimer(any()) } coAnswers {
-      ServerResponse.ok().bodyValue(updatedTimerPomodoroDto)
+      ServerResponse.ok().bodyValue(updatedTimerExamDto)
     }
 
     client.put()
       .uri("/api/exam-timers/$timerId")
       .contentType(MediaType.APPLICATION_JSON)
-      .bodyValue(updatedTimerPomodoroDto)
+      .bodyValue(updatedTimerExamDto)
       .exchange()
       .expectStatus().isEqualTo(HttpStatus.OK)
-      .expectBody(TimerPomodoroDto::class.java)
-      .isEqualTo(updatedTimerPomodoroDto)
+      .expectBody(TimerExamDto::class.java)
+      .isEqualTo(updatedTimerExamDto)
   }
 
   @Test

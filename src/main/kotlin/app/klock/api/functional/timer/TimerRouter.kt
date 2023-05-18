@@ -13,6 +13,7 @@ class TimerRouter(private val timerHandler: TimerHandler) {
   fun timerRoutes(): RouterFunction<ServerResponse> = router {
     "/api/timers".nest {
       GET("", timerHandler::getAllTimersByUserId)
+      PUT("", timerHandler::updateTimersSeq)
     }
   }
 }

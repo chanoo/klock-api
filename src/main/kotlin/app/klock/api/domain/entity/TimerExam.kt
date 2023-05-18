@@ -14,6 +14,7 @@ import java.time.LocalDateTime
  * @property startTime 타이머 시험의 시작 시간
  * @property duration 타이머 시험의 지속 시간 (분 단위)
  * @property questionCount 타이머 시험의 문제 개수
+ * @property markingTime 타이머 시험 마킹 시간
  * @property createdAt 레코드 생성 시간
  * @property updatedAt 레코드 수정 시간
  */
@@ -39,6 +40,9 @@ data class TimerExam(
 
   @Column("question_count")
   val questionCount: Int,
+
+  @Column("marking_time")
+  val markingTime: Int,
 
   @Column("created_at")
   val createdAt: LocalDateTime? = null,

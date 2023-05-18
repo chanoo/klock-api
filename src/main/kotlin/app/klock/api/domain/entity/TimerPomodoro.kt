@@ -12,7 +12,7 @@ import java.time.LocalDateTime
  * @property name 타이머 포모도로의 이름
  * @property seq 타이머 포모도로의 순서
  * @property focusTime 집중 시간 (분 단위)
- * @property restTime 휴식 시간 (분 단위)
+ * @property breakTime 휴식 시간 (분 단위)
  * @property cycleCount 포모도로 사이클 횟수
  * @property createdAt 레코드 생성 시간
  * @property updatedAt 레코드 수정 시간
@@ -34,8 +34,8 @@ data class TimerPomodoro(
   @Column("focus_time")
   val focusTime: Int,
 
-  @Column("rest_time")
-  val restTime: Int,
+  @Column("break_time")
+  val breakTime: Int,
 
   @Column("cycle_count")
   val cycleCount: Int,
@@ -50,7 +50,8 @@ data class TimerPomodoro(
   fun validate() {
     require(name.isNotBlank()) { "name must not be blank" }
     require(focusTime > 0) { "focusTime must be greater than 0" }
-    require(restTime > 0) { "restTime must be greater than 0" }
+    require(breakTime > 0) { "breakTime must be greater than 0" }
     require(cycleCount > 0) { "cycleCount must be greater than 0" }
+    require(seq > 0) { "seq must be greater than 0" }
   }
 }
