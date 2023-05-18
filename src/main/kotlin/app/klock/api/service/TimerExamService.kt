@@ -28,6 +28,7 @@ class TimerExamService(
         startTime = timerExam.startTime,
         duration = timerExam.duration,
         questionCount = timerExam.questionCount,
+        markingTime = timerExam.markingTime,
         updatedAt = LocalDateTime.now()
       )
       timer.validate()

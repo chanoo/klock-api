@@ -26,7 +26,7 @@ class TimerExamServiceTest {
   @Test
   fun `TimerExam 생성 테스트`() {
     // Given
-    val timerExam = TimerExam(1L, 1, "Exam 1", 1, LocalDateTime.now(), 60, 30)
+    val timerExam = TimerExam(1L, 1, "Exam 1", 1, LocalDateTime.now(), 60, 30, 10)
 
     every { timerExamRepository.save(timerExam) } returns Mono.just(timerExam)
 
@@ -45,7 +45,7 @@ class TimerExamServiceTest {
   fun `TimerExam 조회 테스트`() {
     // Given
     val timerExamId = 1L
-    val timerExam = TimerExam(timerExamId, 1, "Exam 1", 1, LocalDateTime.now(), 60, 30)
+    val timerExam = TimerExam(timerExamId, 1, "Exam 1", 1, LocalDateTime.now(), 60, 30, 10)
 
     every { timerExamRepository.findById(timerExamId) } returns Mono.just(timerExam)
 
@@ -64,8 +64,8 @@ class TimerExamServiceTest {
   fun `TimerExam 업데이트 테스트`() {
     // Given
     val id = 1L
-    val timerExam = TimerExam(id, 1, "Exam 1", 1, LocalDateTime.now(), 60, 30)
-    val updatedTimerExam = TimerExam(id, 1, "Exam 1 Updated", 1, LocalDateTime.now(), 60, 30)
+    val timerExam = TimerExam(id, 1, "Exam 1", 1, LocalDateTime.now(), 60, 30, 10)
+    val updatedTimerExam = TimerExam(id, 1, "Exam 1 Updated", 1, LocalDateTime.now(), 60, 30, 20)
 
     every { timerExamRepository.findById(id) } returns Mono.just(timerExam)
     every { timerExamRepository.save(timerExam) } returns Mono.just(updatedTimerExam)

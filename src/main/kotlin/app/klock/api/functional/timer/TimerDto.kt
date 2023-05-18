@@ -21,8 +21,9 @@ data class TimerExamDto(
   val startTime: LocalDateTime,
   val duration: Int,
   val questionCount: Int,
+  val markingTime: Int,
 ) : TimerDto {
-  fun toDomain() = TimerExam(id, userId, name, seq, startTime, duration, questionCount)
+  fun toDomain() = TimerExam(id, userId, name, seq, startTime, duration, questionCount, markingTime)
 
   companion object {
     fun from(domain: TimerExam) = TimerExamDto(
@@ -33,7 +34,8 @@ data class TimerExamDto(
       domain.name,
       domain.startTime,
       domain.duration,
-      domain.questionCount
+      domain.questionCount,
+      domain.markingTime
     )
   }
 }

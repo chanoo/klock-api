@@ -29,7 +29,8 @@ class TimerService(
           it.name,
           it.startTime,
           it.duration,
-          it.questionCount
+          it.questionCount,
+          it.markingTime
         )
       }
 

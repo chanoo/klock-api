@@ -47,7 +47,7 @@ class TimerServiceTest {
   fun `사용자 ID별 모든 타이머 가져오기 테스트`() {
     // Given
     val userId: Long = 1
-    val exam = TimerExam(100, userId, "Exam 1", 1, LocalDateTime.now(), 60, 30)
+    val exam = TimerExam(100, userId, "Exam 1", 1, LocalDateTime.now(), 60, 30, 10)
     val pomodoro = TimerPomodoro(200, userId, "Pomodoro 1", 2, 25, 5, 4)
     val focus = TimerFocus(300, userId, 3, "Focus 1")
 
@@ -93,7 +93,7 @@ class TimerServiceTest {
     val timerSeqArray = arrayOf(timerFocusSeq, timerExamSeq, timerPomodoroSeq)
 
     val timerFocus = TimerFocus(1L, 1L, 1, "Focus 1")
-    val timerExam = TimerExam(1L, 1L, "Exam 1", 1, LocalDateTime.now(), 60, 30)
+    val timerExam = TimerExam(1L, 1L, "Exam 1", 1, LocalDateTime.now(), 60, 30, 10)
     val timerPomodoro = TimerPomodoro(1L, 1L, "Pomodoro 1", 1, 25, 5, 4)
 
     every { timerFocusRepository.findById(1L) } returns Mono.just(timerFocus)
@@ -152,7 +152,7 @@ class TimerServiceTest {
       seq = 2
     )
 
-    val timerExam = TimerExam(1L, 1L, "Exam 1", 1, LocalDateTime.now(), 60, 30)
+    val timerExam = TimerExam(1L, 1L, "Exam 1", 1, LocalDateTime.now(), 60, 30, 10)
 
     slotExam = slot()
     every { timerExamRepository.findById(1L) } returns Mono.just(timerExam)
