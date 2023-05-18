@@ -30,7 +30,7 @@ class TimerPomodoroServiceTest {
       name = "Pomodoro 1",
       seq = 1,
       focusTime = 25,
-      restTime = 5,
+      breakTime = 5,
       cycleCount = 4
     )
 
@@ -56,7 +56,7 @@ class TimerPomodoroServiceTest {
       name = "Pomodoro 1",
       seq = 1,
       focusTime = 25,
-      restTime = 5,
+      breakTime = 5,
       cycleCount = 4
     )
 
@@ -82,7 +82,7 @@ class TimerPomodoroServiceTest {
       name = "Pomodoro 1",
       seq = 1,
       focusTime = 25,
-      restTime = 5,
+      breakTime = 5,
       cycleCount = 4
     )
 

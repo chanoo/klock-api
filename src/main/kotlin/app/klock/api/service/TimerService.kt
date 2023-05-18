@@ -29,7 +29,8 @@ class TimerService(
           it.name,
           it.startTime,
           it.duration,
-          it.questionCount
+          it.questionCount,
+          it.markingTime
         )
       }
 
@@ -42,7 +43,7 @@ class TimerService(
           TimerType.POMODORO,
           it.name,
           it.focusTime,
-          it.restTime,
+          it.breakTime,
           it.cycleCount
         )
       }

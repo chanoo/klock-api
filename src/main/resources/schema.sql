@@ -131,6 +131,7 @@ CREATE TABLE IF NOT EXISTS klk_timer_exam
     start_time     TIMESTAMP    NOT NULL,                                                       -- 시작 시간
     duration       INT          NOT NULL,                                                       -- 지속 시간
     question_count INT          NOT NULL,                                                       -- 문제 수
+    marking_time   INT          NOT NULL DEFAULT 0,                                             -- 마킹 시간
     created_at     TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,                             -- 생성일
     updated_at     TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, -- 업데이트 일자
     FOREIGN KEY (user_id) REFERENCES klk_user (id)                                              -- 사용자 타이머 테이블 참조
@@ -144,7 +145,7 @@ CREATE TABLE IF NOT EXISTS klk_timer_pomodoro
     name        VARCHAR(255) NOT NULL,                                                       -- 포모도로 이름
     seq         INT          NOT NULL,                                                       -- 정렬
     focus_time  INT          NOT NULL,                                                       -- 집중 시간
-    rest_time   INT          NOT NULL,                                                       -- 휴식 시간
+    break_time  INT          NOT NULL,                                                       -- 휴식 시간
     cycle_count INT          NOT NULL,                                                       -- 사이클 수
     created_at  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,                             -- 생성일
     updated_at  TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, -- 업데이트 일자

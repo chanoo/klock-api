@@ -21,8 +21,9 @@ data class TimerExamDto(
   val startTime: LocalDateTime,
   val duration: Int,
   val questionCount: Int,
+  val markingTime: Int,
 ) : TimerDto {
-  fun toDomain() = TimerExam(id, userId, name, seq, startTime, duration, questionCount)
+  fun toDomain() = TimerExam(id, userId, name, seq, startTime, duration, questionCount, markingTime)
 
   companion object {
     fun from(domain: TimerExam) = TimerExamDto(
@@ -33,7 +34,8 @@ data class TimerExamDto(
       domain.name,
       domain.startTime,
       domain.duration,
-      domain.questionCount
+      domain.questionCount,
+      domain.markingTime
     )
   }
 }
@@ -45,10 +47,10 @@ data class TimerPomodoroDto(
   override val type: TimerType = TimerType.POMODORO,
   val name: String,
   val focusTime: Int,
-  val restTime: Int,
+  val breakTime: Int,
   val cycleCount: Int
 ) : TimerDto {
-  fun toDomain() = TimerPomodoro(id, userId, name, seq, focusTime, restTime, cycleCount)
+  fun toDomain() = TimerPomodoro(id, userId, name, seq, focusTime, breakTime, cycleCount)
 
   companion object {
     fun from(domain: TimerPomodoro) = TimerPomodoroDto(
@@ -58,7 +60,7 @@ data class TimerPomodoroDto(
       TimerType.POMODORO,
       domain.name,
       domain.focusTime,
-      domain.restTime,
+      domain.breakTime,
       domain.cycleCount
     )
   }
