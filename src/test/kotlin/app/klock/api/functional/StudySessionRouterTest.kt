@@ -1,8 +1,9 @@
 package app.klock.api.functional
 
+import app.klock.api.functional.studySession.StudySessionDto
 import app.klock.api.functional.studySession.StudySessionHandler
 import app.klock.api.functional.studySession.StudySessionRouter
-import app.klock.api.functional.studySession.dto.StudySessionDTO
+import app.klock.api.functional.timer.TimerType
 import io.mockk.coEvery
 import io.mockk.mockk
 import org.junit.jupiter.api.BeforeEach
@@ -36,17 +37,21 @@ class StudySessionRouterTest {
     val startDate = LocalDateTime.now().toLocalDate()
 
     val studySessions = listOf(
-      StudySessionDTO(
+      StudySessionDto(
         id = 1,
         userId = userId,
         startTime = LocalDateTime.now(),
-        endTime = LocalDateTime.now().plusHours(1)
+        endTime = LocalDateTime.now().plusHours(1),
+        timerName = "국어",
+        timerType = TimerType.FOCUS
       ),
-      StudySessionDTO(
+      StudySessionDto(
         id = 2,
         userId = userId,
         startTime = LocalDateTime.now(),
-        endTime = LocalDateTime.now().plusHours(1)
+        endTime = LocalDateTime.now().plusHours(1),
+        timerName = "수학",
+        timerType = TimerType.POMODORO
       )
     )
 
@@ -60,17 +65,19 @@ class StudySessionRouterTest {
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBodyList(StudySessionDTO::class.java)
+      .expectBodyList(StudySessionDto::class.java)
       .hasSize(2)
       .contains(studySessions[0], studySessions[1])
   }
 
   @Test
   fun `공부 시간 추가`() {
-    val studySessionDTO = StudySessionDTO(
+    val studySessionDTO = StudySessionDto(
       userId = 3,
       startTime = LocalDateTime.now(),
-      endTime = LocalDateTime.now().plusHours(1)
+      endTime = LocalDateTime.now().plusHours(1),
+      timerName = "국어",
+      timerType = TimerType.FOCUS
     )
 
     val createdStudySession = studySessionDTO.copy(id = 3)
@@ -86,17 +93,19 @@ class StudySessionRouterTest {
       .exchange()
       .expectStatus().isCreated
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(StudySessionDTO::class.java)
+      .expectBody(StudySessionDto::class.java)
       .isEqualTo(createdStudySession)
   }
 
   @Test
   fun `공부 시간 수정`() {
-    val studySessionDTO = StudySessionDTO(
+    val studySessionDTO = StudySessionDto(
       id = 1L,
       userId = 3,
       startTime = LocalDateTime.now(),
-      endTime = LocalDateTime.now().plusHours(1)
+      endTime = LocalDateTime.now().plusHours(1),
+      timerName = "국어",
+      timerType = TimerType.FOCUS
     )
 
     coEvery { studySessionHandler.update(any()) } coAnswers {
@@ -110,7 +119,7 @@ class StudySessionRouterTest {
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
-      .expectBody(StudySessionDTO::class.java)
+      .expectBody(StudySessionDto::class.java)
       .isEqualTo(studySessionDTO)
   }
 }

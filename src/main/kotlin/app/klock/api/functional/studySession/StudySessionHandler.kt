@@ -1,7 +1,6 @@
 package app.klock.api.functional.studySession
 
 import app.klock.api.domain.entity.StudySession
-import app.klock.api.functional.studySession.dto.StudySessionDTO
 import app.klock.api.service.StudySessionService
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -23,11 +22,7 @@ class StudySessionHandler(private val studySessionService: StudySessionService) 
     return if (userId != null && date != null) {
       studySessionService.findByUserIdAndStartTimeBetween(userId, date)
         .map { studySession ->
-          StudySessionDTO(
-            id = studySession.id,
-            startTime = studySession.startTime,
-            endTime = studySession.endTime,
-            userId = studySession.userId)
+          StudySessionDto.from(studySession)
         }
         .collectList()
         .flatMap { studySessions -> ServerResponse.ok().body(BodyInserters.fromValue(studySessions)) }
@@ -39,9 +34,9 @@ class StudySessionHandler(private val studySessionService: StudySessionService) 
   }
 
   fun create(request: ServerRequest): Mono<ServerResponse> {
-    return request.bodyToMono(StudySession::class.java)
-      .flatMap { studySession ->
-        studySessionService.create(studySession)
+    return request.bodyToMono(StudySessionDto::class.java)
+      .flatMap { studySessionDto ->
+        studySessionService.create(studySessionDto.toDomain())
           .flatMap { createdSession ->
             ServerResponse.status(HttpStatus.CREATED).body(BodyInserters.fromValue(createdSession))
           }
@@ -51,9 +46,9 @@ class StudySessionHandler(private val studySessionService: StudySessionService) 
   fun update(request: ServerRequest): Mono<ServerResponse> {
     val id = request.pathVariable("id").toLong()
 
-    return request.bodyToMono(StudySession::class.java)
-      .flatMap { studySession ->
-        studySessionService.update(id, studySession)
+    return request.bodyToMono(StudySessionDto::class.java)
+      .flatMap { studySessionDto ->
+        studySessionService.update(id, studySessionDto.toDomain())
           .flatMap { updatedSession ->
             ServerResponse.ok().body(BodyInserters.fromValue(updatedSession))
           }

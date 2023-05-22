@@ -67,12 +67,12 @@ CREATE TABLE IF NOT EXISTS klk_subject
 CREATE TABLE IF NOT EXISTS klk_study_session
 (
     id         BIGINT AUTO_INCREMENT PRIMARY KEY,        -- 고유 식별자
-    user_id    BIGINT    NOT NULL,                       -- 사용자 ID (외래 키)
-    subject_id BIGINT    NOT NULL,                       -- 과목 ID (외래 키)
-    start_time TIMESTAMP NOT NULL,                       -- 학습 시작 시간
-    end_time   TIMESTAMP NOT NULL,                       -- 학습 종료 시간
-    FOREIGN KEY (user_id) REFERENCES klk_user (id),      -- app_user 테이블 참조
-    FOREIGN KEY (subject_id) REFERENCES klk_subject (id) -- subject 테이블 참조
+    user_id    BIGINT       NOT NULL,                    -- 사용자 ID (외래 키)
+    start_time TIMESTAMP    NOT NULL,                    -- 학습 시작 시간
+    end_time   TIMESTAMP    NOT NULL,                    -- 학습 종료 시간
+    timer_name VARCHAR(25%) NOT NULL,                    -- 타이머 이름
+    timer_type VARCHAR(25%) NOT NULL,                    -- 타이머 종류
+    FOREIGN KEY (user_id) REFERENCES klk_user (id)       -- app_user 테이블 참조
 );
 
 -- D-Day 이벤트 테이블

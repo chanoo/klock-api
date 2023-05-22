@@ -2,6 +2,7 @@
 package app.klock.api.service
 
 import app.klock.api.domain.entity.StudySession
+import app.klock.api.functional.timer.TimerType
 import app.klock.api.repository.StudySessionRepository
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -36,12 +37,14 @@ class StudySessionServiceTest @Autowired constructor(
       id = 1L,
       userId = 1L,
       startTime = LocalDateTime.now(),
-      endTime = LocalDateTime.now().plusHours(2)
+      endTime = LocalDateTime.now().plusHours(2),
+      timerName = "국어 공부",
+      timerType = TimerType.FOCUS
     )
 
     studySessions = listOf(
-      StudySession(id = 1, userId = 1, startTime = LocalDateTime.now(), endTime = LocalDateTime.now().plusHours(1)),
-      StudySession(id = 2, userId = 2, startTime = LocalDateTime.now(), endTime = LocalDateTime.now().plusHours(1))
+      StudySession(id = 1, userId = 1, startTime = LocalDateTime.now(), endTime = LocalDateTime.now().plusHours(1), "국어", TimerType.FOCUS),
+      StudySession(id = 2, userId = 2, startTime = LocalDateTime.now(), endTime = LocalDateTime.now().plusHours(1), "수학", TimerType.POMODORO)
     )
   }
 

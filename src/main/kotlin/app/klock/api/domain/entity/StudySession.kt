@@ -1,5 +1,6 @@
 package app.klock.api.domain.entity
 
+import app.klock.api.functional.timer.TimerType
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
@@ -24,5 +25,11 @@ data class StudySession(
   val startTime: LocalDateTime,
 
   @Column("end_time")
-  val endTime: LocalDateTime
+  val endTime: LocalDateTime,
+
+  @Column("timer_name")
+  val timerName: String,
+
+  @Column("timer_type")
+  val timerType: TimerType
 )
