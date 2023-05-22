@@ -19,7 +19,7 @@ class TimerExamService(
   fun get(id: Long): Mono<TimerExam> = timerExamRepository.findById(id)
 
   // Update TimerExam
-  @PreAuthorize("@permissionService.hasTimerFocusPermission(#id, principal)")
+  @PreAuthorize("@permissionService.hasTimerExamPermission(#id, principal)")
   fun update(id: Long, timerExam: TimerExam): Mono<TimerExam> {
     return timerExamRepository.findById(id).flatMap { existingTimer ->
       val timer = existingTimer.copy(
