@@ -2,10 +2,8 @@ package app.klock.api.functional.user
 
 import app.klock.api.domain.entity.User
 import app.klock.api.domain.entity.UserRole
-import app.klock.api.functional.auth.dto.ChangePasswordRequest
-import app.klock.api.functional.auth.dto.UpdateUserRequest
-import app.klock.api.functional.auth.dto.UpdateUserResponse
-import app.klock.api.functional.auth.dto.UserResponse
+import app.klock.api.functional.auth.UpdateUserRequest
+import app.klock.api.functional.auth.UpdateUserResponse
 import app.klock.api.service.UserService
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.BodyInserters
@@ -20,7 +18,7 @@ class UserHandler(private val userService: UserService) {
   // 사용자 목록 조회
   fun getAllUsers(request: ServerRequest): Mono<ServerResponse> {
     val usersFlux = userService.findAll()
-    return usersFlux.map { user -> UserResponse(user.id, user.username, user.email) }
+    return usersFlux.map { user -> UserResponse(user.id, user.nickName, user.email) }
       .collectList()
       .flatMap { users -> ServerResponse.ok().body(BodyInserters.fromValue(users)) }
   }
@@ -31,7 +29,7 @@ class UserHandler(private val userService: UserService) {
 
     return userService.findById(requestedUserId)
       .flatMap { user ->
-        ServerResponse.ok().bodyValue(UserResponse(user.id, user.username, user.email))
+        ServerResponse.ok().bodyValue(UserResponse(user.id, user.nickName, user.email))
       }
       .switchIfEmpty(ServerResponse.notFound().build())
 
@@ -46,7 +44,7 @@ class UserHandler(private val userService: UserService) {
           id = userId,
           user = User(
             id = userRequest.id,
-            username = userRequest.name,
+            nickName = userRequest.nickName,
             email = userRequest.email,
             hashedPassword = userRequest.password,
             role = UserRole.USER,
@@ -59,7 +57,7 @@ class UserHandler(private val userService: UserService) {
         )
       }
       .flatMap { user ->
-        ServerResponse.ok().bodyValue(UpdateUserResponse(user.id, user.username, user.email))
+        ServerResponse.ok().bodyValue(UpdateUserResponse(user.id, user.nickName, user.email))
       }
       .switchIfEmpty(ServerResponse.notFound().build())
 
@@ -80,4 +78,15 @@ class UserHandler(private val userService: UserService) {
       }
       .switchIfEmpty(ServerResponse.notFound().build())
 
+  // 닉네임 존재 여부 체크
+  fun existedNickName(request: ServerRequest): Mono<ServerResponse> =
+    request.bodyToMono(CheckNickNameRequest::class.java)
+      .flatMap { checkNickNameRequest ->
+        userService.existedNickName(checkNickNameRequest.nickName)
+          .flatMap { exists ->
+            ServerResponse.ok().bodyValue(mapOf("exists" to exists))
+          }
+      }.onErrorResume { e ->
+        ServerResponse.badRequest().bodyValue(mapOf("error" to (e.message ?: "Unknown error")))
+      }
 }

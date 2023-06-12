@@ -1,7 +1,6 @@
 package app.klock.api.functional.auth
 
 import app.klock.api.domain.entity.UserTag
-import app.klock.api.functional.auth.dto.*
 import app.klock.api.service.AuthService
 import app.klock.api.service.UserService
 import app.klock.api.service.UserTagService
@@ -26,7 +25,7 @@ class AuthHandler(
     request.bodyToMono(SignUpReqDTO::class.java)
       .flatMap { signUpRequest ->
         authService.signup(
-          username = signUpRequest.username,
+          nickName = signUpRequest.nickName,
           email = signUpRequest.email,
           password = signUpRequest.password
         ).flatMap { savedUser ->
@@ -57,7 +56,7 @@ class AuthHandler(
           SignUpResDTO(id = user.id!!,
             accessToken = accessToken,
             refreshToken = refreshToken,
-            username = user.username,
+            nickName = user.nickName,
             provider = socialLogin.provider,
             providerUserId = socialLogin.providerUserId,
             email = user.email,
@@ -79,7 +78,7 @@ class AuthHandler(
             userService.validatePassword(loginRequest
               .password, user.hashedPassword)
           }
-          .switchIfEmpty(Mono.error(Exception("Invalid username or password")))
+          .switchIfEmpty(Mono.error(Exception("Invalid nickname or password")))
           .flatMap { user ->
             val token = jwtUtils.generateToken(user.id.toString(), listOf(user.role.name))
             ServerResponse.ok()

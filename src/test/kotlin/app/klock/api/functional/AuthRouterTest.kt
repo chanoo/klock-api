@@ -3,10 +3,10 @@ package app.klock.api.functional
 import app.klock.api.domain.entity.SocialProvider
 import app.klock.api.functional.auth.AuthHandler
 import app.klock.api.functional.auth.AuthRouter
-import app.klock.api.functional.auth.dto.LoginRequest
-import app.klock.api.functional.auth.dto.LoginResponse
-import app.klock.api.functional.auth.dto.SignUpReqDTO
-import app.klock.api.functional.auth.dto.SignUpResDTO
+import app.klock.api.functional.auth.LoginRequest
+import app.klock.api.functional.auth.LoginResponse
+import app.klock.api.functional.auth.SignUpReqDTO
+import app.klock.api.functional.auth.SignUpResDTO
 import io.mockk.coEvery
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -39,7 +39,7 @@ class AuthRouterTest {
   fun `POST 요청으로 회원 가입 테스트`() {
 
     val signUpReqDTO = SignUpReqDTO(
-      username = "user1",
+      nickName = "user1",
       email = "user1@example.com",
       password = "test_password",
       providerUserId = "test_provider_user_id",
@@ -49,7 +49,7 @@ class AuthRouterTest {
 
     val signUpResDTO = SignUpResDTO(
       id = 1L,
-      username = "user1",
+      nickName = "user1",
       email = "user1@example.com",
       accessToken = "valid_token",
       refreshToken = "valid_refresh_token",
@@ -71,7 +71,7 @@ class AuthRouterTest {
       .expectBody(SignUpResDTO::class.java)
       .value { actualSignUpResponse ->
         assertEquals(1L, actualSignUpResponse.id, "ID가 1이어야 합니다.")
-        assertEquals(signUpReqDTO.username, actualSignUpResponse.username)
+        assertEquals(signUpReqDTO.nickName, actualSignUpResponse.nickName)
         assertEquals(signUpReqDTO.email, actualSignUpResponse.email)
       }
   }

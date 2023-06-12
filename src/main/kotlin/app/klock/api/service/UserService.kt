@@ -7,6 +7,7 @@ import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import java.nio.charset.Charset
 
 /**
  * UserService 클래스는 User 엔티티와 관련된 비즈니스 로직을 처리합니다.
@@ -85,5 +86,19 @@ class UserService(private val userRepository: UserRepository, private val passwo
         }
       }
 
+  fun existedNickName(nickName: String): Mono<Boolean> {
+    if (!validateNickName(nickName)) {
+      return Mono.error(IllegalArgumentException("Invalid nick name"))
+    }
+    return userRepository.findByNickName(nickName)
+      .hasElement()
+  }
 
+  private fun validateNickName(nickName: String): Boolean {
+    val byteSize = nickName.toByteArray(Charset.forName("UTF-8")).size
+
+    return !nickName.isNullOrEmpty() &&
+            nickName.length <= User.allowedNickNameMaxLength() &&
+            User.allowedPattern().matches(nickName)
+  }
 }
