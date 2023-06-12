@@ -18,6 +18,7 @@ import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
 import org.springframework.web.reactive.function.server.ServerResponse
+import java.time.DayOfWeek
 
 @ActiveProfiles("test")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -44,7 +45,9 @@ class AuthRouterTest {
       password = "test_password",
       providerUserId = "test_provider_user_id",
       tagId = 1,
-      provider = SocialProvider.APPLE
+      provider = SocialProvider.APPLE,
+      startOfTheWeek = DayOfWeek.MONDAY,
+      startOfTheDay = 7
     )
 
     val signUpResDTO = SignUpResDTO(
