@@ -7,5 +7,5 @@ import reactor.core.publisher.Flux
 
 @Repository
 interface FriendRelationRepository : ReactiveCrudRepository<FriendRelation, Long> {
-    fun findByRequesterId(requesterId: Long): Flux<FriendRelation>
+    fun findByUserIdAndLike(userId: Long, like: Boolean): Flux<FriendRelation>
 }

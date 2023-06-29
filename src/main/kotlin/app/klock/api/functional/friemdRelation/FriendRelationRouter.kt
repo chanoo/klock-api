@@ -1,4 +1,4 @@
-package app.klock.api.functional
+package app.klock.api.functional.friemdRelation
 
 import app.klock.api.functional.friendrelation.FriendRelationHandler
 import org.springframework.context.annotation.Bean
@@ -12,7 +12,8 @@ class FriendRelationRouter(private val friendRelationHandler: FriendRelationHand
   fun friendRelationRoutes() = router {
     "/api/friend-relations".nest {
       POST("", friendRelationHandler::create)
-      GET("", friendRelationHandler::getFriendRelationsByRequesterId)
+      GET("", friendRelationHandler::getFriendRelations)
+      DELETE("/{id}", friendRelationHandler::delete)
     }
   }
 

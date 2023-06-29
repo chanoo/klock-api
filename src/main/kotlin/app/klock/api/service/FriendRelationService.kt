@@ -9,12 +9,16 @@ import reactor.core.publisher.Mono
 @Service
 class FriendRelationService(private val friendRelationRepository: FriendRelationRepository) {
 
-    fun create(requesterId: Long, friendId: Long): Mono<FriendRelation> {
-        val friendRelation = FriendRelation(requesterId = requesterId, friendId = friendId)
+    fun create(userId: Long, followId: Long): Mono<FriendRelation> {
+        val friendRelation = FriendRelation(userId = userId, followId = followId)
         return friendRelationRepository.save(friendRelation)
     }
 
-    fun getFriendRelationsByRequesterId(requesterId: Long): Flux<FriendRelation> {
-        return friendRelationRepository.findByRequesterId(requesterId)
+    fun getFriendRelations(userId: Long): Flux<FriendRelation> {
+        return friendRelationRepository.findByUserIdAndLike(userId, true)
+    }
+
+    fun deleteById(id: Long): Mono<Void> {
+        return friendRelationRepository.deleteById(id)
     }
 }

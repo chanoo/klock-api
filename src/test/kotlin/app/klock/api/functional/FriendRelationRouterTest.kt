@@ -2,6 +2,7 @@ package app.klock.api.functional
 
 import app.klock.api.config.TestConfig
 import app.klock.api.domain.entity.FriendRelation
+import app.klock.api.functional.friemdRelation.FriendRelationRouter
 import app.klock.api.functional.friendrelation.FriendRelationHandler
 import io.mockk.coEvery
 import io.mockk.mockk

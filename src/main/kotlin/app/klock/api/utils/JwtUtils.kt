@@ -4,8 +4,11 @@ import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.Authentication
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Component
 import java.security.KeyPair
 import java.util.*
@@ -48,6 +51,12 @@ class JwtUtils {
   fun getUserIdFromToken(token: String): String {
     val claims: Claims = getClaimsFromToken(token)
     return claims.subject
+  }
+
+  fun getUserIdFromToken(): Long {
+    val authentication: Authentication = SecurityContextHolder.getContext().authentication
+    val token = authentication.credentials.toString()
+    return getUserIdFromToken(token).toLong()
   }
 
   // JWT 토큰의 유효성 검사
