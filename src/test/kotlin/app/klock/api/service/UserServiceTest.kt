@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchers.anyString
+import org.mockito.BDDMockito.given
 import org.mockito.Mockito
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
@@ -42,7 +43,7 @@ class UserServiceTest {
     // Arrange
     val user = User(
       id = 1L,
-      username = "user1",
+      nickName = "user1",
       email = "user1@example.com",
       role = UserRole.USER,
       active = true,
@@ -67,7 +68,7 @@ class UserServiceTest {
     // Arrange
     val user1 = User(
       id = 1L,
-      username = "user1",
+      nickName = "user1",
       email = "user1@example.com",
       role = UserRole.USER,
       active = true,
@@ -78,7 +79,7 @@ class UserServiceTest {
     )
     val user2 = User(
       id = 2L,
-      username = "user1",
+      nickName = "user1",
       email = "user1@example.com",
       role = UserRole.USER,
       active = true,
@@ -104,7 +105,7 @@ class UserServiceTest {
     // Arrange
     val newUser = User(
       id = null,
-      username = "user1",
+      nickName = "user1",
       email = "user1@example.com",
       role = UserRole.USER,
       active = true,
@@ -115,7 +116,7 @@ class UserServiceTest {
     )
     val savedUser = User(
       id = 1L,
-      username = "user1",
+      nickName = "user1",
       email = "user1@example.com",
       role = UserRole.USER,
       active = true,
@@ -140,7 +141,7 @@ class UserServiceTest {
     // Arrange
     val existingUser = User(
       id = 1L,
-      username = "user1",
+      nickName = "user1",
       email = "user1@example.com",
       role = UserRole.USER,
       active = true,
@@ -151,7 +152,7 @@ class UserServiceTest {
     )
     val updatedUser = User(
       id = 1L,
-      username = "user1",
+      nickName = "user1",
       email = "user1@example.com",
       role = UserRole.USER,
       active = true,
@@ -191,7 +192,7 @@ class UserServiceTest {
     // Arrange
     val user = User(
       id = 1L,
-      username = "user1",
+      nickName = "user1",
       email = "user1@example.com",
       role = UserRole.USER,
       active = true,
@@ -253,7 +254,7 @@ class UserServiceTest {
     // Arrange
     val existingUser = User(
       id = 1L,
-      username = "user1",
+      nickName = "user1",
       email = "user1@example.com",
       role = UserRole.USER,
       active = true,
@@ -275,7 +276,7 @@ class UserServiceTest {
     StepVerifier.create(savedUser)
       .assertNext { updatedUser ->
         assertEquals(existingUser.id, updatedUser.id)
-        assertEquals(existingUser.username, updatedUser.username)
+        assertEquals(existingUser.nickName, updatedUser.nickName)
         assertEquals(existingUser.email, updatedUser.email)
         assertNotEquals(existingUser.hashedPassword, updatedUser.hashedPassword)
         assertTrue(passwordEncoder.matches("new_password", updatedUser.hashedPassword))
@@ -288,7 +289,7 @@ class UserServiceTest {
     // Arrange
     val existingUser = User(
       id = 1L,
-      username = "user1",
+      nickName = "user1",
       email = "user1@example.com",
       role = UserRole.USER,
       active = true,
@@ -307,6 +308,35 @@ class UserServiceTest {
     StepVerifier.create(savedUser)
       .expectErrorMatches { it is IllegalArgumentException && it.message == "Invalid current password" }
       .verify()
+  }
+
+  @Test
+  fun `닉네임 존재 여부 성공 체크`() {
+    // Arrange
+    val nickName = "exist이름1"
+    val existingUser = User(
+      id = 1L,
+      nickName = nickName,
+      email = "user1@example.com",
+      role = UserRole.USER,
+      active = true,
+      totalStudyTime = 0,
+      userLevelId = 1,
+      hashedPassword = passwordEncoder.encode("password"),
+      createdAt = LocalDateTime.now(),
+      updatedAt = LocalDateTime.now()
+    )
+    // when은 TDD방식 given은 BDD방식
+//    `when`(userRepository.findByNickName(nickName)).thenReturn(Mono.just(existingUser))
+    given(userRepository.findByNickName(nickName)).willReturn(Mono.just(existingUser))
+
+    // Act
+    val exists = userService.existedNickName(nickName)
+
+    // Assert
+    StepVerifier.create(exists)
+      .assertNext { assertTrue(it) }
+      .verifyComplete()
   }
 
 }

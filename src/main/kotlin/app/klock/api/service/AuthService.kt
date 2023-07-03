@@ -4,7 +4,7 @@ import app.klock.api.domain.entity.SocialLogin
 import app.klock.api.domain.entity.SocialProvider
 import app.klock.api.domain.entity.User
 import app.klock.api.domain.entity.UserRole
-import app.klock.api.functional.auth.dto.SocialLoginRequest
+import app.klock.api.functional.auth.SocialLoginRequest
 import app.klock.api.repository.SocialLoginRepository
 import app.klock.api.repository.UserRepository
 import app.klock.api.utils.JwtUtils
@@ -36,11 +36,11 @@ class AuthService(
   private val appleClientId = "your_apple_client_id"
 
 
-  fun signup(username: String,
+  fun signup(nickName: String,
              email: String? = null,
              password: String? = null): Mono<User> {
     val user = User(
-      username = username,
+      nickName = nickName,
       email = email,
       hashedPassword = password?.let { passwordEncoder.encode(it) },
       role = UserRole.USER,

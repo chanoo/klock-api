@@ -38,7 +38,7 @@ class AuthServiceTest {
   fun `사용자 등록`() {
     val savedUser = User(
       id = 1L,
-      username = "testuser",
+      nickName = "testuser",
       email = "test@example.com",
       hashedPassword = "encoded_password",
       role = UserRole.USER,
@@ -66,7 +66,7 @@ class AuthServiceTest {
     // User 생성 테스트
     StepVerifier.create(
       authService.signup(
-        username = savedUser.username,
+        nickName = savedUser.nickName,
         email = savedUser.email,
         password = savedUser.hashedPassword
       )
@@ -94,7 +94,7 @@ class AuthServiceTest {
     val user = User(
       id = 1,
       email = "user@example.com",
-      username = "testuser",
+      nickName = "testuser",
       hashedPassword = "password",
       role = UserRole.USER,
       active = true,

@@ -1,9 +1,10 @@
 package app.klock.api.functional.auth
 
+import app.klock.api.domain.entity.UserSetting
 import app.klock.api.domain.entity.UserTag
-import app.klock.api.functional.auth.dto.*
 import app.klock.api.service.AuthService
 import app.klock.api.service.UserService
+import app.klock.api.service.UserSettingService
 import app.klock.api.service.UserTagService
 import app.klock.api.utils.JwtUtils
 import org.springframework.http.HttpStatus
@@ -18,6 +19,7 @@ class AuthHandler(
   private val authService: AuthService,
   private val userService: UserService,
   private val userTagService: UserTagService,
+  private val userSettingService: UserSettingService,
   private val jwtUtils: JwtUtils
 ) {
 
@@ -26,7 +28,7 @@ class AuthHandler(
     request.bodyToMono(SignUpReqDTO::class.java)
       .flatMap { signUpRequest ->
         authService.signup(
-          username = signUpRequest.username,
+          nickName = signUpRequest.nickName,
           email = signUpRequest.email,
           password = signUpRequest.password
         ).flatMap { savedUser ->
@@ -35,29 +37,37 @@ class AuthHandler(
             provider = signUpRequest.provider,
             providerUserId = signUpRequest.providerUserId
           ).flatMap { savedSocialLogin ->
-            if (signUpRequest.tagId != null) {
-              userTagService.create(
-                UserTag(
-                  userId = savedUser.id,
-                  tagId = signUpRequest.tagId
-                )
-              ).map { savedUserTag ->
-                Triple(savedUser, savedSocialLogin, savedUserTag)
+            userSettingService.create(
+              UserSetting(
+                userId = savedUser.id!!,
+                startOfTheWeek = signUpRequest.startOfTheWeek,
+                startOfTheDay = signUpRequest.startOfTheDay
+              )
+            ).flatMap { savedUserSetting ->
+              if (signUpRequest.tagId != null) {
+                userTagService.create(
+                  UserTag(
+                    userId = savedUser.id,
+                    tagId = signUpRequest.tagId
+                  )
+                ).map { savedUserTag ->
+                  SignUp(savedUser, savedSocialLogin, savedUserSetting, savedUserTag)
+                }
+              } else {
+                Mono.just(SignUp(savedUser, savedSocialLogin, savedUserSetting, null))
               }
-            } else {
-              Mono.just(Triple(savedUser, savedSocialLogin, null))
             }
           }
         }
       }
-      .flatMap { (user, socialLogin, userTag) ->
+      .flatMap { (user, socialLogin, userSetting, userTag) ->
         val accessToken = jwtUtils.generateToken(user.id.toString(), listOf(user.role.name))
         val refreshToken = jwtUtils.generateRefreshToken(user.id.toString(), listOf(user.role.name))
         ServerResponse.status(HttpStatus.CREATED).bodyValue(
           SignUpResDTO(id = user.id!!,
             accessToken = accessToken,
             refreshToken = refreshToken,
-            username = user.username,
+            nickName = user.nickName,
             provider = socialLogin.provider,
             providerUserId = socialLogin.providerUserId,
             email = user.email,
@@ -79,7 +89,7 @@ class AuthHandler(
             userService.validatePassword(loginRequest
               .password, user.hashedPassword)
           }
-          .switchIfEmpty(Mono.error(Exception("Invalid username or password")))
+          .switchIfEmpty(Mono.error(Exception("Invalid nickname or password")))
           .flatMap { user ->
             val token = jwtUtils.generateToken(user.id.toString(), listOf(user.role.name))
             ServerResponse.ok()
