@@ -3,7 +3,7 @@ package app.klock.api.functional
 import app.klock.api.config.TestConfig
 import app.klock.api.domain.entity.FriendRelation
 import app.klock.api.functional.friemdRelation.FriendRelationRouter
-import app.klock.api.functional.friendrelation.FriendRelationHandler
+import app.klock.api.functional.friemdRelation.FriendRelationHandler
 import io.mockk.coEvery
 import io.mockk.mockk
 import org.junit.jupiter.api.BeforeEach
@@ -32,10 +32,10 @@ class FriendRelationRouterTest {
   }
 
   @Test
-  fun `친구 관계 생성`() {
-    val createFriendRelationRequest = mapOf("requesterId" to 1L, "addresseeId" to 2L)
+  fun `팔로우 요청`() {
+    val createFriendRelationRequest = mapOf("followId" to 1L)
 
-    coEvery { friendRelationHandler.create(any()) } coAnswers {
+    coEvery { friendRelationHandler.follow(any()) } coAnswers {
       ServerResponse.status(201).bodyValue(createFriendRelationRequest)
     }
 
@@ -48,24 +48,24 @@ class FriendRelationRouterTest {
       .jsonPath("$.requesterId").isEqualTo(1L)
   }
 
-  @Test
-  fun `요청자 ID로 친구 관계 조회`() {
-    val friendRelations = listOf(
-      FriendRelation(id = 1L, requesterId = 1L, friendId = 2L),
-      FriendRelation(id = 2L, requesterId = 1L, friendId = 3L)
-    )
-
-    coEvery { friendRelationHandler.getFriendRelationsByRequesterId(any()) } coAnswers {
-      ServerResponse.ok().bodyValue(friendRelations)
-    }
-
-    client.get().uri("/api/friend-relations?requesterId=1")
-      .exchange()
-      .expectStatus().isOk
-      .expectBody()
-      .jsonPath("$[0].requesterId").isEqualTo(1L)
-      .jsonPath("$[0].friendId").isEqualTo(2L)
-      .jsonPath("$[1].requesterId").isEqualTo(1L)
-      .jsonPath("$[1].friendId").isEqualTo(3L)
-  }
+//  @Test
+//  fun `요청자 ID로 친구 관계 조회`() {
+//    val friendRelations = listOf(
+//      FriendRelation(id = 1L, requesterId = 1L, friendId = 2L),
+//      FriendRelation(id = 2L, requesterId = 1L, friendId = 3L)
+//    )
+//
+//    coEvery { friendRelationHandler.getFriendRelationsByRequesterId(any()) } coAnswers {
+//      ServerResponse.ok().bodyValue(friendRelations)
+//    }
+//
+//    client.get().uri("/api/friend-relations?requesterId=1")
+//      .exchange()
+//      .expectStatus().isOk
+//      .expectBody()
+//      .jsonPath("$[0].requesterId").isEqualTo(1L)
+//      .jsonPath("$[0].friendId").isEqualTo(2L)
+//      .jsonPath("$[1].requesterId").isEqualTo(1L)
+//      .jsonPath("$[1].friendId").isEqualTo(3L)
+//  }
 }

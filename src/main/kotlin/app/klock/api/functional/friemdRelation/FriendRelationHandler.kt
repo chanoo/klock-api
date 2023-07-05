@@ -1,6 +1,5 @@
-package app.klock.api.functional.friendrelation
+package app.klock.api.functional.friemdRelation
 
-import app.klock.api.functional.friemdRelation.FriendRelationRequest
 import app.klock.api.service.FriendRelationService
 import app.klock.api.utils.JwtUtils
 import org.springframework.http.HttpStatus
@@ -16,7 +15,10 @@ class FriendRelationHandler(
   private val jwtUtils: JwtUtils
 ) {
 
-  fun create(request: ServerRequest): Mono<ServerResponse> {
+  /**
+   * 팔로우 요청
+   */
+  fun follow(request: ServerRequest): Mono<ServerResponse> {
     return request.bodyToMono(FriendRelationRequest::class.java)
       .flatMap { friendRelationRequest ->
         friendRelationService.create(
@@ -31,9 +33,18 @@ class FriendRelationHandler(
       .switchIfEmpty(ServerResponse.status(HttpStatus.BAD_REQUEST).build())
   }
 
-  fun delete(request: ServerRequest): Mono<ServerResponse> {
-    val id = request.pathVariable("id").toLong()
-    return friendRelationService.deleteById(id)
+  /**
+   * 유저가 팔로우한 유저를 다시 언팔로우
+   *
+   */
+  fun unfollow(request: ServerRequest): Mono<ServerResponse> {
+    return request.bodyToMono(FriendRelationRequest::class.java)
+      .flatMap { friendRelationRequest ->
+        friendRelationService.unfollow(
+          userId = friendRelationRequest.followId,
+          followId = jwtUtils.getUserIdFromToken()
+        )
+      }
       .then(ServerResponse.noContent().build())
       .switchIfEmpty(ServerResponse.notFound().build())
   }

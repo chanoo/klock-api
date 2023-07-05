@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS klk_user
     id               BIGINT       NOT NULL AUTO_INCREMENT,
     email            VARCHAR(255) NOT NULL,
     hashed_password  VARCHAR(255),
-    username         VARCHAR(255) NOT NULL,
+    nickname         VARCHAR(255) NOT NULL,
     total_study_time INT          NOT NULL,
     user_level_id    BIGINT       NOT NULL,
     role             VARCHAR(255) NOT NULL,
@@ -43,13 +43,14 @@ CREATE TABLE IF NOT EXISTS klk_social_login
 -- 친구 관계 테이블
 CREATE TABLE IF NOT EXISTS klk_friend_relation
 (
-    id           BIGINT AUTO_INCREMENT PRIMARY KEY,      -- 관계 고유 ID
-    requester_id BIGINT    NOT NULL,                     -- 친구 요청을 보낸 사용자의 ID
-    friend_id    BIGINT    NOT NULL,                     -- 친구 요청을 받은 사용자의 ID
-    accepted     BOOLEAN DEFAULT TRUE,                   -- 친구 요청 수락 여부 (QR 코드를 사용하므로 기본값은 TRUE)
+    id           BIGINT    NOT NULL AUTO_INCREMENT,      -- 관계 고유 ID
+    user_id      BIGINT    NOT NULL,                     -- 사용자의 ID
+    follow_id    BIGINT    NOT NULL,                     -- 팔로우 요청을 한 사용자의 ID
+    followed     BOOLEAN   DEFAULT TRUE,                 -- 팔로우 요청 수락 여부 (QR 코드를 사용하므로 기본값은 TRUE)
     created_at   TIMESTAMP NOT NULL,                     -- 친구 요청 생성 시간
-    FOREIGN KEY (requester_id) REFERENCES klk_user (id), -- requester_id가 app_user 테이블의 id를 참조
-    FOREIGN KEY (friend_id) REFERENCES klk_user (id)     -- friend_id가 app_user 테이블의 id를 참조
+    PRIMARY KEY (id),
+    FOREIGN KEY (user_id) REFERENCES klk_user (id),      -- requester_id가 app_user 테이블의 id를 참조
+    FOREIGN KEY (follow_id) REFERENCES klk_user (id)     -- friend_id가 app_user 테이블의 id를 참조
 );
 
 -- 과목 테이블
@@ -162,4 +163,18 @@ CREATE TABLE IF NOT EXISTS klk_timer_focus
     created_at TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,                             -- 생성일
     updated_at TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, -- 업데이트 일자
     FOREIGN KEY (user_id) REFERENCES klk_user (id)                                          -- 사용자 타이머 테이블 참조
+);
+
+-- User Traces 테이블
+CREATE TABLE IF NOT EXISTS klk_user_traces
+(
+    id                  BIGINT       NOT NULL AUTO_INCREMENT,
+    user_id             BIGINT       NOT NULL,                                              -- 사용자 ID (외래 키)
+    friend_id           BIGINT       NULL,                                                  -- 친구 ID
+    friend_nickname     VARCHAR(255) NULL,                                                  -- 친구 닉네임
+    contents            VARCHAR(255) NULL,                                                  -- 내용
+    contents_image      VARCHAR(255) NULL,                                                  -- 내용 첨부 이미지
+    like                BOOLEAN      NOT NULL DEFAULT FALSE,                                -- 좋아요 여부
+    created_at TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,                             -- 생성일
+    PRIMARY KEY (id),
 );

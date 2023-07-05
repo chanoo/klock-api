@@ -17,7 +17,7 @@ import java.time.LocalDateTime
  * @property createdAt 레코드 생성 시간
  */
 
-@Table("klk_user")
+@Table("klk_user_traces")
 data class UserTraces(
   @Id
   val id: Long? = null,
