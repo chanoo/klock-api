@@ -9,10 +9,6 @@ import reactor.core.publisher.Mono
 @Service
 class UserLevelService(private val userLevelRepository: UserLevelRepository) {
 
-  fun findByUserId(userId: Long): Mono<UserLevel> {
-    return userLevelRepository.findByUserId(userId)
-  }
-
   @Transactional
   fun create(userLevel: UserLevel): Mono<UserLevel> {
     return userLevelRepository.save(userLevel)

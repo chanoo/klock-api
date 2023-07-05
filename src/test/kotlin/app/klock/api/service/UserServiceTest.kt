@@ -63,7 +63,6 @@ class UserServiceTest {
     )
     val userLevel = UserLevel(
       id = 1L,
-      userId = 1L,
       level = 1,
       requiredStudyTime = 10,
       characterName = "atom",
@@ -82,7 +81,7 @@ class UserServiceTest {
     )
     val userInfoDto = UserInfoDto.from(user = user, userLevel = userLevel, userSetting = userSetting, userTag = userTag)
     `when`(userRepository.findById(1L)).thenReturn(Mono.just(user))
-    `when`(userLevelRepository.findByUserId(1L)).thenReturn(Mono.just(userLevel))
+    `when`(userLevelRepository.findById(1L)).thenReturn(Mono.just(userLevel))
     `when`(userSettingRepository.findByUserId(1L)).thenReturn(Mono.just(userSetting))
     `when`(userTagRepository.findByUserId(1L)).thenReturn(Mono.just(userTag))
 

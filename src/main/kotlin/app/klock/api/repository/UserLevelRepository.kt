@@ -8,5 +8,5 @@ import reactor.core.publisher.Mono
 
 @Repository
 interface UserLevelRepository : ReactiveCrudRepository<UserLevel, Long> {
-    fun findByUserId(userId: Long): Mono<UserLevel>
+
 }

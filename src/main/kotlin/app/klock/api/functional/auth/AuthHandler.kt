@@ -45,7 +45,6 @@ class AuthHandler(
             ).flatMap { savedUserSetting ->
               userLevelService.create(
                 UserLevel(
-                  userId = savedUser.id!!,
                   level = 1,
                   requiredStudyTime = 0,
                   characterName = "",

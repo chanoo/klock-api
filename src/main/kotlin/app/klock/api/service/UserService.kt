@@ -46,7 +46,7 @@ class UserService(private val userRepository: UserRepository,
   fun findById(id: Long): Mono<UserInfoDto> {
     return userRepository.findById(id)
       .flatMap { user ->
-        userLevelRepository.findByUserId(id)
+        userLevelRepository.findById(user.userLevelId)
           .flatMap { userLevel ->
             userSettingRepository.findByUserId(id)
               .flatMap { userSetting ->
