@@ -42,11 +42,11 @@ class UserTagRouterTest {
   @Test
   fun `계정 태그 조회`() {
 
-    coEvery { userTagHandler.getUserTags(any()) } coAnswers {
+    coEvery { userTagHandler.getUserTag(any()) } coAnswers {
       ServerResponse.ok().bodyValue(userTag)
     }
 
-    client.get().uri("/api/user-tags?userId=1")
+    client.get().uri("/api/user-tag?userId=1")
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)

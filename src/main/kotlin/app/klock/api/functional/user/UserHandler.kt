@@ -2,8 +2,6 @@ package app.klock.api.functional.user
 
 import app.klock.api.domain.entity.User
 import app.klock.api.domain.entity.UserRole
-import app.klock.api.functional.auth.UpdateUserRequest
-import app.klock.api.functional.auth.UpdateUserResponse
 import app.klock.api.service.UserService
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.BodyInserters
@@ -17,8 +15,7 @@ class UserHandler(private val userService: UserService) {
 
   // 사용자 목록 조회
   fun getAllUsers(request: ServerRequest): Mono<ServerResponse> {
-    val usersFlux = userService.findAll()
-    return usersFlux.map { user -> UserResponse(user.id, user.nickName, user.email) }
+    return userService.findAll()
       .collectList()
       .flatMap { users -> ServerResponse.ok().body(BodyInserters.fromValue(users)) }
   }
@@ -26,13 +23,11 @@ class UserHandler(private val userService: UserService) {
   // 사용자 상세 조회
   fun getUserById(request: ServerRequest): Mono<ServerResponse> {
     val requestedUserId = request.pathVariable("id").toLong()
-
     return userService.findById(requestedUserId)
-      .flatMap { user ->
-        ServerResponse.ok().bodyValue(UserResponse(user.id, user.nickName, user.email))
+      .flatMap { userInfo ->
+        ServerResponse.ok().bodyValue(userInfo)
       }
       .switchIfEmpty(ServerResponse.notFound().build())
-
   }
 
   // 사용자 수정
@@ -40,24 +35,10 @@ class UserHandler(private val userService: UserService) {
     request.bodyToMono(UpdateUserRequest::class.java)
       .flatMap { userRequest ->
         val userId = request.pathVariable("id").toLong()
-        userService.update(
-          id = userId,
-          user = User(
-            id = userRequest.id,
-            nickName = userRequest.nickName,
-            email = userRequest.email,
-            hashedPassword = userRequest.password,
-            role = UserRole.USER,
-            active = true,
-            totalStudyTime = 0,
-            userLevelId = 1,
-            createdAt = LocalDateTime.now(),
-            updatedAt = LocalDateTime.now()
-          )
-        )
+        userService.update(id = userId, updateUserRequest = userRequest)
       }
-      .flatMap { user ->
-        ServerResponse.ok().bodyValue(UpdateUserResponse(user.id, user.nickName, user.email))
+      .flatMap { userInfo ->
+        ServerResponse.ok().bodyValue(userInfo)
       }
       .switchIfEmpty(ServerResponse.notFound().build())
 
@@ -74,7 +55,7 @@ class UserHandler(private val userService: UserService) {
         userService.changePassword(userId, changePasswordRequest.currentPassword, changePasswordRequest.newPassword)
       }
       .flatMap { user ->
-        ServerResponse.ok().bodyValue(UserResponse.from(user))
+        ServerResponse.ok().bodyValue(UserInfoDto.from(user))
       }
       .switchIfEmpty(ServerResponse.notFound().build())
 

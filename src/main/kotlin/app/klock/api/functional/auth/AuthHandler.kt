@@ -1,11 +1,9 @@
 package app.klock.api.functional.auth
 
+import app.klock.api.domain.entity.UserLevel
 import app.klock.api.domain.entity.UserSetting
 import app.klock.api.domain.entity.UserTag
-import app.klock.api.service.AuthService
-import app.klock.api.service.UserService
-import app.klock.api.service.UserSettingService
-import app.klock.api.service.UserTagService
+import app.klock.api.service.*
 import app.klock.api.utils.JwtUtils
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -20,6 +18,7 @@ class AuthHandler(
   private val userService: UserService,
   private val userTagService: UserTagService,
   private val userSettingService: UserSettingService,
+  private val userLevelService: UserLevelService,
   private val jwtUtils: JwtUtils
 ) {
 
@@ -44,23 +43,33 @@ class AuthHandler(
                 startOfTheDay = signUpRequest.startOfTheDay
               )
             ).flatMap { savedUserSetting ->
-              if (signUpRequest.tagId != null) {
-                userTagService.create(
-                  UserTag(
-                    userId = savedUser.id,
-                    tagId = signUpRequest.tagId
-                  )
-                ).map { savedUserTag ->
-                  SignUp(savedUser, savedSocialLogin, savedUserSetting, savedUserTag)
+              userLevelService.create(
+                UserLevel(
+                  userId = savedUser.id!!,
+                  level = 1,
+                  requiredStudyTime = 0,
+                  characterName = "",
+                  characterImage = ""
+                )
+              ).flatMap { savedUserLevel ->
+                if (signUpRequest.tagId != null) {
+                  userTagService.create(
+                    UserTag(
+                      userId = savedUser.id,
+                      tagId = signUpRequest.tagId
+                    )
+                  ).map { savedUserTag ->
+                    SignUp(savedUser, savedSocialLogin, savedUserSetting, savedUserLevel, savedUserTag)
+                  }
+                } else {
+                  Mono.just(SignUp(savedUser, savedSocialLogin, savedUserSetting, savedUserLevel, null))
                 }
-              } else {
-                Mono.just(SignUp(savedUser, savedSocialLogin, savedUserSetting, null))
               }
             }
           }
         }
       }
-      .flatMap { (user, socialLogin, userSetting, userTag) ->
+      .flatMap { (user, socialLogin, userSetting, userLevel, userTag) ->
         val accessToken = jwtUtils.generateToken(user.id.toString(), listOf(user.role.name))
         val refreshToken = jwtUtils.generateRefreshToken(user.id.toString(), listOf(user.role.name))
         ServerResponse.status(HttpStatus.CREATED).bodyValue(
