@@ -11,9 +11,9 @@ import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.transaction.reactive.TransactionalOperator
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import java.nio.charset.Charset
 import java.time.LocalDateTime
 
 /**
@@ -25,7 +25,9 @@ class UserService(private val userRepository: UserRepository,
                   private val userLevelRepository: UserLevelRepository,
                   private val userSettingRepository: UserSettingRepository,
                   private val userTagRepository: UserTagRepository,
-                  private val passwordEncoder: PasswordEncoder) {
+                  private val passwordEncoder: PasswordEncoder,
+                  private val transactionalOperator: TransactionalOperator
+) {
   /**
    * 데이터베이스에서 모든 User 엔티티를 검색합니다.
    * @return User 엔티티의 Flux를 반환합니다.
@@ -70,7 +72,6 @@ class UserService(private val userRepository: UserRepository,
    * @param updateUserRequest 업데이트할 사용자 정보를 포함한 User 객체
    * @return 업데이트된 사용자의 Mono를 반환합니다.
    */
-  @Transactional
   fun update(id: Long, updateUserRequest: UpdateUserRequest): Mono<UserInfoDto> {
     return userRepository.findById(id)
       .flatMap { user ->
@@ -96,7 +97,7 @@ class UserService(private val userRepository: UserRepository,
                           userTag.copy(
                             tagId = updateUserRequest.tagId
                           )
-                        )
+                        ).`as`(transactionalOperator::transactional)
                           .map { updateTag ->
                             UserInfoDto.from(user = updateUser, userSetting = updateUserSetting, userTag = updateTag)
                           }
@@ -126,7 +127,7 @@ class UserService(private val userRepository: UserRepository,
    * 사용자의 비밀번호를 변경합니다.
    * @param id 비밀번호를 변경할 사용자의 ID
    * @param currentPassword 현재 비밀번호
-   * @param password 변경할 비밀번호
+   * @param newPassword 변경할 비밀번호
    * @return 변경된 사용자의 Mono를 반환합니다.
    */
   @Transactional
@@ -150,9 +151,7 @@ class UserService(private val userRepository: UserRepository,
   }
 
   private fun validateNickName(nickName: String): Boolean {
-    val byteSize = nickName.toByteArray(Charset.forName("UTF-8")).size
-
-    return !nickName.isNullOrEmpty() &&
+    return nickName.isNotEmpty() &&
             nickName.length <= User.allowedNickNameMaxLength() &&
             User.allowedPattern().matches(nickName)
   }
