@@ -1,8 +1,12 @@
 package app.klock.api.service
 
-import app.klock.api.domain.entity.User
-import app.klock.api.domain.entity.UserRole
+import app.klock.api.domain.entity.*
+import app.klock.api.functional.user.UpdateUserRequest
+import app.klock.api.functional.user.UserInfoDto
+import app.klock.api.repository.UserLevelRepository
 import app.klock.api.repository.UserRepository
+import app.klock.api.repository.UserSettingRepository
+import app.klock.api.repository.UserTagRepository
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -19,6 +23,7 @@ import org.springframework.test.context.ActiveProfiles
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
+import java.time.DayOfWeek
 import java.time.LocalDateTime
 
 @ExtendWith(MockitoExtension::class)
@@ -26,16 +31,20 @@ import java.time.LocalDateTime
 class UserServiceTest {
 
   private lateinit var userService: UserService
-
   private lateinit var userRepository: UserRepository
-
+  private lateinit var userLevelRepository: UserLevelRepository
+  private lateinit var userSettingRepository: UserSettingRepository
+  private lateinit var userTagRepository: UserTagRepository
   private lateinit var passwordEncoder: BCryptPasswordEncoder
 
   @BeforeEach
   fun setUp() {
     passwordEncoder = mock(BCryptPasswordEncoder::class.java)
     userRepository = mock(UserRepository::class.java)
-    userService = UserService(userRepository, passwordEncoder)
+    userLevelRepository = mock(UserLevelRepository::class.java)
+    userSettingRepository = mock(UserSettingRepository::class.java)
+    userTagRepository = mock(UserTagRepository::class.java)
+    userService = UserService(userRepository, userLevelRepository, userSettingRepository, userTagRepository, passwordEncoder)
   }
 
   @Test
@@ -52,14 +61,37 @@ class UserServiceTest {
       createdAt = LocalDateTime.now(),
       updatedAt = LocalDateTime.now()
     )
+    val userLevel = UserLevel(
+      id = 1L,
+      userId = 1L,
+      level = 1,
+      requiredStudyTime = 10,
+      characterName = "atom",
+      characterImage = "atom.png"
+    )
+    val userSetting = UserSetting(
+      id = 1L,
+      userId = 1L,
+      startOfTheWeek = DayOfWeek.MONDAY,
+      startOfTheDay = 1
+    )
+    val userTag = UserTag(
+      id = 1L,
+      userId = 1L,
+      tagId = 1L
+    )
+    val userInfoDto = UserInfoDto.from(user = user, userLevel = userLevel, userSetting = userSetting, userTag = userTag)
     `when`(userRepository.findById(1L)).thenReturn(Mono.just(user))
+    `when`(userLevelRepository.findByUserId(1L)).thenReturn(Mono.just(userLevel))
+    `when`(userSettingRepository.findByUserId(1L)).thenReturn(Mono.just(userSetting))
+    `when`(userTagRepository.findByUserId(1L)).thenReturn(Mono.just(userTag))
 
     // Act
     val foundUser = userService.findById(1L)
 
     // Assert
     StepVerifier.create(foundUser)
-      .expectNext(user)
+      .expectNext(userInfoDto)
       .verifyComplete()
   }
 
@@ -95,8 +127,8 @@ class UserServiceTest {
 
     // Assert
     StepVerifier.create(users)
-      .expectNext(user1)
-      .expectNext(user2)
+      .expectNext(UserInfoDto.from(user1))
+      .expectNext(UserInfoDto.from(user2))
       .verifyComplete()
   }
 
@@ -152,7 +184,7 @@ class UserServiceTest {
     )
     val updatedUser = User(
       id = 1L,
-      nickName = "user1",
+      nickName = "new_user",
       email = "user1@example.com",
       role = UserRole.USER,
       active = true,
@@ -161,15 +193,47 @@ class UserServiceTest {
       createdAt = LocalDateTime.now(),
       updatedAt = LocalDateTime.now()
     )
+    val existingUserSetting = UserSetting(
+      id = 1L,
+      userId = 1L,
+      startOfTheWeek = DayOfWeek.MONDAY,
+      startOfTheDay = 1
+    )
+    val updateUserSetting = UserSetting(
+      id = 1L,
+      userId = 1L,
+      startOfTheWeek = DayOfWeek.THURSDAY,
+      startOfTheDay = 2
+    )
+    val existingUserTag = UserTag(
+      id = 1L,
+      userId = 1L,
+      tagId = 1L
+    )
+    val updateUserTag = UserTag(
+      id = 1L,
+      userId = 1L,
+      tagId = 2L
+    )
+    val updateUserRequest = UpdateUserRequest(
+      nickName = "new_user",
+      startOfTheDay = 2,
+      startOfTheWeek = DayOfWeek.THURSDAY,
+      tagId = 2L
+    )
     `when`(userRepository.findById(1L)).thenReturn(Mono.just(existingUser))
     `when`(userRepository.save(updatedUser)).thenReturn(Mono.just(updatedUser))
+    `when`(userSettingRepository.findByUserId(1L)).thenReturn(Mono.just(existingUserSetting))
+    `when`(userSettingRepository.save(updateUserSetting)).thenReturn(Mono.just(updateUserSetting))
+    `when`(userTagRepository.findByUserId(1L)).thenReturn(Mono.just(existingUserTag))
+    `when`(userTagRepository.save(updateUserTag)).thenReturn(Mono.just(updateUserTag))
 
     // Act
-    val savedUser = userService.update(1L, updatedUser)
+    val savedUser = userService.update(1L, updateUserRequest)
 
     // Assert
     StepVerifier.create(savedUser)
-      .expectNext(updatedUser)
+      .expectNext(UserInfoDto.from(user = updatedUser, userSetting = updateUserSetting, userTag = updateUserTag))
       .verifyComplete()
   }
 

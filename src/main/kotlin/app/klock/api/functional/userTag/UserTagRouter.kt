@@ -9,8 +9,8 @@ class UserTagRouter(private val userTagHandler: UserTagHandler) {
 
   @Bean
   fun userTagRoutes() = router {
-    "/api/user-tags".nest {
-      GET("", userTagHandler::getUserTags)
+    "/api/user-tag".nest {
+      GET("", userTagHandler::getUserTag)
       POST("", userTagHandler::create)
     }
   }

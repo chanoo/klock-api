@@ -21,6 +21,7 @@ data class SignUp(
   val savedUser: User,
   val savedSocialLogin: SocialLogin,
   val savedUserSetting: UserSetting,
+  val savedUserLevel: UserLevel,
   val savedUserTag: UserTag?
 )
 
@@ -44,9 +45,6 @@ data class SignUpResDTO(
   val email: String?,
   val tagId: Long?
 )
-
-data class UpdateUserRequest(val id: Long?, val password: String, override val nickName: String, override val email: String) : BaseUserDTO(nickName, email)
-data class UpdateUserResponse(val id: Long?, override val nickName: String, override val email: String?) : BaseUserDTO(nickName, email)
 
 data class RefreshTokenRequest(val refreshToken: String)
 data class RefreshTokenResponse(val accessToken: String, val refreshToken: String)

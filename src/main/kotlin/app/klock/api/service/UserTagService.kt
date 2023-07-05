@@ -9,7 +9,7 @@ import reactor.core.publisher.Mono
 @Service
 class UserTagService(private val userTagRepository: UserTagRepository) {
 
-  fun findByUserId(userId: Long): Flux<UserTag> {
+  fun findByUserId(userId: Long): Mono<UserTag> {
     return userTagRepository.findByUserId(userId)
   }
 

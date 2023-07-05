@@ -12,13 +12,12 @@ import java.util.*
 @Component
 class UserTagHandler(private val userTagService: UserTagService) {
   // userId를 사용하여 태그 가져오기
-  fun getUserTags(request: ServerRequest): Mono<ServerResponse> {
+  fun getUserTag(request: ServerRequest): Mono<ServerResponse> {
     val userId = request.queryParam("userId").flatMap { it.toLongOrNull()?.let { id -> Optional.of(id) } }.orElse(null)
     return if (userId != null) {
       userTagService.findByUserId(userId)
-        .collectList()
-        .flatMap { tags ->
-          ServerResponse.ok().bodyValue(tags)
+        .flatMap { tag ->
+          ServerResponse.ok().bodyValue(tag)
         }
     } else {
       ServerResponse.status(HttpStatus.BAD_REQUEST).bodyValue("Invalid userId")

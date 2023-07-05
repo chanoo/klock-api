@@ -9,7 +9,7 @@ import reactor.core.publisher.Mono
 @Service
 class UserSettingService(private val userSettingRepository: UserSettingRepository) {
 
-  fun findByUserId(userId: Long): Flux<UserSetting> {
+  fun findByUserId(userId: Long): Mono<UserSetting> {
     return userSettingRepository.findByUserId(userId)
   }
 
