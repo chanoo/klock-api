@@ -11,7 +11,6 @@ import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import org.springframework.transaction.reactive.TransactionalOperator
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.time.LocalDateTime
@@ -26,7 +25,6 @@ class UserService(private val userRepository: UserRepository,
                   private val userSettingRepository: UserSettingRepository,
                   private val userTagRepository: UserTagRepository,
                   private val passwordEncoder: PasswordEncoder,
-                  private val transactionalOperator: TransactionalOperator
 ) {
   /**
    * 데이터베이스에서 모든 User 엔티티를 검색합니다.
@@ -97,7 +95,7 @@ class UserService(private val userRepository: UserRepository,
                           userTag.copy(
                             tagId = updateUserRequest.tagId
                           )
-                        ).`as`(transactionalOperator::transactional)
+                        )
                           .map { updateTag ->
                             UserInfoDto.from(user = updateUser, userSetting = updateUserSetting, userTag = updateTag)
                           }
