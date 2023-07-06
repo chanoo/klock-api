@@ -1,12 +1,7 @@
 package app.klock.api.functional
 
 import app.klock.api.domain.entity.SocialProvider
-import app.klock.api.functional.auth.AuthHandler
-import app.klock.api.functional.auth.AuthRouter
-import app.klock.api.functional.auth.LoginRequest
-import app.klock.api.functional.auth.LoginResponse
-import app.klock.api.functional.auth.SignUpReqDTO
-import app.klock.api.functional.auth.SignUpResDTO
+import app.klock.api.functional.auth.*
 import io.mockk.coEvery
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -47,7 +42,7 @@ class AuthRouterTest {
       tagId = 1,
       provider = SocialProvider.APPLE,
       startOfTheWeek = DayOfWeek.MONDAY,
-      startOfTheDay = 7
+      startOfTheDay = 5
     )
 
     val signUpResDTO = SignUpResDTO(
@@ -59,6 +54,8 @@ class AuthRouterTest {
       provider = SocialProvider.APPLE,
       providerUserId = "test_provider_user_id",
       tagId = 1L,
+      startOfTheWeek = DayOfWeek.MONDAY,
+      startOfTheDay = 5
     )
 
     coEvery { authHandler.signup(any()) } coAnswers {
