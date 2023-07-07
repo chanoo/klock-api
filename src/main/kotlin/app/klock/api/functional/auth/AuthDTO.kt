@@ -21,7 +21,6 @@ data class SignUp(
   val savedUser: User,
   val savedSocialLogin: SocialLogin,
   val savedUserSetting: UserSetting,
-  val savedUserLevel: UserLevel,
   val savedUserTag: UserTag?
 )
 
@@ -31,10 +30,11 @@ data class SignUpReqDTO(
   val provider: SocialProvider,
   val email: String?,
   val password: String?,
-  val tagId: Long?,
+  val tagId: Long,
   val startOfTheWeek: DayOfWeek,
   val startOfTheDay: Int
 )
+
 data class SignUpResDTO(
   val id: Long,
   val accessToken: String,
@@ -43,7 +43,9 @@ data class SignUpResDTO(
   val providerUserId: String,
   val provider: SocialProvider,
   val email: String?,
-  val tagId: Long?
+  val tagId: Long?,
+  val startOfTheWeek: DayOfWeek,
+  val startOfTheDay: Int
 )
 
 data class RefreshTokenRequest(val refreshToken: String)
