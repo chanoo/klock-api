@@ -13,7 +13,7 @@ class UserRouter(private val userHandler: UserHandler) {
       GET("/{id}", userHandler::getUserById)
       PUT("/{id}", userHandler::updateUser)
       DELETE("/{id}", userHandler::deleteUser)
-      POST("/existedNickName", userHandler::existedNickName)
+      POST("/existed-nickname", userHandler::existedNickname)
     }
   }
 }

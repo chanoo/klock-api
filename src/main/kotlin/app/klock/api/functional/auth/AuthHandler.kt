@@ -28,7 +28,7 @@ class AuthHandler(
     request.bodyToMono(SignUpReqDTO::class.java)
       .flatMap { signUpRequest ->
         val savedUserMono = authService.signup(
-          nickName = signUpRequest.nickName,
+          nickname = signUpRequest.nickname,
           email = signUpRequest.email,
           password = signUpRequest.password
         )
@@ -65,7 +65,7 @@ class AuthHandler(
             id = user.id!!,
             accessToken = accessToken,
             refreshToken = refreshToken,
-            nickName = user.nickName,
+            nickname = user.nickname,
             provider = socialLogin.provider,
             providerUserId = socialLogin.providerUserId,
             email = user.email,

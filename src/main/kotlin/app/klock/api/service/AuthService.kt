@@ -37,11 +37,11 @@ class AuthService(
   private val appleClientId = "your_apple_client_id"
 
 
-  fun signup(nickName: String,
+  fun signup(nickname: String,
              email: String? = null,
              password: String? = null): Mono<User> {
     val user = User(
-      nickName = nickName,
+      nickname = nickname,
       email = email,
       hashedPassword = password?.let { passwordEncoder.encode(it) },
       role = UserRole.USER,

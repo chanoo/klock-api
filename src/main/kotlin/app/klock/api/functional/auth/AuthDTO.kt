@@ -5,11 +5,11 @@ import java.time.DayOfWeek
 
 data class AuthDTO(
   val id: Long? = null,
-  val nickName: String,
+  val nickname: String,
   val email: String?
 )
 
-open class BaseUserDTO(open val nickName: String, open val email: String?)
+open class BaseUserDTO(open val nickname: String, open val email: String?)
 
 data class LoginRequest(val email: String, val password: String)
 data class LoginResponse(val token: String)
@@ -25,7 +25,7 @@ data class SignUp(
 )
 
 data class SignUpReqDTO(
-  val nickName: String,
+  val nickname: String,
   val providerUserId: String,
   val provider: SocialProvider,
   val email: String?,
@@ -39,7 +39,7 @@ data class SignUpResDTO(
   val id: Long,
   val accessToken: String,
   val refreshToken: String,
-  val nickName: String,
+  val nickname: String,
   val providerUserId: String,
   val provider: SocialProvider,
   val email: String?,

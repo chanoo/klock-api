@@ -60,10 +60,10 @@ class UserHandler(private val userService: UserService) {
       .switchIfEmpty(ServerResponse.notFound().build())
 
   // 닉네임 존재 여부 체크
-  fun existedNickName(request: ServerRequest): Mono<ServerResponse> =
-    request.bodyToMono(CheckNickNameRequest::class.java)
-      .flatMap { checkNickNameRequest ->
-        userService.existedNickName(checkNickNameRequest.nickName)
+  fun existedNickname(request: ServerRequest): Mono<ServerResponse> =
+    request.bodyToMono(CheckNicknameRequest::class.java)
+      .flatMap { checkNicknameRequest ->
+        userService.existedNickname(checkNicknameRequest.nickname)
           .flatMap { exists ->
             ServerResponse.ok().bodyValue(mapOf("exists" to exists))
           }

@@ -35,7 +35,7 @@ class AuthRouterTest {
   fun `POST 요청으로 회원 가입 테스트`() {
 
     val signUpReqDTO = SignUpReqDTO(
-      nickName = "user1",
+      nickname = "user1",
       email = "user1@example.com",
       password = "test_password",
       providerUserId = "test_provider_user_id",
@@ -47,7 +47,7 @@ class AuthRouterTest {
 
     val signUpResDTO = SignUpResDTO(
       id = 1L,
-      nickName = "user1",
+      nickname = "user1",
       email = "user1@example.com",
       accessToken = "valid_token",
       refreshToken = "valid_refresh_token",
@@ -71,7 +71,7 @@ class AuthRouterTest {
       .expectBody(SignUpResDTO::class.java)
       .value { actualSignUpResponse ->
         assertEquals(1L, actualSignUpResponse.id, "ID가 1이어야 합니다.")
-        assertEquals(signUpReqDTO.nickName, actualSignUpResponse.nickName)
+        assertEquals(signUpReqDTO.nickname, actualSignUpResponse.nickname)
         assertEquals(signUpReqDTO.email, actualSignUpResponse.email)
       }
   }

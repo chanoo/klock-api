@@ -51,7 +51,7 @@ class SecurityConfig(
             "/api/chat-bots/**",
             "/ws/**",
             "/api/tags",
-            "/api/users/existedNickName")
+            "/api/users/existed-nickname")
           .permitAll()
           .anyExchange().authenticated()
       }

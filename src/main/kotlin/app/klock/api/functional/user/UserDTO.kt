@@ -6,6 +6,7 @@ import app.klock.api.domain.entity.UserSetting
 import app.klock.api.domain.entity.UserTag
 import app.klock.api.functional.auth.BaseUserDTO
 import java.time.DayOfWeek
+import java.time.LocalDateTime
 
 data class ChangePasswordRequest(
   val currentPassword: String,
@@ -14,7 +15,7 @@ data class ChangePasswordRequest(
 
 data class UserInfoDto(
   val id: Long? = null,
-  val nickName: String,
+  val nickname: String,
   val email: String? = null,
   val level: Int,
   val requiredStudyTime: Int,
@@ -31,7 +32,7 @@ data class UserInfoDto(
              userTag: UserTag? = null): UserInfoDto {
       return UserInfoDto(
         id = user.id,
-        nickName = user.nickName,
+        nickname = user.nickname,
         email = user.email,
         level = userLevel?.level ?: 0,
         requiredStudyTime = userLevel?.requiredStudyTime ?: 0,
@@ -45,21 +46,22 @@ data class UserInfoDto(
   }
 }
 
-data class CheckNickNameRequest(
-  val nickName: String
+data class CheckNicknameRequest(
+  val nickname: String
 )
 
 data class UpdateUserRequest(
-  val nickName: String,
+  val nickname: String,
   val tagId: Long,
   val startOfTheWeek: DayOfWeek,
-  val startOfTheDay: Int
+  val startOfTheDay: Int,
+  val updatedAt: LocalDateTime = LocalDateTime.now()
 )
 data class UpdateUserResponse(
   val id: Long?,
-  override val nickName: String,
+  override val nickname: String,
   override val email: String?,
   val tagId: Long?,
   val startOfTheWeek: DayOfWeek,
   val startOfTheDay: Int
-) : BaseUserDTO(nickName, email)
+) : BaseUserDTO(nickname, email)

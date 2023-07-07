@@ -77,8 +77,8 @@ class UserService(private val userRepository: UserRepository,
       .flatMap { user ->
         userRepository.save(
           user.copy(
-            nickName = updateUserRequest.nickName,
-            updatedAt = LocalDateTime.now()
+            nickname = updateUserRequest.nickname,
+            updatedAt = updateUserRequest.updatedAt
           )
         )
           .flatMap { updateUser ->
@@ -113,7 +113,7 @@ class UserService(private val userRepository: UserRepository,
    * @param id 탈퇴처리할 사용자의 ID
    *
    * user 엔티티
-   * - nickName = #id
+   * - nickname = #id
    * - email = null
    * - hashedPassword = null
    * - active = false
@@ -134,25 +134,35 @@ class UserService(private val userRepository: UserRepository,
    */
   @PreAuthorize("authentication.principal == #id")
   fun deleteById(id: Long): Mono<Void> {
-    socialLoginRepository.deleteByUserId(id)
-    userSettingRepository.deleteByUserId(id)
-    userTagRepository.deleteByUserId(id)
-    studySessionRepository.deleteByUserId(id)
-    timerExamRepository.deleteByUserId(id)
-    timerFocusRepository.deleteByUserId(id)
-    timerPomodoroRepository.deleteByUserId(id)
+    val deleteSocialLogin = Mono.justOrEmpty(socialLoginRepository.deleteByUserId(id))
+    val deleteUserSetting = Mono.justOrEmpty(userSettingRepository.deleteByUserId(id))
+    val deleteUserTag = Mono.justOrEmpty(userTagRepository.deleteByUserId(id))
+    val deleteStudySession = Mono.justOrEmpty(studySessionRepository.deleteByUserId(id))
+    val deleteTimerExam = Mono.justOrEmpty(timerExamRepository.deleteByUserId(id))
+    val deleteTimerFocus = Mono.justOrEmpty(timerFocusRepository.deleteByUserId(id))
+    val deleteTimerPomodoro = Mono.justOrEmpty(timerPomodoroRepository.deleteByUserId(id))
 
-    return userRepository.findById(id)
-      .flatMap { user ->
-        userRepository.save(user.copy(
-          nickName = "#$id",
-          email = null,
-          hashedPassword = null,
-          active = false,
-          updatedAt = LocalDateTime.now()
-        ))
+    return Mono.`when`(
+      deleteSocialLogin,
+      deleteUserSetting,
+      deleteUserTag,
+      deleteStudySession,
+      deleteTimerExam,
+      deleteTimerFocus,
+      deleteTimerPomodoro
+    ).then(
+      userRepository.findById(id)
+        .flatMap { user ->
+          userRepository.save(user.copy(
+            nickname = "#$id",
+            email = null,
+            hashedPassword = null,
+            active = false,
+            updatedAt = LocalDateTime.now()
+          ))
       }
       .then(Mono.empty())
+    )
   }
 
   // 이메일 주소로 사용자를 검색합니다.
@@ -181,17 +191,17 @@ class UserService(private val userRepository: UserRepository,
         }
       }
 
-  fun existedNickName(nickName: String): Mono<Boolean> {
-    if (!validateNickName(nickName)) {
+  fun existedNickname(nickname: String): Mono<Boolean> {
+    if (!validateNickname(nickname)) {
       return Mono.error(IllegalArgumentException("Invalid nick name"))
     }
-    return userRepository.findByNickName(nickName)
+    return userRepository.findByNickname(nickname)
       .hasElement()
   }
 
-  private fun validateNickName(nickName: String): Boolean {
-    return nickName.isNotEmpty() &&
-            nickName.length <= User.allowedNickNameMaxLength() &&
-            User.allowedPattern().matches(nickName)
+  private fun validateNickname(nickname: String): Boolean {
+    return nickname.isNotEmpty() &&
+            nickname.length <= User.allowedNicknameMaxLength() &&
+            User.allowedPattern().matches(nickname)
   }
 }
