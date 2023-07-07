@@ -97,7 +97,7 @@ class AuthHandler(
             val token = jwtUtils.generateToken(user.id.toString(), listOf(user.role.name))
             ServerResponse.ok()
               .contentType(MediaType.APPLICATION_JSON)
-              .bodyValue(mapOf("token" to token))
+              .bodyValue(LoginDto(token = token, userId = user.id))
           }
       }
       .onErrorResume { error ->
@@ -129,7 +129,7 @@ class AuthHandler(
   fun authenticateFacebook(request: ServerRequest): Mono<ServerResponse> {
     val socialLoginRequest = request.bodyToMono(SocialLoginRequest::class.java)
     return authService.authenticateFacebook(socialLoginRequest)
-      .flatMap { jwt -> ServerResponse.ok().bodyValue(mapOf("token" to jwt)) }
+      .flatMap { login -> ServerResponse.ok().bodyValue(login) }
       .onErrorResume { error ->
         ServerResponse.status(HttpStatus.UNAUTHORIZED).bodyValue(mapOf("error" to error.localizedMessage))
       }
@@ -139,7 +139,7 @@ class AuthHandler(
   fun authenticateApple(request: ServerRequest): Mono<ServerResponse> {
     val socialLoginRequest = request.bodyToMono(SocialLoginRequest::class.java)
     return authService.authenticateApple(socialLoginRequest)
-      .flatMap { jwt -> ServerResponse.ok().bodyValue(mapOf("token" to jwt)) }
+      .flatMap { login -> ServerResponse.ok().bodyValue(login) }
       .onErrorResume { error ->
         ServerResponse.status(HttpStatus.UNAUTHORIZED).bodyValue(mapOf("error" to error.localizedMessage))
       }

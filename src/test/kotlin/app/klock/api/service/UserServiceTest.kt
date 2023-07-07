@@ -3,10 +3,7 @@ package app.klock.api.service
 import app.klock.api.domain.entity.*
 import app.klock.api.functional.user.UpdateUserRequest
 import app.klock.api.functional.user.UserInfoDto
-import app.klock.api.repository.UserLevelRepository
-import app.klock.api.repository.UserRepository
-import app.klock.api.repository.UserSettingRepository
-import app.klock.api.repository.UserTagRepository
+import app.klock.api.repository.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -37,6 +34,12 @@ class UserServiceTest {
   private lateinit var userTagRepository: UserTagRepository
   private lateinit var passwordEncoder: BCryptPasswordEncoder
 
+  private lateinit var socialLoginRepository: SocialLoginRepository
+  private lateinit var studySessionRepository: StudySessionRepository
+  private lateinit var timerExamRepository: TimerExamRepository
+  private lateinit var timerFocusRepository: TimerFocusRepository
+  private lateinit var timerPomodoroRepository: TimerPomodoroRepository
+
   @BeforeEach
   fun setUp() {
     passwordEncoder = mock(BCryptPasswordEncoder::class.java)
@@ -44,7 +47,22 @@ class UserServiceTest {
     userLevelRepository = mock(UserLevelRepository::class.java)
     userSettingRepository = mock(UserSettingRepository::class.java)
     userTagRepository = mock(UserTagRepository::class.java)
-    userService = UserService(userRepository, userLevelRepository, userSettingRepository, userTagRepository, passwordEncoder)
+    socialLoginRepository = mock(SocialLoginRepository::class.java)
+    studySessionRepository = mock(StudySessionRepository::class.java)
+    timerExamRepository = mock(TimerExamRepository::class.java)
+    timerFocusRepository = mock(TimerFocusRepository::class.java)
+    timerPomodoroRepository = mock(TimerPomodoroRepository::class.java)
+    userService = UserService(
+      userRepository,
+      userLevelRepository,
+      userSettingRepository,
+      userTagRepository,
+      socialLoginRepository,
+      studySessionRepository,
+      timerExamRepository,
+      timerFocusRepository,
+      timerPomodoroRepository,
+      passwordEncoder)
   }
 
   @Test

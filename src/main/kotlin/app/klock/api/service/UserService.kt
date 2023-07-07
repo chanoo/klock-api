@@ -3,10 +3,7 @@ package app.klock.api.service
 import app.klock.api.domain.entity.User
 import app.klock.api.functional.user.UpdateUserRequest
 import app.klock.api.functional.user.UserInfoDto
-import app.klock.api.repository.UserLevelRepository
-import app.klock.api.repository.UserRepository
-import app.klock.api.repository.UserSettingRepository
-import app.klock.api.repository.UserTagRepository
+import app.klock.api.repository.*
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
@@ -24,6 +21,11 @@ class UserService(private val userRepository: UserRepository,
                   private val userLevelRepository: UserLevelRepository,
                   private val userSettingRepository: UserSettingRepository,
                   private val userTagRepository: UserTagRepository,
+                  private val socialLoginRepository: SocialLoginRepository,
+                  private val studySessionRepository: StudySessionRepository,
+                  private val timerExamRepository: TimerExamRepository,
+                  private val timerFocusRepository: TimerFocusRepository,
+                  private val timerPomodoroRepository: TimerPomodoroRepository,
                   private val passwordEncoder: PasswordEncoder,
 ) {
   /**
@@ -107,12 +109,51 @@ class UserService(private val userRepository: UserRepository,
   }
 
   /**
-   * 지정된 ID를 가진 User 엔티티를 데이터베이스에서 삭제합니다.
-   * @param id 삭제할 사용자의 ID
-   * @return 삭제 작업의 결과를 나타내는 Mono<Void>를 반환합니다.
+   * 사용자 탈퇴 처리
+   * @param id 탈퇴처리할 사용자의 ID
+   *
+   * user 엔티티
+   * - nickName = #id
+   * - email = null
+   * - hashedPassword = null
+   * - active = false
+   * userSocialLogin 엔티티
+   * - 삭제
+   * userSetting 엔티티
+   * - 삭제
+   * userTag 엔티티
+   * - 삭제
+   * studySession 엔티티
+   * - 삭제
+   * timerExam/timerFocus/timerPomodoro 엔티티
+   * - 삭제
+   * friendRelation 엔티티
+   * - ???
+   *
+   * @return 탈퇴 작업의 결과를 나타내는 Mono<Void>를 반환합니다.
    */
-  @Transactional
-  fun deleteById(id: Long): Mono<Void> = userRepository.deleteById(id)
+  @PreAuthorize("authentication.principal == #id")
+  fun deleteById(id: Long): Mono<Void> {
+    socialLoginRepository.deleteByUserId(id)
+    userSettingRepository.deleteByUserId(id)
+    userTagRepository.deleteByUserId(id)
+    studySessionRepository.deleteByUserId(id)
+    timerExamRepository.deleteByUserId(id)
+    timerFocusRepository.deleteByUserId(id)
+    timerPomodoroRepository.deleteByUserId(id)
+
+    return userRepository.findById(id)
+      .flatMap { user ->
+        userRepository.save(user.copy(
+          nickName = "#$id",
+          email = null,
+          hashedPassword = null,
+          active = false,
+          updatedAt = LocalDateTime.now()
+        ))
+      }
+      .then(Mono.empty())
+  }
 
   // 이메일 주소로 사용자를 검색합니다.
   fun findByEmail(email: String): Mono<User> = userRepository.findByEmail(email)

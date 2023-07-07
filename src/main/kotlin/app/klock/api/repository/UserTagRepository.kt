@@ -8,4 +8,5 @@ import reactor.core.publisher.Mono
 @Repository
 interface UserTagRepository : ReactiveCrudRepository<UserTag, Long> {
   fun findByUserId(userId: Long): Mono<UserTag>
+  fun deleteByUserId(userId: Long): Mono<Void>
 }

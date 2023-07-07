@@ -48,5 +48,10 @@ data class SignUpResDTO(
   val startOfTheDay: Int
 )
 
+data class LoginDto(
+  val token: String,
+  val userId: Long?
+)
+
 data class RefreshTokenRequest(val refreshToken: String)
 data class RefreshTokenResponse(val accessToken: String, val refreshToken: String)
