@@ -34,7 +34,7 @@ spec:
               path: /api/deploy/healthy
               port: 8080
             initialDelaySeconds: 60
-            periodSeconds: 15
+            periodSeconds: 60
           env:
             - name: SPRING_PROFILES_ACTIVE
               value: common,prod

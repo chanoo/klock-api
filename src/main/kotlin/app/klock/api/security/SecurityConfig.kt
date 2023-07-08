@@ -47,6 +47,7 @@ class SecurityConfig(
         exchanges
           .pathMatchers(
             "/echo/**",
+            "/api/deploy/**",
             "/api/v1/auth/**",
             "/api/v1/chat-bots/**",
             "/ws/**",
