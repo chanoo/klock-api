@@ -17,16 +17,17 @@ import java.time.LocalDateTime
  * 데이터베이스 작업을 위해 UserRepository와 통신합니다.
  */
 @Service
-class UserService(private val userRepository: UserRepository,
-                  private val userLevelRepository: UserLevelRepository,
-                  private val userSettingRepository: UserSettingRepository,
-                  private val userTagRepository: UserTagRepository,
-                  private val socialLoginRepository: SocialLoginRepository,
-                  private val studySessionRepository: StudySessionRepository,
-                  private val timerExamRepository: TimerExamRepository,
-                  private val timerFocusRepository: TimerFocusRepository,
-                  private val timerPomodoroRepository: TimerPomodoroRepository,
-                  private val passwordEncoder: PasswordEncoder,
+class UserService(
+  private val userRepository: UserRepository,
+  private val userLevelRepository: UserLevelRepository,
+  private val userSettingRepository: UserSettingRepository,
+  private val userTagRepository: UserTagRepository,
+  private val socialLoginRepository: SocialLoginRepository,
+  private val studySessionRepository: StudySessionRepository,
+  private val timerExamRepository: TimerExamRepository,
+  private val timerFocusRepository: TimerFocusRepository,
+  private val timerPomodoroRepository: TimerPomodoroRepository,
+  private val passwordEncoder: PasswordEncoder,
 ) {
   /**
    * 데이터베이스에서 모든 User 엔티티를 검색합니다.
@@ -34,8 +35,8 @@ class UserService(private val userRepository: UserRepository,
    */
   fun findAll(): Flux<UserInfoDto> {
     return userRepository.findAll()
-      .map {
-          user -> UserInfoDto.from(user = user)
+      .map { user ->
+        UserInfoDto.from(user = user)
       }
   }
 
@@ -55,7 +56,10 @@ class UserService(private val userRepository: UserRepository,
                 userTagRepository.findByUserId(id)
                   .map { userTag ->
                     UserInfoDto.from(user, userLevel, userSetting, userTag)
-      }}}}
+                  }
+              }
+          }
+      }
   }
 
   /**
@@ -134,13 +138,13 @@ class UserService(private val userRepository: UserRepository,
    */
   @PreAuthorize("authentication.principal == #id")
   fun deleteById(id: Long): Mono<Void> {
-    val deleteSocialLogin = Mono.justOrEmpty(socialLoginRepository.deleteByUserId(id))
-    val deleteUserSetting = Mono.justOrEmpty(userSettingRepository.deleteByUserId(id))
-    val deleteUserTag = Mono.justOrEmpty(userTagRepository.deleteByUserId(id))
-    val deleteStudySession = Mono.justOrEmpty(studySessionRepository.deleteByUserId(id))
-    val deleteTimerExam = Mono.justOrEmpty(timerExamRepository.deleteByUserId(id))
-    val deleteTimerFocus = Mono.justOrEmpty(timerFocusRepository.deleteByUserId(id))
-    val deleteTimerPomodoro = Mono.justOrEmpty(timerPomodoroRepository.deleteByUserId(id))
+    val deleteSocialLogin = Mono.defer { socialLoginRepository.deleteByUserId(id) }
+    val deleteUserSetting = Mono.defer { userSettingRepository.deleteByUserId(id) }
+    val deleteUserTag = Mono.defer { userTagRepository.deleteByUserId(id) }
+    val deleteStudySession = Mono.defer { studySessionRepository.deleteByUserId(id) }
+    val deleteTimerExam = Mono.defer { timerExamRepository.deleteByUserId(id) }
+    val deleteTimerFocus = Mono.defer { timerFocusRepository.deleteByUserId(id) }
+    val deleteTimerPomodoro = Mono.defer { timerPomodoroRepository.deleteByUserId(id) }
 
     return Mono.`when`(
       deleteSocialLogin,
@@ -153,15 +157,17 @@ class UserService(private val userRepository: UserRepository,
     ).then(
       userRepository.findById(id)
         .flatMap { user ->
-          userRepository.save(user.copy(
-            nickname = "#$id",
-            email = null,
-            hashedPassword = null,
-            active = false,
-            updatedAt = LocalDateTime.now()
-          ))
-      }
-      .then(Mono.empty())
+          userRepository.save(
+            user.copy(
+              nickname = "#$id",
+              email = null,
+              hashedPassword = null,
+              active = false,
+              updatedAt = LocalDateTime.now()
+            )
+          )
+        }
+        .then(Mono.empty())
     )
   }
 
@@ -201,7 +207,7 @@ class UserService(private val userRepository: UserRepository,
 
   private fun validateNickname(nickname: String): Boolean {
     return nickname.isNotEmpty() &&
-            nickname.length <= User.allowedNicknameMaxLength() &&
-            User.allowedPattern().matches(nickname)
+      nickname.length <= User.allowedNicknameMaxLength() &&
+      User.allowedPattern().matches(nickname)
   }
 }
