@@ -8,7 +8,7 @@ import org.springframework.web.reactive.function.server.router
 class UserRouter(private val userHandler: UserHandler) {
   @Bean
   fun userRoutes() = router {
-    "/api/users".nest {
+    "/api/v1/users".nest {
       GET("", userHandler::getAllUsers)
       GET("/{id}", userHandler::getUserById)
       PUT("/{id}", userHandler::updateUser)

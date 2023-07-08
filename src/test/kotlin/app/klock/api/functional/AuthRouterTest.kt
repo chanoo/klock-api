@@ -63,7 +63,7 @@ class AuthRouterTest {
     }
 
     client.post()
-      .uri("/api/auth/signup")
+      .uri("/api/v1/auth/signup")
       .contentType(MediaType.APPLICATION_JSON)
       .bodyValue(signUpReqDTO)
       .exchange()
@@ -93,7 +93,7 @@ class AuthRouterTest {
     }
 
     client.post()
-      .uri("/api/auth/signin")
+      .uri("/api/v1/auth/signin")
       .contentType(MediaType.APPLICATION_JSON)
       .bodyValue(loginRequest)
       .exchange()
@@ -113,7 +113,7 @@ class AuthRouterTest {
       ServerResponse.ok().bodyValue(mapOf("token" to newAccessToken))
     }
 
-    client.post().uri("/api/auth/refresh-token")
+    client.post().uri("/api/v1/auth/refresh-token")
       .contentType(MediaType.APPLICATION_JSON)
       .bodyValue(mapOf("refreshToken" to refreshToken))
       .exchange()

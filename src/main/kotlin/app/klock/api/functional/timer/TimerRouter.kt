@@ -11,7 +11,7 @@ class TimerRouter(private val timerHandler: TimerHandler) {
 
   @Bean
   fun timerRoutes(): RouterFunction<ServerResponse> = router {
-    "/api/timers".nest {
+    "/api/v1/timers".nest {
       GET("", timerHandler::getAllTimersByUserId)
       PUT("", timerHandler::updateTimersSeq)
     }

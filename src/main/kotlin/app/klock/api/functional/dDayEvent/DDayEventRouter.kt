@@ -12,7 +12,7 @@ class DDayEventRouter(private val handler: DDayEventHandler) {
 
     @Bean
     fun dDayEventRoutes(): RouterFunction<ServerResponse> = coRouter {
-        "/api/d-day".nest {
+        "/api/v1/d-day".nest {
             GET("", handler::getById)
             GET("/{id}", handler::getById)
             POST("/", handler::create)

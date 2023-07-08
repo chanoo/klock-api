@@ -9,7 +9,7 @@ class AuthRouter(private val authHandler: AuthHandler) {
 
     @Bean
     fun authRoutes() = router {
-        "/api/auth".nest {
+        "/api/v1/auth".nest {
             POST("/signup", authHandler::signup)
             POST("/signin", authHandler::signin)
             POST("/refresh-token", authHandler::refreshToken)

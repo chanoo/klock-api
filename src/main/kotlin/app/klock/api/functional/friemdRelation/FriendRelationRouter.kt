@@ -10,7 +10,7 @@ class FriendRelationRouter(private val friendRelationHandler: FriendRelationHand
 
   @Bean
   fun friendRelationRoutes() = router {
-    "/api/friend-relations".nest {
+    "/api/v1/friend-relations".nest {
       POST("", friendRelationHandler::create)
       GET("", friendRelationHandler::getFriendRelationsByRequesterId)
     }

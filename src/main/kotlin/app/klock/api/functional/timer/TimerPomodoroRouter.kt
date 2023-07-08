@@ -12,7 +12,7 @@ class TimerPomodoroRouter(private val timerPomodoroHandler: TimerPomodoroHandler
   
   @Bean
   fun timerPomodoroRoutes() = router {
-    "/api/pomodoro-timers".nest {
+    "/api/v1/pomodoro-timers".nest {
       POST("", timerPomodoroHandler::createPomodoroTimer)
       PUT("/{id}", timerPomodoroHandler::updatePomodoroTimer)
       DELETE("/{id}", timerPomodoroHandler::deletePomodoroTimer)

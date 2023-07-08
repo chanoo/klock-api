@@ -49,7 +49,7 @@ class TimerPomodoroRouterTest {
     }
 
     client.post()
-      .uri("/api/pomodoro-timers")
+      .uri("/api/v1/pomodoro-timers")
       .contentType(MediaType.APPLICATION_JSON)
       .bodyValue(timerPomodoroDto)
       .exchange()
@@ -85,7 +85,7 @@ class TimerPomodoroRouterTest {
     }
 
     client.put()
-      .uri("/api/pomodoro-timers/$timerId")
+      .uri("/api/v1/pomodoro-timers/$timerId")
       .contentType(MediaType.APPLICATION_JSON)
       .bodyValue(updatedTimerPomodoroDto)
       .exchange()
@@ -103,7 +103,7 @@ class TimerPomodoroRouterTest {
     }
 
     client.delete()
-      .uri("/api/pomodoro-timers/$timerId")
+      .uri("/api/v1/pomodoro-timers/$timerId")
       .exchange()
       .expectStatus().isEqualTo(HttpStatus.NO_CONTENT)
   }

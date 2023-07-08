@@ -38,7 +38,7 @@ class FriendRelationRouterTest {
       ServerResponse.status(201).bodyValue(createFriendRelationRequest)
     }
 
-    client.post().uri("/api/friend-relations")
+    client.post().uri("/api/v1/friend-relations")
       .contentType(MediaType.APPLICATION_JSON)
       .body(BodyInserters.fromValue(createFriendRelationRequest))
       .exchange()
@@ -58,7 +58,7 @@ class FriendRelationRouterTest {
       ServerResponse.ok().bodyValue(friendRelations)
     }
 
-    client.get().uri("/api/friend-relations?requesterId=1")
+    client.get().uri("/api/v1/friend-relations?requesterId=1")
       .exchange()
       .expectStatus().isOk
       .expectBody()

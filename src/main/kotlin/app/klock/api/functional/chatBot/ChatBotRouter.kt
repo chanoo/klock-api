@@ -10,7 +10,7 @@ class ChatBotRouter(private val chatBotHandler: ChatBotHandler) {
 
   @Bean
   fun chatBotRoutes() = router {
-    "/api/chat-bots".nest {
+    "/api/v1/chat-bots".nest {
       GET("", chatBotHandler::getByActiveChatBots)
     }
   }

@@ -46,7 +46,7 @@ class UserTagRouterTest {
       ServerResponse.ok().bodyValue(userTag)
     }
 
-    client.get().uri("/api/user-tag?userId=1")
+    client.get().uri("/api/v1/user-tag?userId=1")
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
@@ -60,7 +60,7 @@ class UserTagRouterTest {
       ServerResponse.status(HttpStatus.CREATED).bodyValue(userTag)
     }
 
-    client.post().uri("/api/user-tags")
+    client.post().uri("/api/v1/user-tags")
       .contentType(MediaType.APPLICATION_JSON)
       .body(BodyInserters.fromValue(userTag))
       .exchange()

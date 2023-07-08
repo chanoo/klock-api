@@ -51,7 +51,7 @@ class ChatBotRouterTest {
 
     // Test the GET API
     client.get()
-      .uri("/api/chat-bots?active=true")
+      .uri("/api/v1/chat-bots?active=true")
       .accept(MediaType.APPLICATION_JSON)
       .exchange()
       .expectBody(object : ParameterizedTypeReference<List<ChatBotDTO>>() {})

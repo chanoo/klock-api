@@ -23,7 +23,7 @@ class FriendRelationHandler(
         )
       }
       .flatMap { friendRelation ->
-        ServerResponse.created(URI.create("/api/friendrelation/${friendRelation.id}"))
+        ServerResponse.created(URI.create("/api/v1/friendrelation/${friendRelation.id}"))
           .bodyValue(friendRelation)
       }
       .switchIfEmpty(ServerResponse.status(HttpStatus.BAD_REQUEST).build())

@@ -44,7 +44,7 @@ class TimerFocusRouterTest {
     }
 
     client.post()
-      .uri("/api/focus-timers")
+      .uri("/api/v1/focus-timers")
       .contentType(MediaType.APPLICATION_JSON)
       .bodyValue(timerFocusDto)
       .exchange()
@@ -72,7 +72,7 @@ class TimerFocusRouterTest {
     }
 
     client.put()
-      .uri("/api/focus-timers/$timerId")
+      .uri("/api/v1/focus-timers/$timerId")
       .contentType(MediaType.APPLICATION_JSON)
       .bodyValue(timerFocusDto)
       .exchange()
@@ -90,7 +90,7 @@ class TimerFocusRouterTest {
     }
 
     client.delete()
-      .uri("/api/focus-timers/$timerId")
+      .uri("/api/v1/focus-timers/$timerId")
       .exchange()
       .expectStatus().isEqualTo(HttpStatus.NO_CONTENT)
   }

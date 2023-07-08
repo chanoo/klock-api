@@ -47,11 +47,11 @@ class SecurityConfig(
         exchanges
           .pathMatchers(
             "/echo/**",
-            "/api/auth/**",
-            "/api/chat-bots/**",
+            "/api/v1/auth/**",
+            "/api/v1/chat-bots/**",
             "/ws/**",
-            "/api/tags",
-            "/api/users/existed-nickname")
+            "/api/v1/tags",
+            "/api/v1/users/existed-nickname")
           .permitAll()
           .anyExchange().authenticated()
       }

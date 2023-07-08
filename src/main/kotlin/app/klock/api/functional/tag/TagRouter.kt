@@ -9,7 +9,7 @@ class TagRouter(private val tagHandler: TagHandler) {
 
   @Bean
   fun tagRoutes() = router {
-    "/api/tags".nest {
+    "/api/v1/tags".nest {
       GET("", tagHandler::getall)
       GET("/{id}", tagHandler::get)
       POST("", tagHandler::create)

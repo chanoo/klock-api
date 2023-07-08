@@ -8,7 +8,7 @@ import org.springframework.web.reactive.function.server.router
 class TimerExamRouter(private val timerExamHandler: TimerExamHandler) {
   @Bean
   fun timerExamRoutes() = router {
-    "/api/exam-timers".nest {
+    "/api/v1/exam-timers".nest {
       POST("", timerExamHandler::createExamTimer)
       PUT("/{id}", timerExamHandler::updateExamTimer)
       DELETE("/{id}", timerExamHandler::deleteExamTimer)
