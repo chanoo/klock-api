@@ -33,7 +33,7 @@ spec:
             httpGet:
               path: /api/deploy/healthy
               port: 8080
-            initialDelaySeconds: 15
+            initialDelaySeconds: 60
             periodSeconds: 15
           env:
             - name: SPRING_PROFILES_ACTIVE
