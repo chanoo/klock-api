@@ -38,7 +38,7 @@ class StudySessionHandler(private val studySessionService: StudySessionService) 
     val startDate = request.queryParam("startDate").orElse(null)?.let { LocalDate.parse(it) }
     val endDate = request.queryParam("endDate").orElse(null)?.let { LocalDate.parse(it) }
 
-    return if (userId != null && startDate != null && endDate != null && startDate.isAfter(endDate)) {
+    return if (userId != null && startDate != null && endDate != null && !startDate.isAfter(endDate)) {
       studySessionService.findByUserIdAndStartTimeBetween(userId, startDate, endDate)
         .map { studySession ->
           StudySessionDto.from(studySession)
