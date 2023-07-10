@@ -1,12 +1,7 @@
 package app.klock.api.functional
 
 import app.klock.api.domain.entity.SocialProvider
-import app.klock.api.functional.auth.AuthHandler
-import app.klock.api.functional.auth.AuthRouter
-import app.klock.api.functional.auth.LoginRequest
-import app.klock.api.functional.auth.LoginResponse
-import app.klock.api.functional.auth.SignUpReqDTO
-import app.klock.api.functional.auth.SignUpResDTO
+import app.klock.api.functional.auth.*
 import io.mockk.coEvery
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -40,25 +35,27 @@ class AuthRouterTest {
   fun `POST 요청으로 회원 가입 테스트`() {
 
     val signUpReqDTO = SignUpReqDTO(
-      nickName = "user1",
+      nickname = "user1",
       email = "user1@example.com",
       password = "test_password",
       providerUserId = "test_provider_user_id",
       tagId = 1,
       provider = SocialProvider.APPLE,
       startOfTheWeek = DayOfWeek.MONDAY,
-      startOfTheDay = 7
+      startOfTheDay = 5
     )
 
     val signUpResDTO = SignUpResDTO(
       id = 1L,
-      nickName = "user1",
+      nickname = "user1",
       email = "user1@example.com",
       accessToken = "valid_token",
       refreshToken = "valid_refresh_token",
       provider = SocialProvider.APPLE,
       providerUserId = "test_provider_user_id",
       tagId = 1L,
+      startOfTheWeek = DayOfWeek.MONDAY,
+      startOfTheDay = 5
     )
 
     coEvery { authHandler.signup(any()) } coAnswers {
@@ -66,7 +63,7 @@ class AuthRouterTest {
     }
 
     client.post()
-      .uri("/api/auth/signup")
+      .uri("/api/v1/auth/signup")
       .contentType(MediaType.APPLICATION_JSON)
       .bodyValue(signUpReqDTO)
       .exchange()
@@ -74,7 +71,7 @@ class AuthRouterTest {
       .expectBody(SignUpResDTO::class.java)
       .value { actualSignUpResponse ->
         assertEquals(1L, actualSignUpResponse.id, "ID가 1이어야 합니다.")
-        assertEquals(signUpReqDTO.nickName, actualSignUpResponse.nickName)
+        assertEquals(signUpReqDTO.nickname, actualSignUpResponse.nickname)
         assertEquals(signUpReqDTO.email, actualSignUpResponse.email)
       }
   }
@@ -96,7 +93,7 @@ class AuthRouterTest {
     }
 
     client.post()
-      .uri("/api/auth/signin")
+      .uri("/api/v1/auth/signin")
       .contentType(MediaType.APPLICATION_JSON)
       .bodyValue(loginRequest)
       .exchange()
@@ -116,7 +113,7 @@ class AuthRouterTest {
       ServerResponse.ok().bodyValue(mapOf("token" to newAccessToken))
     }
 
-    client.post().uri("/api/auth/refresh-token")
+    client.post().uri("/api/v1/auth/refresh-token")
       .contentType(MediaType.APPLICATION_JSON)
       .bodyValue(mapOf("refreshToken" to refreshToken))
       .exchange()

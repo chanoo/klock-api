@@ -4,6 +4,7 @@ import app.klock.api.domain.entity.SocialLogin
 import app.klock.api.domain.entity.SocialProvider
 import app.klock.api.domain.entity.User
 import app.klock.api.domain.entity.UserRole
+import app.klock.api.functional.auth.LoginDto
 import app.klock.api.functional.auth.SocialLoginRequest
 import app.klock.api.repository.SocialLoginRepository
 import app.klock.api.repository.UserRepository
@@ -36,11 +37,11 @@ class AuthService(
   private val appleClientId = "your_apple_client_id"
 
 
-  fun signup(nickName: String,
+  fun signup(nickname: String,
              email: String? = null,
              password: String? = null): Mono<User> {
     val user = User(
-      nickName = nickName,
+      nickname = nickname,
       email = email,
       hashedPassword = password?.let { passwordEncoder.encode(it) },
       role = UserRole.USER,
@@ -66,18 +67,21 @@ class AuthService(
     return socialLoginRepository.save(socialLogin)
   }
 
-  private fun authenticateSocial(socialProvider: SocialProvider, providerUserId: String): Mono<String> {
+  private fun authenticateSocial(socialProvider: SocialProvider, providerUserId: String): Mono<LoginDto> {
     return socialLoginRepository.findByProviderAndProviderUserId(socialProvider, providerUserId)
       .flatMap { socialLogin ->
         userRepository.findById(socialLogin.userId)
           .flatMap { user ->
             // JWT 토큰을 생성합니다.
-            Mono.just(jwtUtils.generateToken(user.id.toString(), listOf(user.role.name)))
+            Mono.just(LoginDto(
+              token = jwtUtils.generateToken(user.id.toString(), listOf(user.role.name)),
+              userId = user.id)
+            )
           }
       }
   }
 
-  fun authenticateFacebook(socialLoginRequest: Mono<SocialLoginRequest>): Mono<String> {
+  fun authenticateFacebook(socialLoginRequest: Mono<SocialLoginRequest>): Mono<LoginDto> {
     return socialLoginRequest.flatMap { request ->
       // Facebook 액세스 토큰을 사용하여 사용자 정보를 가져옵니다.
       val facebookAccessToken = request.accessToken
@@ -92,7 +96,7 @@ class AuthService(
     }.switchIfEmpty(Mono.error(NoSuchElementException("Authentication failed")))
   }
 
-  fun authenticateApple(socialLoginRequest: Mono<SocialLoginRequest>): Mono<String> {
+  fun authenticateApple(socialLoginRequest: Mono<SocialLoginRequest>): Mono<LoginDto> {
     return socialLoginRequest.flatMap { request ->
       val appleAccessToken = request.accessToken
       // Apple 공개 키를 가져옵니다.

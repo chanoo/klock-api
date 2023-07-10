@@ -10,8 +10,9 @@ class StudySessionRouter(private val studySessionHandler: StudySessionHandler) {
 
     @Bean
     fun studySessionRoutes() = router {
-        "/api/study-sessions".nest {
+        "/api/v1/study-sessions".nest {
             GET("", studySessionHandler::getStudySessionByUserIdAndDate)
+            GET("/period", studySessionHandler::getStudySessionByUserIdAndPeriod)
             POST("", studySessionHandler::create)
             PUT("/{id}", studySessionHandler::update)
         }

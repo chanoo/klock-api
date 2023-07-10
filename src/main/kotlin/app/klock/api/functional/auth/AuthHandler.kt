@@ -27,36 +27,33 @@ class AuthHandler(
   fun signup(request: ServerRequest): Mono<ServerResponse> =
     request.bodyToMono(SignUpReqDTO::class.java)
       .flatMap { signUpRequest ->
-        authService.signup(
-          nickName = signUpRequest.nickName,
+        val savedUserMono = authService.signup(
+          nickname = signUpRequest.nickname,
           email = signUpRequest.email,
           password = signUpRequest.password
-        ).flatMap { savedUser ->
-          authService.createSocialLogin(
-            userId = savedUser.id!!,
-            provider = signUpRequest.provider,
-            providerUserId = signUpRequest.providerUserId
-          ).flatMap { savedSocialLogin ->
+        )
+        savedUserMono.flatMap { savedUser ->
+          Mono.zip(
+            authService.createSocialLogin(
+              userId = savedUser.id!!,
+              provider = signUpRequest.provider,
+              providerUserId = signUpRequest.providerUserId
+            ),
             userSettingService.create(
               UserSetting(
                 userId = savedUser.id!!,
                 startOfTheWeek = signUpRequest.startOfTheWeek,
                 startOfTheDay = signUpRequest.startOfTheDay
               )
-            ).flatMap { savedUserSetting ->
-              if (signUpRequest.tagId != null) {
-                userTagService.create(
-                  UserTag(
-                    userId = savedUser.id,
-                    tagId = signUpRequest.tagId
-                  )
-                ).map { savedUserTag ->
-                  SignUp(savedUser, savedSocialLogin, savedUserSetting, savedUserTag)
-                }
-              } else {
-                Mono.just(SignUp(savedUser, savedSocialLogin, savedUserSetting, null))
-              }
-            }
+            ),
+            userTagService.create(
+              UserTag(
+                userId = savedUser.id,
+                tagId = signUpRequest.tagId
+              )
+            )
+          ).map { results ->
+            SignUp(savedUser, results.t1, results.t2, results.t3)
           }
         }
       }
@@ -64,14 +61,18 @@ class AuthHandler(
         val accessToken = jwtUtils.generateToken(user.id.toString(), listOf(user.role.name))
         val refreshToken = jwtUtils.generateRefreshToken(user.id.toString(), listOf(user.role.name))
         ServerResponse.status(HttpStatus.CREATED).bodyValue(
-          SignUpResDTO(id = user.id!!,
+          SignUpResDTO(
+            id = user.id!!,
             accessToken = accessToken,
             refreshToken = refreshToken,
-            nickName = user.nickName,
+            nickname = user.nickname,
             provider = socialLogin.provider,
             providerUserId = socialLogin.providerUserId,
             email = user.email,
-            tagId = userTag?.tagId)
+            tagId = userTag?.tagId,
+            startOfTheWeek = userSetting.startOfTheWeek,
+            startOfTheDay = userSetting.startOfTheDay
+          )
         )
       }
       .onErrorResume { error ->
@@ -86,15 +87,17 @@ class AuthHandler(
       .flatMap { loginRequest ->
         userService.findByEmail(loginRequest.email)
           .filter { user ->
-            userService.validatePassword(loginRequest
-              .password, user.hashedPassword)
+            userService.validatePassword(
+              loginRequest
+                .password, user.hashedPassword
+            )
           }
           .switchIfEmpty(Mono.error(Exception("Invalid nickname or password")))
           .flatMap { user ->
             val token = jwtUtils.generateToken(user.id.toString(), listOf(user.role.name))
             ServerResponse.ok()
               .contentType(MediaType.APPLICATION_JSON)
-              .bodyValue(mapOf("token" to token))
+              .bodyValue(LoginDto(token = token, userId = user.id))
           }
       }
       .onErrorResume { error ->
@@ -126,16 +129,20 @@ class AuthHandler(
   fun authenticateFacebook(request: ServerRequest): Mono<ServerResponse> {
     val socialLoginRequest = request.bodyToMono(SocialLoginRequest::class.java)
     return authService.authenticateFacebook(socialLoginRequest)
-      .flatMap { jwt -> ServerResponse.ok().bodyValue(mapOf("token" to jwt)) }
-      .onErrorResume { error -> ServerResponse.status(HttpStatus.UNAUTHORIZED).bodyValue(mapOf("error" to error.localizedMessage)) }
+      .flatMap { login -> ServerResponse.ok().bodyValue(login) }
+      .onErrorResume { error ->
+        ServerResponse.status(HttpStatus.UNAUTHORIZED).bodyValue(mapOf("error" to error.localizedMessage))
+      }
   }
 
   // 애플 로그인 요청 처리
   fun authenticateApple(request: ServerRequest): Mono<ServerResponse> {
     val socialLoginRequest = request.bodyToMono(SocialLoginRequest::class.java)
     return authService.authenticateApple(socialLoginRequest)
-      .flatMap { jwt -> ServerResponse.ok().bodyValue(mapOf("token" to jwt)) }
-      .onErrorResume { error -> ServerResponse.status(HttpStatus.UNAUTHORIZED).bodyValue(mapOf("error" to error.localizedMessage)) }
+      .flatMap { login -> ServerResponse.ok().bodyValue(login) }
+      .onErrorResume { error ->
+        ServerResponse.status(HttpStatus.UNAUTHORIZED).bodyValue(mapOf("error" to error.localizedMessage))
+      }
   }
 
 }

@@ -33,6 +33,25 @@ class StudySessionHandler(private val studySessionService: StudySessionService) 
     }
   }
 
+  fun getStudySessionByUserIdAndPeriod(request: ServerRequest): Mono<ServerResponse> {
+    val userId = request.queryParam("userId").orElse(null)?.toLongOrNull()
+    val startDate = request.queryParam("startDate").orElse(null)?.let { LocalDate.parse(it) }
+    val endDate = request.queryParam("endDate").orElse(null)?.let { LocalDate.parse(it) }
+
+    return if (userId != null && startDate != null && endDate != null && !startDate.isAfter(endDate)) {
+      studySessionService.findByUserIdAndStartTimeBetween(userId, startDate, endDate)
+        .map { studySession ->
+          StudySessionDto.from(studySession)
+        }
+        .collectList()
+        .flatMap { studySessions -> ServerResponse.ok().body(BodyInserters.fromValue(studySessions)) }
+    } else {
+      ServerResponse.badRequest()
+        .contentType(MediaType.APPLICATION_JSON)
+        .bodyValue(mapOf("error" to "Invalid query parameters"))
+    }
+  }
+
   fun create(request: ServerRequest): Mono<ServerResponse> {
     return request.bodyToMono(StudySessionDto::class.java)
       .flatMap { studySessionDto ->

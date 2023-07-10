@@ -42,7 +42,7 @@ class TagRouterTest {
       ServerResponse.ok().bodyValue(listOf(tag1, tag2))
     }
 
-    client.get().uri("/api/tags")
+    client.get().uri("/api/v1/tags")
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
@@ -59,7 +59,7 @@ class TagRouterTest {
       ServerResponse.status(201).bodyValue(tag1.copy(name = "NewTag"))
     }
 
-    client.post().uri("/api/tags")
+    client.post().uri("/api/v1/tags")
       .contentType(MediaType.APPLICATION_JSON)
       .bodyValue(newTag)
       .exchange()
@@ -76,7 +76,7 @@ class TagRouterTest {
       ServerResponse.ok().bodyValue(tag1)
     }
 
-    client.get().uri("/api/tags/${tag1.id}")
+    client.get().uri("/api/v1/tags/${tag1.id}")
       .exchange()
       .expectStatus().isOk
       .expectHeader().contentType(MediaType.APPLICATION_JSON)
@@ -92,7 +92,7 @@ class TagRouterTest {
       ServerResponse.ok().bodyValue(tag1.copy(name = "UpdatedTag"))
     }
 
-    client.put().uri("/api/tags/${updatedTag.id}")
+    client.put().uri("/api/v1/tags/${updatedTag.id}")
       .contentType(MediaType.APPLICATION_JSON)
       .bodyValue(updatedTag)
       .exchange()
@@ -110,7 +110,7 @@ class TagRouterTest {
       ServerResponse.noContent().build()
     }
 
-    client.delete().uri("/api/tags/${tagId}")
+    client.delete().uri("/api/v1/tags/${tagId}")
       .exchange()
       .expectStatus().isNoContent
   }

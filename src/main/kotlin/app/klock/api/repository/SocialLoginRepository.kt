@@ -9,4 +9,5 @@ import reactor.core.publisher.Mono
 @Repository
 interface SocialLoginRepository : ReactiveCrudRepository<SocialLogin, Long> {
     fun findByProviderAndProviderUserId(provider: SocialProvider, providerUserId: String): Mono<SocialLogin>
+    fun deleteByUserId(userId: Long): Mono<Void>
 }

@@ -60,7 +60,7 @@ class StudySessionRouterTest {
     }
 
     client.get()
-      .uri("/api/study-sessions?userId=$userId&date=$startDate")
+      .uri("/api/v1/study-sessions?userId=$userId&date=$startDate")
       .accept(MediaType.APPLICATION_JSON)
       .exchange()
       .expectStatus().isOk
@@ -87,7 +87,7 @@ class StudySessionRouterTest {
     }
 
     client.post()
-      .uri("/api/study-sessions")
+      .uri("/api/v1/study-sessions")
       .contentType(MediaType.APPLICATION_JSON)
       .bodyValue(studySessionDTO)
       .exchange()
@@ -113,7 +113,7 @@ class StudySessionRouterTest {
     }
 
     client.put()
-      .uri("/api/study-sessions/${studySessionDTO.id}")
+      .uri("/api/v1/study-sessions/${studySessionDTO.id}")
       .contentType(MediaType.APPLICATION_JSON)
       .bodyValue(studySessionDTO)
       .exchange()

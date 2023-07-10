@@ -48,7 +48,7 @@ class TimerExamRouterTest {
     }
 
     client.post()
-      .uri("/api/exam-timers")
+      .uri("/api/v1/exam-timers")
       .contentType(MediaType.APPLICATION_JSON)
       .bodyValue(timerExamDto)
       .exchange()
@@ -86,7 +86,7 @@ class TimerExamRouterTest {
     }
 
     client.put()
-      .uri("/api/exam-timers/$timerId")
+      .uri("/api/v1/exam-timers/$timerId")
       .contentType(MediaType.APPLICATION_JSON)
       .bodyValue(updatedTimerExamDto)
       .exchange()
@@ -104,7 +104,7 @@ class TimerExamRouterTest {
     }
 
     client.delete()
-      .uri("/api/exam-timers/$timerId")
+      .uri("/api/v1/exam-timers/$timerId")
       .exchange()
       .expectStatus().isEqualTo(HttpStatus.NO_CONTENT)
   }

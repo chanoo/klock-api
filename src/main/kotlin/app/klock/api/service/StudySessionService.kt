@@ -19,6 +19,12 @@ class StudySessionService(private val studySessionRepository: StudySessionReposi
     return studySessionRepository.findByUserIdAndStartTimeBetween(userId, startDateTime, endDateTime)
   }
 
+  fun findByUserIdAndStartTimeBetween(userId: Long, startDate: LocalDate, endDate: LocalDate): Flux<StudySession> {
+    val startDateTime = startDate.atStartOfDay()
+    val endDateTime = endDate.atTime(LocalTime.MAX)
+    return studySessionRepository.findByUserIdAndStartTimeBetween(userId, startDateTime, endDateTime)
+  }
+
   // userId로 studySession 등록
   fun create(studySession: StudySession): Mono<StudySession> {
     return studySessionRepository.save(studySession)

@@ -10,7 +10,7 @@ import java.time.LocalDateTime
  * @property id 데이터베이스에서 자동 생성되는 기본 키 값
  * @property email 사용자의 이메일 주소
  * @property hashedPassword 사용자의 해시된 비밀번호
- * @property nickName 사용자의 닉네임
+ * @property nickname 사용자의 닉네임
  * @property totalStudyTime 사용자의 총 학습 시간 (분 단위)
  * @property userLevelId 사용자의 레벨 정보와 연결된 고유 식별자
  * @property role 사용자의 권한
@@ -30,7 +30,7 @@ data class User(
   var hashedPassword: String? = null,
 
   @Column("nickname")
-  val nickName: String,
+  val nickname: String,
 
   @Column("total_study_time")
   val totalStudyTime: Int,
@@ -54,7 +54,7 @@ data class User(
     fun allowedPattern() : Regex {
       return Regex("[a-zA-Z0-9가-힣]+")
     }
-    fun allowedNickNameMaxLength() : Int {
+    fun allowedNicknameMaxLength() : Int {
       return 10
     }
   }

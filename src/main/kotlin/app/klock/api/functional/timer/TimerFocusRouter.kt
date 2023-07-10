@@ -8,7 +8,7 @@ import org.springframework.web.reactive.function.server.router
 class TimerFocusRouter(private val timerFocusHandler: TimerFocusHandler) {
   @Bean
   fun timerFocusRoutes() = router {
-    "/api/focus-timers".nest {
+    "/api/v1/focus-timers".nest {
       POST("", timerFocusHandler::createFocusTimer)
       PUT("/{id}", timerFocusHandler::updateFocusTimer)
       DELETE("/{id}", timerFocusHandler::deleteFocusTimer)
