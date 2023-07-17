@@ -39,7 +39,7 @@ class FriendRelationRouterTest {
       ServerResponse.status(201).bodyValue(createFriendRelationRequest)
     }
 
-    client.post().uri("/api/friend-relations")
+    client.post().uri("/api/v1/friend-relations")
       .contentType(MediaType.APPLICATION_JSON)
       .body(BodyInserters.fromValue(createFriendRelationRequest))
       .exchange()

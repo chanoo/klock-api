@@ -9,7 +9,7 @@ class FriendRelationRouter(private val friendRelationHandler: FriendRelationHand
 
   @Bean
   fun friendRelationRoutes() = router {
-    "/api/friend-relations".nest {
+    "/api/v1/friend-relations".nest {
       POST("/follow", friendRelationHandler::follow)
       POST("/unfollow", friendRelationHandler::unfollow)
       GET("", friendRelationHandler::getFriendRelations)
