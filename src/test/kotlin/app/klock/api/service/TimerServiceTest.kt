@@ -1,10 +1,12 @@
 package app.klock.api.service
 
+import app.klock.api.domain.entity.TimerAuto
 import app.klock.api.domain.entity.TimerExam
 import app.klock.api.domain.entity.TimerFocus
 import app.klock.api.domain.entity.TimerPomodoro
 import app.klock.api.functional.timer.TimerSeqDto
 import app.klock.api.functional.timer.TimerType
+import app.klock.api.repository.TimerAutoRepository
 import app.klock.api.repository.TimerExamRepository
 import app.klock.api.repository.TimerFocusRepository
 import app.klock.api.repository.TimerPomodoroRepository
@@ -26,19 +28,22 @@ class TimerServiceTest {
   private lateinit var timerExamRepository: TimerExamRepository
   private lateinit var timerPomodoroRepository: TimerPomodoroRepository
   private lateinit var timerFocusRepository: TimerFocusRepository
+  private lateinit var timerAutoRepository: TimerAutoRepository
 
   private lateinit var slotFocus: CapturingSlot<TimerFocus>
   private lateinit var slotExam: CapturingSlot<TimerExam>
   private lateinit var slotPomodoro: CapturingSlot<TimerPomodoro>
+  private lateinit var slotAuto: CapturingSlot<TimerAuto>
 
   @BeforeEach
   fun setUp() {
     timerFocusRepository = mockk()
     timerExamRepository = mockk()
     timerPomodoroRepository = mockk()
+    timerAutoRepository = mockk()
 
     timerService = spyk(
-      objToCopy = TimerService(timerExamRepository, timerPomodoroRepository, timerFocusRepository),
+      objToCopy = TimerService(timerExamRepository, timerPomodoroRepository, timerFocusRepository, timerAutoRepository),
       recordPrivateCalls = true
     )
   }
@@ -50,10 +55,12 @@ class TimerServiceTest {
     val exam = TimerExam(100, userId, "Exam 1", 1, LocalDateTime.now(), 60, 30, 10)
     val pomodoro = TimerPomodoro(200, userId, "Pomodoro 1", 2, 25, 5, 4)
     val focus = TimerFocus(300, userId, 3, "Focus 1")
+    val auto = TimerAuto(400, userId, 4, "Auto 1")
 
     every { timerFocusRepository.findAllByUserIdOrderBySeq(userId) } returns Flux.just(focus)
     every { timerExamRepository.findAllByUserIdOrderBySeq(userId) } returns Flux.just(exam)
     every { timerPomodoroRepository.findAllByUserIdOrderBySeq(userId) } returns Flux.just(pomodoro)
+    every { timerAutoRepository.findAllByUserIdOrderBySeq(userId) } returns Flux.just(auto)
 
     // When
     val timersFlux = timerService.getAllTimersByUserId(userId)
@@ -68,6 +75,9 @@ class TimerServiceTest {
       }
       .assertNext { timer ->
         assertEquals(300, timer.id)
+      }
+      .assertNext { timer ->
+        assertEquals(400, timer.id)
       }
       .verifyComplete()
   }
@@ -90,15 +100,22 @@ class TimerServiceTest {
       id = 1L,
       seq = 3
     )
-    val timerSeqArray = arrayOf(timerFocusSeq, timerExamSeq, timerPomodoroSeq)
+    val timerAutoSeq = TimerSeqDto(
+      type = TimerType.AUTO,
+      id = 1L,
+      seq = 4
+    )
+    val timerSeqArray = arrayOf(timerFocusSeq, timerExamSeq, timerPomodoroSeq, timerAutoSeq)
 
     val timerFocus = TimerFocus(1L, 1L, 1, "Focus 1")
     val timerExam = TimerExam(1L, 1L, "Exam 1", 1, LocalDateTime.now(), 60, 30, 10)
     val timerPomodoro = TimerPomodoro(1L, 1L, "Pomodoro 1", 1, 25, 5, 4)
+    val timerAuto = TimerAuto(1L, 1L, 1, "Auto 1")
 
     every { timerFocusRepository.findById(1L) } returns Mono.just(timerFocus)
     every { timerExamRepository.findById(1L) } returns Mono.just(timerExam)
     every { timerPomodoroRepository.findById(1L) } returns Mono.just(timerPomodoro)
+    every { timerAutoRepository.findById(1L) } returns Mono.just(timerAuto)
 
     // When
     val resultMono: Mono<Boolean> = timerService.updateTimersSeq(timerSeqArray)
