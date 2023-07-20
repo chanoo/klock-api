@@ -1,5 +1,6 @@
 package app.klock.api.functional.timer
 
+import app.klock.api.domain.entity.TimerAuto
 import app.klock.api.domain.entity.TimerExam
 import app.klock.api.domain.entity.TimerFocus
 import app.klock.api.domain.entity.TimerPomodoro
@@ -86,6 +87,26 @@ data class TimerFocusDto(
   }
 }
 
+data class TimerAutoDto(
+  override val id: Long? = null,
+  override val userId: Long,
+  override val seq: Int,
+  override val type: TimerType = TimerType.AUTO,
+  val name: String
+) : TimerDto {
+  fun toDomain() = TimerAuto(id, userId, seq, name)
+
+  companion object {
+    fun from(domain: TimerAuto) = TimerAutoDto(
+      domain.id,
+      domain.userId,
+      domain.seq,
+      TimerType.AUTO,
+      domain.name
+    )
+  }
+}
+
 data class TimerSeqDto(
   val type: TimerType,
   val id: Long,
@@ -95,5 +116,6 @@ data class TimerSeqDto(
 enum class TimerType {
   FOCUS,
   EXAM,
-  POMODORO;
+  POMODORO,
+  AUTO;
 }

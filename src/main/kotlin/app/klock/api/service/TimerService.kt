@@ -1,9 +1,11 @@
 package app.klock.api.service
 
+import app.klock.api.domain.entity.TimerAuto
 import app.klock.api.domain.entity.TimerExam
 import app.klock.api.domain.entity.TimerFocus
 import app.klock.api.domain.entity.TimerPomodoro
 import app.klock.api.functional.timer.*
+import app.klock.api.repository.TimerAutoRepository
 import app.klock.api.repository.TimerExamRepository
 import app.klock.api.repository.TimerFocusRepository
 import app.klock.api.repository.TimerPomodoroRepository
@@ -16,7 +18,8 @@ import java.time.LocalDateTime
 class TimerService(
   private val timerExamRepository: TimerExamRepository,
   private val timerPomodoroRepository: TimerPomodoroRepository,
-  private val timerFocusRepository: TimerFocusRepository
+  private val timerFocusRepository: TimerFocusRepository,
+  private val timerAutoRepository: TimerAutoRepository
 ) {
   fun getAllTimersByUserId(userId: Long): Flux<TimerDto> {
     val timerExams = timerExamRepository.findAllByUserIdOrderBySeq(userId)
@@ -59,8 +62,19 @@ class TimerService(
         )
       }
 
+    val timerAutos = timerAutoRepository.findAllByUserIdOrderBySeq(userId)
+      .map {
+        TimerAutoDto(
+          it.id!!,
+          it.userId,
+          it.seq,
+          TimerType.AUTO,
+          it.name
+        )
+      }
+
     return Flux
-      .concat(timerExams, timerPomodoros, timerStudies)
+      .concat(timerExams, timerPomodoros, timerStudies, timerAutos)
       .sort(compareBy {
         it.seq
       })
@@ -72,6 +86,8 @@ class TimerService(
         TimerType.FOCUS -> updateFocus(timerSeq)
         TimerType.EXAM -> updateExam(timerSeq)
         TimerType.POMODORO -> updatePomodoro(timerSeq)
+        TimerType.AUTO -> updateAuto(timerSeq)
+        else -> {}
       }
     }
     return Mono.just(true)
@@ -117,5 +133,19 @@ class TimerService(
       timer.validate()
       timerPomodoroRepository.save(timer)
     }
+  }
+
+  fun updateAuto(timerSeq: TimerSeqDto): Mono<TimerAuto> {
+    return timerAutoRepository.findById(timerSeq.id)
+      .filter { existingTimer ->
+        timerSeq.seq != existingTimer.seq
+      }.flatMap { existingTimer ->
+        val timer = existingTimer.copy(
+          seq = timerSeq.seq,
+          updatedAt = LocalDateTime.now()
+        )
+        timer.validate()
+        timerAutoRepository.save(timer)
+      }
   }
 }

@@ -178,3 +178,14 @@ CREATE TABLE IF NOT EXISTS klk_user_traces
     created_at TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,                             -- 생성일
     PRIMARY KEY (id),
 );
+-- 타이머 자동시간 테이블 생성
+CREATE TABLE IF NOT EXISTS klk_timer_auto
+(
+    id         BIGINT AUTO_INCREMENT PRIMARY KEY,                                           -- 고유 식별자
+    user_id    BIGINT       NOT NULL,                                                       -- 사용자 ID (외래 키)
+    name       VARCHAR(255) NOT NULL,                                                       -- 공부 이름
+    seq        INT          NOT NULL,                                                       -- 정렬
+    created_at TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,                             -- 생성일
+    updated_at TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, -- 업데이트 일자
+    FOREIGN KEY (user_id) REFERENCES klk_user (id)                                          -- 사용자 타이머 테이블 참조
+);
