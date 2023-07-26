@@ -1,6 +1,6 @@
 package app.klock.api.config
 
-import app.klock.api.functional.FriendRelationRouter
+import app.klock.api.functional.friemdRelation.FriendRelationRouter
 import app.klock.api.functional.auth.AuthRouter
 import app.klock.api.functional.chatBot.ChatBotRouter
 import app.klock.api.functional.echo.EchoRouter
@@ -18,18 +18,18 @@ import org.springframework.test.web.reactive.server.WebTestClient
 
 @TestConfiguration
 class TestConfig(
-  private val authRouter: AuthRouter,
-  private val userRouter: UserRouter,
-  private val timerRouter: TimerRouter,
-  private val timerPomodoroRouter: TimerPomodoroRouter,
-  private val timerExamRouter: TimerExamRouter,
-  private val timerFocusRouter: TimerFocusRouter,
-  private val tagRouter: TagRouter,
-  private val echoRouter: EchoRouter,
-  private val userTagRouter: UserTagRouter,
-  private val studySessionRouter: StudySessionRouter,
-  private val friendRelationRouter: FriendRelationRouter,
-  private val chatBotRouter: ChatBotRouter
+    private val authRouter: AuthRouter,
+    private val userRouter: UserRouter,
+    private val timerRouter: TimerRouter,
+    private val timerPomodoroRouter: TimerPomodoroRouter,
+    private val timerExamRouter: TimerExamRouter,
+    private val timerFocusRouter: TimerFocusRouter,
+    private val tagRouter: TagRouter,
+    private val echoRouter: EchoRouter,
+    private val userTagRouter: UserTagRouter,
+    private val studySessionRouter: StudySessionRouter,
+    private val friendRelationRouter: FriendRelationRouter,
+    private val chatBotRouter: ChatBotRouter
 ) {
 
   @Bean

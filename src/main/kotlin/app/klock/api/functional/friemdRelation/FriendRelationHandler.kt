@@ -1,7 +1,7 @@
-package app.klock.api.functional.friendrelation
+package app.klock.api.functional.friemdRelation
 
-import app.klock.api.functional.friemdRelation.FriendRelationRequest
 import app.klock.api.service.FriendRelationService
+import app.klock.api.utils.JwtUtils
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.ServerRequest
@@ -11,15 +11,19 @@ import java.net.URI
 
 @Component
 class FriendRelationHandler(
-  private val friendRelationService: FriendRelationService
+  private val friendRelationService: FriendRelationService,
+  private val jwtUtils: JwtUtils
 ) {
 
-  fun create(request: ServerRequest): Mono<ServerResponse> {
+  /**
+   * 팔로우 요청
+   */
+  fun follow(request: ServerRequest): Mono<ServerResponse> {
     return request.bodyToMono(FriendRelationRequest::class.java)
       .flatMap { friendRelationRequest ->
         friendRelationService.create(
-          requesterId = friendRelationRequest.requesterId,
-          friendId = friendRelationRequest.friendId
+          userId = jwtUtils.getUserIdFromToken(),
+          followId = friendRelationRequest.followId
         )
       }
       .flatMap { friendRelation ->
@@ -29,16 +33,27 @@ class FriendRelationHandler(
       .switchIfEmpty(ServerResponse.status(HttpStatus.BAD_REQUEST).build())
   }
 
-  fun getFriendRelationsByRequesterId(request: ServerRequest): Mono<ServerResponse> {
-    val requesterId = request.queryParam("requesterId").orElse(null)?.toLongOrNull()
-    return if (requesterId != null) {
-      friendRelationService.getFriendRelationsByRequesterId(requesterId)
-        .collectList()
-        .flatMap { friendRelations ->
-          ServerResponse.ok().bodyValue(friendRelations)
-        }
-    } else {
-      ServerResponse.badRequest().build()
-    }
+  /**
+   * 유저가 팔로우한 유저를 다시 언팔로우
+   *
+   */
+  fun unfollow(request: ServerRequest): Mono<ServerResponse> {
+    return request.bodyToMono(FriendRelationRequest::class.java)
+      .flatMap { friendRelationRequest ->
+        friendRelationService.unfollow(
+          userId = friendRelationRequest.followId,
+          followId = jwtUtils.getUserIdFromToken()
+        )
+      }
+      .then(ServerResponse.noContent().build())
+      .switchIfEmpty(ServerResponse.notFound().build())
+  }
+
+  fun getFriendRelations(request: ServerRequest): Mono<ServerResponse> {
+    return friendRelationService.getFriendRelations(jwtUtils.getUserIdFromToken())
+      .collectList()
+      .flatMap { friendRelations ->
+        ServerResponse.ok().bodyValue(friendRelations)
+      }
   }
 }
