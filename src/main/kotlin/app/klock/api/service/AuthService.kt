@@ -4,12 +4,12 @@ import app.klock.api.domain.entity.SocialLogin
 import app.klock.api.domain.entity.SocialProvider
 import app.klock.api.domain.entity.User
 import app.klock.api.domain.entity.UserRole
+import app.klock.api.functional.auth.AppleLoginRequest
 import app.klock.api.functional.auth.LoginDto
 import app.klock.api.functional.auth.SocialLoginRequest
 import app.klock.api.repository.SocialLoginRepository
 import app.klock.api.repository.UserRepository
 import app.klock.api.utils.JwtUtils
-import com.fasterxml.jackson.databind.JsonNode
 import com.nimbusds.jose.JWSAlgorithm
 import com.nimbusds.jose.jwk.JWKSet
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet
@@ -30,16 +30,19 @@ class AuthService(
   private val jwtUtils: JwtUtils,
   private val passwordEncoder: PasswordEncoder,
   private val userRepository: UserRepository,
-  private var socialLoginRepository: SocialLoginRepository) {
+  private var socialLoginRepository: SocialLoginRepository
+) {
 
   private val facebookAppId = "your_facebook_app_id"
   private val facebookAppSecret = "your_facebook_app_secret"
   private val appleClientId = "your_apple_client_id"
 
 
-  fun signup(nickname: String,
-             email: String? = null,
-             password: String? = null): Mono<User> {
+  fun signup(
+    nickname: String,
+    email: String? = null,
+    password: String? = null
+  ): Mono<User> {
     val user = User(
       nickname = nickname,
       email = email,
@@ -55,9 +58,11 @@ class AuthService(
     return userRepository.save(user)
   }
 
-  fun createSocialLogin(userId: Long,
-                        provider: SocialProvider,
-                        providerUserId: String): Mono<SocialLogin> {
+  fun createSocialLogin(
+    userId: Long,
+    provider: SocialProvider,
+    providerUserId: String
+  ): Mono<SocialLogin> {
     val socialLogin = SocialLogin(
       userId = userId,
       provider = provider,
@@ -73,31 +78,26 @@ class AuthService(
         userRepository.findById(socialLogin.userId)
           .flatMap { user ->
             // JWT 토큰을 생성합니다.
-            Mono.just(LoginDto(
-              token = jwtUtils.generateToken(user.id.toString(), listOf(user.role.name)),
-              userId = user.id)
+            Mono.just(
+              LoginDto(
+                token = jwtUtils.generateToken(user.id.toString(), listOf(user.role.name)),
+                userId = user.id
+              )
             )
           }
       }
   }
 
-  fun authenticateFacebook(socialLoginRequest: Mono<SocialLoginRequest>): Mono<LoginDto> {
+  fun authenticateSocial(socialLoginRequest: Mono<SocialLoginRequest>): Mono<LoginDto> {
     return socialLoginRequest.flatMap { request ->
-      // Facebook 액세스 토큰을 사용하여 사용자 정보를 가져옵니다.
-      val facebookAccessToken = request.accessToken
-      val userInfoUrl = "https://graph.facebook.com/me?fields=id,email,name&access_token=$facebookAccessToken"
-      WebClient.create().get().uri(userInfoUrl).retrieve().bodyToMono(JsonNode::class.java)
-        .flatMap { userInfo ->
-          val userId = userInfo.get("id").asText()
-
-          // userId로 User가 있는지 확인해서 가져와서 JWT 토큰을 생성하고 반환 한다.
-          authenticateSocial(SocialProvider.FACEBOOK, userId)
-        }
+      val provider = request.provider
+      val providerUserId = request.providerUserId
+      authenticateSocial(provider, providerUserId)
     }.switchIfEmpty(Mono.error(NoSuchElementException("Authentication failed")))
   }
 
-  fun authenticateApple(socialLoginRequest: Mono<SocialLoginRequest>): Mono<LoginDto> {
-    return socialLoginRequest.flatMap { request ->
+  fun authenticateApple(appleLoginRequest: Mono<AppleLoginRequest>): Mono<LoginDto> {
+    return appleLoginRequest.flatMap { request ->
       val appleAccessToken = request.accessToken
       // Apple 공개 키를 가져옵니다.
       fetchApplePublicKeys().flatMap { jwkSet ->

@@ -14,7 +14,8 @@ open class BaseUserDTO(open val nickname: String, open val email: String?)
 data class LoginRequest(val email: String, val password: String)
 data class LoginResponse(val token: String)
 
-data class SocialLoginRequest(val accessToken: String)
+data class SocialLoginRequest(val provider: SocialProvider, val providerUserId: String)
+data class AppleLoginRequest(val accessToken: String)
 data class SocialLoginResponse(val accessToken: String, val refreshToken: String)
 
 data class SignUp(
