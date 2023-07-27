@@ -123,4 +123,32 @@ class AuthRouterTest {
       .jsonPath("$.token").isEqualTo(newAccessToken)
   }
 
+  @Test
+  fun `소셜 로그인`() {
+
+    val socialLoginRequest = SocialLoginRequest(
+      provider = SocialProvider.APPLE,
+      providerUserId = "001125.4a2a08e0044345e6abf36c3e345420c0.1108"
+    )
+
+    val socialLoginResponse = LoginDto(
+      token = "token",
+      userId = 1
+    )
+
+    coEvery { authHandler.authenticateSocial(any()) } coAnswers {
+      ServerResponse.ok().bodyValue(socialLoginResponse)
+    }
+
+    client.post()
+      .uri("/api/v1/auth/social-login")
+      .contentType(MediaType.APPLICATION_JSON)
+      .bodyValue(socialLoginRequest)
+      .exchange()
+      .expectStatus().isEqualTo(HttpStatus.OK)
+      .expectBody(LoginResponse::class.java)
+      .value { actualLoginResponse ->
+        assertEquals(actualLoginResponse.token, socialLoginResponse.token)
+      }
+  }
 }

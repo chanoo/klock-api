@@ -125,10 +125,10 @@ class AuthHandler(
       }
   }
 
-  // 페이스북 로그인 요청 처리
-  fun authenticateFacebook(request: ServerRequest): Mono<ServerResponse> {
+  // 카카오 로그인 요청 처리
+  fun authenticateSocial(request: ServerRequest): Mono<ServerResponse> {
     val socialLoginRequest = request.bodyToMono(SocialLoginRequest::class.java)
-    return authService.authenticateFacebook(socialLoginRequest)
+    return authService.authenticateSocial(socialLoginRequest)
       .flatMap { login -> ServerResponse.ok().bodyValue(login) }
       .onErrorResume { error ->
         ServerResponse.status(HttpStatus.UNAUTHORIZED).bodyValue(mapOf("error" to error.localizedMessage))
@@ -137,8 +137,8 @@ class AuthHandler(
 
   // 애플 로그인 요청 처리
   fun authenticateApple(request: ServerRequest): Mono<ServerResponse> {
-    val socialLoginRequest = request.bodyToMono(SocialLoginRequest::class.java)
-    return authService.authenticateApple(socialLoginRequest)
+    val appleLoginRequest = request.bodyToMono(AppleLoginRequest::class.java)
+    return authService.authenticateApple(appleLoginRequest)
       .flatMap { login -> ServerResponse.ok().bodyValue(login) }
       .onErrorResume { error ->
         ServerResponse.status(HttpStatus.UNAUTHORIZED).bodyValue(mapOf("error" to error.localizedMessage))
