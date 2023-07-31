@@ -45,8 +45,8 @@ class FriendRelationHandler(
         request.bodyToMono(FriendRelationRequest::class.java)
           .flatMap { friendRelationRequest ->
             friendRelationService.unfollow(
-              userId = friendRelationRequest.followId,
-              followId = userId
+              userId = userId,
+              followId = friendRelationRequest.followId
             )
           }
           .then(ServerResponse.noContent().build())
