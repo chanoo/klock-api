@@ -19,41 +19,49 @@ class FriendRelationHandler(
    * 팔로우 요청
    */
   fun follow(request: ServerRequest): Mono<ServerResponse> {
-    return request.bodyToMono(FriendRelationRequest::class.java)
-      .flatMap { friendRelationRequest ->
-        friendRelationService.create(
-          userId = jwtUtils.getUserIdFromToken(),
-          followId = friendRelationRequest.followId
-        )
+    return jwtUtils.getUserIdFromToken()
+      .flatMap { userId ->
+        request.bodyToMono(FriendRelationRequest::class.java)
+          .flatMap { friendRelationRequest ->
+            friendRelationService.create(
+              userId = userId,
+              followId = friendRelationRequest.followId
+            )
+          }
+          .flatMap { friendRelation ->
+            ServerResponse.created(URI.create("/api/v1/friendrelation/${friendRelation.id}")).bodyValue(friendRelation)
+          }
+          .switchIfEmpty(ServerResponse.status(HttpStatus.BAD_REQUEST).build())
       }
-      .flatMap { friendRelation ->
-        ServerResponse.created(URI.create("/api/v1/friendrelation/${friendRelation.id}"))
-          .bodyValue(friendRelation)
-      }
-      .switchIfEmpty(ServerResponse.status(HttpStatus.BAD_REQUEST).build())
   }
 
   /**
    * 유저가 팔로우한 유저를 다시 언팔로우
-   *
+   * 팔로우한 유저를 찾지 못하면 404 에러 발생
    */
   fun unfollow(request: ServerRequest): Mono<ServerResponse> {
-    return request.bodyToMono(FriendRelationRequest::class.java)
-      .flatMap { friendRelationRequest ->
-        friendRelationService.unfollow(
-          userId = friendRelationRequest.followId,
-          followId = jwtUtils.getUserIdFromToken()
-        )
+    return jwtUtils.getUserIdFromToken()
+      .flatMap { userId ->
+        request.bodyToMono(FriendRelationRequest::class.java)
+          .flatMap { friendRelationRequest ->
+            friendRelationService.unfollow(
+              userId = friendRelationRequest.followId,
+              followId = userId
+            )
+          }
+          .then(ServerResponse.noContent().build())
+          .switchIfEmpty(ServerResponse.notFound().build())
       }
-      .then(ServerResponse.noContent().build())
-      .switchIfEmpty(ServerResponse.notFound().build())
   }
 
   fun getFriendRelations(request: ServerRequest): Mono<ServerResponse> {
-    return friendRelationService.getFriendRelations(jwtUtils.getUserIdFromToken())
-      .collectList()
-      .flatMap { friendRelations ->
-        ServerResponse.ok().bodyValue(friendRelations)
+    return jwtUtils.getUserIdFromToken()
+      .flatMap { userId ->
+        friendRelationService.getFriendRelations(userId)
+          .collectList()
+          .flatMap { friendRelations ->
+            ServerResponse.ok().bodyValue(friendRelations)
+          }
       }
   }
 }
