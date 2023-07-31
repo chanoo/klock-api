@@ -1,5 +1,6 @@
 package app.klock.api.utils
 
+import app.klock.api.security.CustomAuthenticationToken
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
@@ -8,8 +9,10 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
+import org.springframework.security.core.context.ReactiveSecurityContextHolder
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Component
+import reactor.core.publisher.Mono
 import java.security.KeyPair
 import java.util.*
 
@@ -53,10 +56,16 @@ class JwtUtils {
     return claims.subject
   }
 
-  fun getUserIdFromToken(): Long {
-    val authentication: Authentication = SecurityContextHolder.getContext().authentication
-    val token = authentication.credentials.toString()
-    return getUserIdFromToken(token).toLong()
+  fun getUserIdFromToken(): Mono<Long> {
+    return ReactiveSecurityContextHolder.getContext()
+      .map { securityContext ->
+        val authentication = securityContext.authentication
+        if (authentication is CustomAuthenticationToken) {
+          return@map authentication.principal as Long
+        } else {
+          throw IllegalArgumentException("Authentication token is not valid")
+        }
+      }
   }
 
   // JWT 토큰의 유효성 검사
