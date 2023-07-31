@@ -12,7 +12,6 @@ import reactor.core.publisher.Mono
 @Service
 class FriendRelationService(private val friendRelationRepository: FriendRelationRepository) {
 
-    @Transactional
     fun create(userId: Long, followId: Long): Mono<FriendRelationDto> {
         return friendRelationRepository.findByUserIdAndFollowId(followId, userId)
             .flatMap { existingRelation ->
@@ -26,7 +25,6 @@ class FriendRelationService(private val friendRelationRepository: FriendRelation
             .map { FriendRelationDto.from(it) }
     }
 
-    @Transactional
     fun unfollow(userId: Long, followId: Long): Mono<Void> {
         //맞팔여부 체크
         friendRelationRepository.findByUserIdAndFollowId(followId, userId)
