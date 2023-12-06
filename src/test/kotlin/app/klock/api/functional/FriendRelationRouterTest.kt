@@ -1,9 +1,8 @@
 package app.klock.api.functional
 
 import app.klock.api.config.TestConfig
-import app.klock.api.domain.entity.FriendRelation
-import app.klock.api.functional.friemdRelation.FriendRelationRouter
-import app.klock.api.functional.friemdRelation.FriendRelationHandler
+import app.klock.api.functional.friendRelation.FriendRelationRouter
+import app.klock.api.functional.friendRelation.FriendRelationHandler
 import io.mockk.coEvery
 import io.mockk.mockk
 import org.junit.jupiter.api.BeforeEach

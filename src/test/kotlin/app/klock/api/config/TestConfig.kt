@@ -1,6 +1,6 @@
 package app.klock.api.config
 
-import app.klock.api.functional.friemdRelation.FriendRelationRouter
+import app.klock.api.functional.friendRelation.FriendRelationRouter
 import app.klock.api.functional.auth.AuthRouter
 import app.klock.api.functional.chatBot.ChatBotRouter
 import app.klock.api.functional.echo.EchoRouter

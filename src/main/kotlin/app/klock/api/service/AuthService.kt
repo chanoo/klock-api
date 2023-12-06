@@ -52,7 +52,8 @@ class AuthService(
       totalStudyTime = 0,
       userLevelId = 1,
       createdAt = LocalDateTime.now(),
-      updatedAt = LocalDateTime.now()
+      updatedAt = LocalDateTime.now(),
+      profileImage = null
     )
 
     return userRepository.save(user)

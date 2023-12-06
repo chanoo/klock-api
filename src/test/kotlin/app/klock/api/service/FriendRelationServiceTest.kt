@@ -1,7 +1,9 @@
 package app.klock.api.service
 
 import app.klock.api.domain.entity.FriendRelation
-import app.klock.api.functional.friemdRelation.FriendRelationDto
+import app.klock.api.functional.friendRelation.FriendDetailDto
+import app.klock.api.functional.friendRelation.FriendRelationDto
+import app.klock.api.repository.FriendRelationNativeSqlRepository
 import app.klock.api.repository.FriendRelationRepository
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -25,11 +27,13 @@ class FriendRelationServiceTest @Autowired constructor(
 
     @MockBean
     private lateinit var friendRelationRepository: FriendRelationRepository
+    @MockBean
+    private lateinit var friendRelationNativeSqlRepository: FriendRelationNativeSqlRepository
 
     @BeforeEach
     fun setUp() {
-        Mockito.`when`(friendRelationRepository.findByUserIdAndFollowId(anyLong(), anyLong()))
-            .thenReturn(Mono.empty())
+        Mockito.`when`(friendRelationNativeSqlRepository.findFriendDetails(anyLong()))
+            .thenReturn(Flux.empty())
     }
 
     @Test
@@ -46,15 +50,15 @@ class FriendRelationServiceTest @Autowired constructor(
 
     @Test
     fun `요청자 ID로 친구 관계 조회`() {
-        val friendRelations = listOf(
-            FriendRelation(id = 1L, userId = 1L, followId = 2L, followed = true),
-            FriendRelation(id = 2L, userId = 1L, followId = 3L, followed = true)
+        val friendDetails = listOf(
+            FriendDetailDto(followId = 2L, nickname = "test1", totalStudyTime = 100, profileImage = "test1_profile_img"),
+            FriendDetailDto(followId = 3L, nickname = "test2", totalStudyTime = 200, profileImage = "test2_profile_img")
         )
 
-        Mockito.`when`(friendRelationRepository.findByUserIdAndFollowed(1L, true)).thenReturn(Flux.fromIterable(friendRelations))
+        Mockito.`when`(friendRelationNativeSqlRepository.findFriendDetails(1L)).thenReturn(Flux.fromIterable(friendDetails))
 
         StepVerifier.create(friendRelationService.getFriendRelations(1L))
-            .expectNext(FriendRelationDto.from(friendRelations[0]), FriendRelationDto.from(friendRelations[1]))
+            .expectNext(friendDetails[0], friendDetails[1])
             .verifyComplete()
     }
 }

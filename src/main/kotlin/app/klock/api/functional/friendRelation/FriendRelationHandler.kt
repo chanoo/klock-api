@@ -1,4 +1,4 @@
-package app.klock.api.functional.friemdRelation
+package app.klock.api.functional.friendRelation
 
 import app.klock.api.service.FriendRelationService
 import app.klock.api.utils.JwtUtils

@@ -45,6 +45,7 @@ class AuthServiceTest {
       active = true,
       totalStudyTime = 0,
       userLevelId = 1,
+      profileImage = null,
       createdAt = LocalDateTime.now(),
       updatedAt = LocalDateTime.now()
     )
@@ -100,6 +101,7 @@ class AuthServiceTest {
       active = true,
       totalStudyTime = 0,
       userLevelId = 1,
+      profileImage = null,
       createdAt = LocalDateTime.now(),
       updatedAt = LocalDateTime.now()
     )

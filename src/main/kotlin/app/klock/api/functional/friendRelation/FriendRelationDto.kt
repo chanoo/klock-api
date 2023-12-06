@@ -1,4 +1,4 @@
-package app.klock.api.functional.friemdRelation
+package app.klock.api.functional.friendRelation
 
 import app.klock.api.domain.entity.FriendRelation
 import java.time.LocalDateTime
@@ -26,3 +26,10 @@ data class FriendRelationDto(
         )
     }
 }
+
+data class FriendDetailDto(
+    val followId: Long,
+    val nickname: String,
+    val totalStudyTime: Int,
+    val profileImage: String,
+)

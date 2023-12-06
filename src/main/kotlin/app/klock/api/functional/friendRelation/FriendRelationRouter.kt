@@ -1,4 +1,4 @@
-package app.klock.api.functional.friemdRelation
+package app.klock.api.functional.friendRelation
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration

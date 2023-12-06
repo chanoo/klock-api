@@ -1,16 +1,18 @@
 package app.klock.api.service
 
 import app.klock.api.domain.entity.FriendRelation
-import app.klock.api.functional.friemdRelation.FriendRelationDto
-import app.klock.api.functional.studySession.StudySessionDto
+import app.klock.api.functional.friendRelation.FriendDetailDto
+import app.klock.api.functional.friendRelation.FriendRelationDto
+import app.klock.api.repository.FriendRelationNativeSqlRepository
 import app.klock.api.repository.FriendRelationRepository
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 @Service
-class FriendRelationService(private val friendRelationRepository: FriendRelationRepository) {
+class FriendRelationService(
+    private val friendRelationRepository: FriendRelationRepository,
+    private val friendRelationNativeSqlRepository: FriendRelationNativeSqlRepository) {
 
     fun create(userId: Long, followId: Long): Mono<FriendRelationDto> {
         return friendRelationRepository.findByUserIdAndFollowId(followId, userId)
@@ -36,9 +38,7 @@ class FriendRelationService(private val friendRelationRepository: FriendRelation
         return friendRelationRepository.deleteByUserIdAndFollowId(userId, followId)
     }
 
-    fun getFriendRelations(userId: Long): Flux<FriendRelationDto> {
-        return friendRelationRepository.findByUserIdAndFollowed(userId, true)
-            .map { FriendRelationDto.from(it)
-            }
+    fun getFriendRelations(userId: Long): Flux<FriendDetailDto> {
+        return friendRelationNativeSqlRepository.findFriendDetails(userId)
     }
 }

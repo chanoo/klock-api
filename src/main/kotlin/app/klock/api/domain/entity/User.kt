@@ -13,6 +13,7 @@ import java.time.LocalDateTime
  * @property nickname 사용자의 닉네임
  * @property totalStudyTime 사용자의 총 학습 시간 (분 단위)
  * @property userLevelId 사용자의 레벨 정보와 연결된 고유 식별자
+ * @property profileImage 사용자의 프로필 이미지
  * @property role 사용자의 권한
  * @property active 사용자 계정 활성화 여부
  * @property createdAt 레코드 생성 시간
@@ -37,6 +38,9 @@ data class User(
 
   @Column("user_level_id")
   val userLevelId: Long,
+
+  @Column("profile_image")
+  val profileImage: String? = null,
 
   @Column("role")
   val role: UserRole,
