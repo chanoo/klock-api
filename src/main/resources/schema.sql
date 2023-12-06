@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS klk_user
     nickname         VARCHAR(255) NOT NULL,
     total_study_time INT          NOT NULL,
     user_level_id    BIGINT       NOT NULL,
+    profile_image    VARCHAR(255),
     role             VARCHAR(255) NOT NULL,
     active           BOOLEAN      NOT NULL,
     created_at       TIMESTAMP    NOT NULL,

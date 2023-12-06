@@ -7,8 +7,9 @@ import org.springframework.scheduling.annotation.Scheduled
 @Configuration
 class SchedulerConfig(private val webSocketHandler: RealtimeUsersWebSocketHandler) {
 
-    @Scheduled(fixedRate = 5000) // 접속자 수를 5초마다 전송
+    @Scheduled(fixedRate = 5000) // 접속자 정보를 5초마다 전송
     fun sendConnectedUsersCount() {
-        webSocketHandler.broadcastConnectedUsers()
+//        webSocketHandler.broadcastConnectedUsers()
+        webSocketHandler.broadcastOnlineUsers()
     }
 }
