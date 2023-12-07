@@ -22,28 +22,35 @@ class FriendRelationNativeSqlRepository(private val databaseClient: DatabaseClie
             klk_friend_relation fr
         JOIN 
             klk_user u ON fr.follow_id = u.id
-        JOIN
+        LEFT JOIN
 			klk_study_session st ON fr.follow_id = st.user_id    
         WHERE 
             fr.user_id = :userId
             AND fr.followed = true
-    """)
-            .bind("userId", userId)
+        HAVING
+            fr.follow_id is not null    
+        """)
+            .bind(0, userId)
             .map { row, _ ->
                 FriendDetailDto(
-                    followId = row.get("follow_id", Long::class.java)!!,
-                    nickname = row.get("nickname", String::class.java)!!,
-                    totalStudyTime = row.get("total_study_time", Int::class.java)!!,
-                    profileImage = row.get("profile_image", String::class.java)!!,
-                    // Add more fields as needed
+                    followId = row.get("follow_id", Long::class.java) ?: 0L,
+                    nickname = row.get("nickname", String::class.java) ?: "",
+                    totalStudyTime = row.get("total_study_time", Int::class.java) ?: 0,
+                    profileImage = row.get("profile_image", String::class.java) ?: ""
                 )
             }
             .all()
             .collectList()
             .map { friendList ->
-                friendList.sortedWith(compareByDescending<FriendDetailDto> {it.totalStudyTime }.thenBy { it.nickname })
+                friendList.sortedWith(compareByDescending<FriendDetailDto> { it.totalStudyTime }.thenBy { it.nickname })
             }
-            .flatMapMany { Flux.fromIterable(it) }
+            .flatMapMany {
+                if (it.isEmpty()) {
+                    Flux.empty()
+                } else {
+                    Flux.fromIterable(it)
+                }
+            }
     }
 
 }

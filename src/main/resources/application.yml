@@ -17,6 +17,9 @@ logging:
     org.springframework.web: DEBUG
     org.springframework.data.r2dbc: DEBUG
     app.klock.api: DEBUG
+    io.r2dbc.spi: DEBUG
+    dev.miku.r2dbc.mysql: DEBUG
+    org.mariadb: DEBUG
   file:
     name: logs/application.log
   pattern:

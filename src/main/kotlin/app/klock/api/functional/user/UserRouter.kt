@@ -14,6 +14,7 @@ class UserRouter(private val userHandler: UserHandler) {
       PUT("/{id}", userHandler::updateUser)
       DELETE("/{id}", userHandler::deleteUser)
       POST("/existed-nickname", userHandler::existedNickname)
+      POST("/{id}/profile-image", userHandler::updateProfileImage)
     }
   }
 }

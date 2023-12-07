@@ -1,9 +1,11 @@
 package app.klock.api.service
 
+import app.klock.api.aws.s3.service.S3Service
 import app.klock.api.domain.entity.User
 import app.klock.api.functional.user.UpdateUserRequest
 import app.klock.api.functional.user.UserInfoDto
 import app.klock.api.repository.*
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
@@ -28,6 +30,9 @@ class UserService(
   private val timerFocusRepository: TimerFocusRepository,
   private val timerPomodoroRepository: TimerPomodoroRepository,
   private val passwordEncoder: PasswordEncoder,
+  private val s3Service: S3Service,
+  @Value("\${cloud.aws.s3.path-user-profile}") private val userProfilePath: String,
+  @Value("\${cloud.aws.s3.endpoint}") private val s3Endpoint: String
 ) {
   /**
    * 데이터베이스에서 모든 User 엔티티를 검색합니다.
@@ -209,5 +214,19 @@ class UserService(
     return nickname.isNotEmpty() &&
       nickname.length <= User.allowedNicknameMaxLength() &&
       User.allowedPattern().matches(nickname)
+  }
+
+  fun updateProfileImage(userId: Long, imageBytes: ByteArray, originFileName: String): Mono<User> {
+    return userRepository.findById(userId)
+      .flatMap { user ->
+        s3Service.uploadFile(userProfilePath, imageBytes, originFileName)
+          .flatMap { key ->
+            userRepository.save(
+              user.copy(
+                profileImage = "$s3Endpoint/$key"
+              )
+            )
+          }
+      }
   }
 }

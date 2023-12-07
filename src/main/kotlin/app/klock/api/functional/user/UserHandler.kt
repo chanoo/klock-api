@@ -1,14 +1,15 @@
 package app.klock.api.functional.user
 
-import app.klock.api.domain.entity.User
-import app.klock.api.domain.entity.UserRole
 import app.klock.api.service.UserService
+import org.springframework.core.io.buffer.DataBufferUtils
+import org.springframework.http.MediaType
+import org.springframework.http.codec.multipart.FilePart
 import org.springframework.stereotype.Component
+import org.springframework.web.reactive.function.BodyExtractors
 import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.server.ServerRequest
 import org.springframework.web.reactive.function.server.ServerResponse
 import reactor.core.publisher.Mono
-import java.time.LocalDateTime
 
 @Component
 class UserHandler(private val userService: UserService) {
@@ -70,4 +71,31 @@ class UserHandler(private val userService: UserService) {
       }.onErrorResume { e ->
         ServerResponse.badRequest().bodyValue(mapOf("error" to (e.message ?: "Unknown error")))
       }
+
+  // 프로필 이미지 저장/변경
+  fun updateProfileImage(request: ServerRequest): Mono<ServerResponse> =
+    request.body(BodyExtractors.toMultipartData())
+      .flatMap { parts ->
+        val userId = request.pathVariable("id").toLong()
+        val imagePart = parts.toSingleValueMap()["file"] as FilePart
+
+        val imageBytesMono = DataBufferUtils.join(imagePart.content()).flatMap { dataBuffer ->
+          val bytes = ByteArray(dataBuffer.readableByteCount())
+          dataBuffer.read(bytes)
+          DataBufferUtils.release(dataBuffer)
+          Mono.just(bytes)
+        }
+
+        // Process the image asynchronously
+        imageBytesMono.flatMap { imageBytes ->
+          userService.updateProfileImage(userId, imageBytes, imagePart.filename())
+            .flatMap { user ->
+              ServerResponse.ok().bodyValue(UserInfoDto.from(user))
+            }
+        }
+      }.onErrorResume { e ->
+        ServerResponse.badRequest().bodyValue(mapOf("error" to (e.message ?: "Unknown error")))
+      }
+
+
 }
