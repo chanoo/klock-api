@@ -39,3 +39,4 @@ out/
 application-datasource-local.yml
 
 /logs/**
+application-test.yml

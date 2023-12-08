@@ -12,8 +12,8 @@ cloud:
     region:
       static: ap-northeast-2
     credentials:
-      access-key: AKIAWNBTBA5OYGOG7B75
-      secret-key: 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
+      access-key: ${SPRING_AWS_ACCESS_KEY}
+      secret-key: ${SPRING_AWS_SECRET_KEY}
     s3:
       bucket: resource.klock.app
       endpoint: https://resource.klock.app
