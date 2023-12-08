@@ -25,11 +25,8 @@ data class UserTrace(
   @Column("user_id")
   val userId: Long,
 
-  @Column("friend_id")
-  val friendId: Long? = null,
-
-  @Column("friend_nickname")
-  val friendNickName: String? = null,
+  @Column("write_user_id")
+  val writeUserId: Long,
 
   @Column("contents")
   val contents: String? = null,
@@ -38,8 +35,8 @@ data class UserTrace(
   val contentsImage: String? = null,
 
   @Column("heart")
-  val heart: Boolean? = null,
+  val heart: Boolean = false,
 
   @Column("created_at")
-  val createdAt: LocalDateTime,
+  val createdAt: LocalDateTime = LocalDateTime.now(),
 )

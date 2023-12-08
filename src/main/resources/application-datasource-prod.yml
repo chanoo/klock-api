@@ -18,3 +18,4 @@ cloud:
       bucket: resource.klock.app
       endpoint: https://resource.klock.app
       path-user-profile: user-profile
+      path-user-trace-image: user-trace-image
