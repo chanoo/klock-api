@@ -6,40 +6,37 @@ import org.springframework.data.relational.core.mapping.Table
 import java.time.LocalDateTime
 
 /**
- * UserTraces 엔티티는 사용자의 흔적(공부, 친구)들을 기록하는 클래스입니다.
+ * UserTrace 엔티티는 사용자의 흔적(공부, 친구)들을 기록하는 클래스입니다.
  * @property id 데이터베이스에서 자동 생성되는 기본 키 값
  * @property userId 사용자 고유 식별번호
  * @property friendId 친구 고유 식별번호
  * @property friendNickName 친구 닉네임
  * @property contents 흔적 내용 텍스트
  * @property contentsImage 흔적 내용 이미지
- * @property like 좋아요 여부
+ * @property heart 좋아요 여부
  * @property createdAt 레코드 생성 시간
  */
 
-@Table("klk_user_traces")
-data class UserTraces(
+@Table("klk_user_trace")
+data class UserTrace(
   @Id
   val id: Long? = null,
 
   @Column("user_id")
   val userId: Long,
 
-  @Column("friend_id")
-  val friendId: Long,
-
-  @Column("friend_nickname")
-  val friendNickName: String,
+  @Column("write_user_id")
+  val writeUserId: Long,
 
   @Column("contents")
-  val contents: String,
+  val contents: String? = null,
 
   @Column("contents_image")
-  val contentsImage: String,
+  val contentsImage: String? = null,
 
-  @Column("like")
-  val like: Boolean,
+  @Column("heart")
+  val heart: Boolean = false,
 
   @Column("created_at")
-  val createdAt: LocalDateTime,
+  val createdAt: LocalDateTime = LocalDateTime.now(),
 )

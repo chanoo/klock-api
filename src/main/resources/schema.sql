@@ -167,15 +167,14 @@ CREATE TABLE IF NOT EXISTS klk_timer_focus
 );
 
 -- User Traces 테이블
-CREATE TABLE IF NOT EXISTS klk_user_traces
+CREATE TABLE IF NOT EXISTS klk_user_trace
 (
-    id                  BIGINT       NOT NULL AUTO_INCREMENT,
-    user_id             BIGINT       NOT NULL,                                              -- 사용자 ID (외래 키)
-    friend_id           BIGINT       NULL,                                                  -- 친구 ID
-    friend_nickname     VARCHAR(255) NULL,                                                  -- 친구 닉네임
-    contents            VARCHAR(255) NULL,                                                  -- 내용
-    contents_image      VARCHAR(255) NULL,                                                  -- 내용 첨부 이미지
-    like                BOOLEAN      NOT NULL DEFAULT FALSE,                                -- 좋아요 여부
+    id                      BIGINT       NOT NULL AUTO_INCREMENT,
+    user_id                 BIGINT       NOT NULL,                                          -- 담벼락 사용자 ID (외래 키)
+    write_user_id           BIGINT       NOT NULL,                                          -- 작성자 ID
+    contents                VARCHAR(255) NULL,                                              -- 내용
+    contents_image          VARCHAR(255) NULL,                                              -- 내용 이미지
+    heart                   BOOLEAN      NOT NULL DEFAULT FALSE,                            -- 좋아요 여부
     created_at TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,                             -- 생성일
     PRIMARY KEY (id),
 );
