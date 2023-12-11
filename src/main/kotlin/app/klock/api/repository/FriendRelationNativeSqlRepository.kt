@@ -17,18 +17,21 @@ class FriendRelationNativeSqlRepository(private val databaseClient: DatabaseClie
     fun findFriendDetails(userId: Long): Flux<FriendDetailDto> {
         return databaseClient.sql("""
         SELECT
-            fr.follow_id, u.nickname, sum(TIMESTAMPDIFF(MINUTE, st.start_time, st.end_time)) AS total_study_time, u.profile_image
+            fr.follow_id, 
+            u.nickname, 
+            COALESCE(sum(TIMESTAMPDIFF(MINUTE, st.start_time, st.end_time)), 0) AS total_study_time, 
+            u.profile_image
         FROM 
             klk_friend_relation fr
         JOIN 
             klk_user u ON fr.follow_id = u.id
-        LEFT JOIN
+        LEFT OUTER JOIN
 			klk_study_session st ON fr.follow_id = st.user_id    
         WHERE 
             fr.user_id = :userId
             AND fr.followed = true
-        HAVING
-            fr.follow_id is not null    
+        GROUP BY
+        	fr.follow_id  
         """)
             .bind(0, userId)
             .map { row, _ ->
