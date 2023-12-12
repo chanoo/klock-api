@@ -52,6 +52,8 @@ jobs:
           export DB_URL=${{ secrets.DB_URL }}
           export DB_USERNAME=${{ secrets.DB_USERNAME }}
           export DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          export AWS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY }}
+          export AWS_SECRET_KEY=${{ secrets.AWS_SECRET_KEY }}
           export SPRING_PROFILES_ACTIVE=common,prod
           envsubst < k8s/deployment.yaml > k8s/deployment-deploy.yaml
           kubectl apply -f k8s/deployment-deploy.yaml
