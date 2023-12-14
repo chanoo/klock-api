@@ -2,6 +2,7 @@ package app.klock.api.aws.s3.service
 
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
 import software.amazon.awssdk.core.async.AsyncRequestBody
@@ -18,11 +19,14 @@ class S3Service(private val s3AsyncClient: S3AsyncClient,
                 @Value("\${cloud.aws.s3.bucket}") private val bucket: String) {
 
     fun uploadFile(filePath: String, file: ByteArray, originFileName: String): Mono<String> {
-        val key = generateUniqueKey(filePath, originFileName)
+        val fileExtension = getActualFileExtension(originFileName) ?: "unknown"
+        val contentType = getMediaType(fileExtension)
+        val key = generateUniqueKey(filePath, fileExtension)
 
         val putObjectRequest: PutObjectRequest = PutObjectRequest.builder()
             .bucket(bucket)
             .key(key)
+            .contentType(contentType)
             .build()
 
         val byteBuffer = ByteBuffer.wrap(file)
@@ -43,8 +47,7 @@ class S3Service(private val s3AsyncClient: S3AsyncClient,
         }
     }
 
-    private fun generateUniqueKey(filePath: String, fileName: String): String {
-        val fileExtension = getActualFileExtension(fileName) ?: "unknown"
+    private fun generateUniqueKey(filePath: String, fileExtension: String): String {
         return "$filePath/${UUID.randomUUID()}.$fileExtension"
     }
 
@@ -54,6 +57,15 @@ class S3Service(private val s3AsyncClient: S3AsyncClient,
             fileName.substring(lastDotIndex + 1)
         } else {
             null
+        }
+    }
+
+    private fun getMediaType(fileExtension: String): String {
+        return when (fileExtension) {
+            "jpg", "jpeg" -> MediaType.IMAGE_JPEG_VALUE
+            "png" -> MediaType.IMAGE_PNG_VALUE
+            "gif" -> MediaType.IMAGE_GIF_VALUE
+            else -> MediaType.APPLICATION_OCTET_STREAM_VALUE
         }
     }
 }
