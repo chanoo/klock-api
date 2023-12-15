@@ -1,39 +1,37 @@
 package app.klock.api.service
 
+import app.klock.api.aws.s3.service.S3Service
 import app.klock.api.domain.entity.*
 import app.klock.api.functional.user.UpdateUserRequest
 import app.klock.api.functional.user.UserInfoDto
 import app.klock.api.repository.*
+import io.mockk.every
+import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import org.mockito.ArgumentMatchers.any
-import org.mockito.ArgumentMatchers.anyString
-import org.mockito.BDDMockito.given
-import org.mockito.Mock
-import org.mockito.Mockito
-import org.mockito.Mockito.mock
-import org.mockito.Mockito.`when`
 import org.mockito.junit.jupiter.MockitoExtension
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.test.context.ActiveProfiles
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
-import java.time.*
-
+import software.amazon.awssdk.services.s3.S3AsyncClient
+import java.time.DayOfWeek
+import java.time.LocalDateTime
 
 @ExtendWith(MockitoExtension::class)
 @ActiveProfiles("local")
 class UserServiceTest {
-
   private lateinit var userService: UserService
   private lateinit var userRepository: UserRepository
   private lateinit var userLevelRepository: UserLevelRepository
   private lateinit var userSettingRepository: UserSettingRepository
   private lateinit var userTagRepository: UserTagRepository
   private lateinit var passwordEncoder: BCryptPasswordEncoder
+  private lateinit var s3Service: S3Service
+  private lateinit var s3AsyncClient: S3AsyncClient
 
   private lateinit var socialLoginRepository: SocialLoginRepository
   private lateinit var studySessionRepository: StudySessionRepository
@@ -43,16 +41,22 @@ class UserServiceTest {
 
   @BeforeEach
   fun setUp() {
-    passwordEncoder = mock(BCryptPasswordEncoder::class.java)
-    userRepository = mock(UserRepository::class.java)
-    userLevelRepository = mock(UserLevelRepository::class.java)
-    userSettingRepository = mock(UserSettingRepository::class.java)
-    userTagRepository = mock(UserTagRepository::class.java)
-    socialLoginRepository = mock(SocialLoginRepository::class.java)
-    studySessionRepository = mock(StudySessionRepository::class.java)
-    timerExamRepository = mock(TimerExamRepository::class.java)
-    timerFocusRepository = mock(TimerFocusRepository::class.java)
-    timerPomodoroRepository = mock(TimerPomodoroRepository::class.java)
+    userRepository = mockk()
+    userLevelRepository = mockk()
+    userSettingRepository = mockk()
+    userTagRepository = mockk()
+    socialLoginRepository = mockk()
+    studySessionRepository = mockk()
+    timerExamRepository = mockk()
+    timerFocusRepository = mockk()
+    timerPomodoroRepository = mockk()
+    passwordEncoder = mockk()
+    s3AsyncClient = mockk()
+    s3Service = mockk()
+
+    val mockUserProfilePath = "mock/user/profile/path"
+    val mockS3Endpoint = "mock/s3/endpoint"
+
     userService = UserService(
       userRepository,
       userLevelRepository,
@@ -63,7 +67,11 @@ class UserServiceTest {
       timerExamRepository,
       timerFocusRepository,
       timerPomodoroRepository,
-      passwordEncoder)
+      passwordEncoder,
+      s3Service,
+      mockUserProfilePath,
+      mockS3Endpoint
+    )
   }
 
   @Test
@@ -73,6 +81,7 @@ class UserServiceTest {
       id = 1L,
       nickname = "user1",
       email = "user1@example.com",
+      profileImage = "https://resouce.klock.app/profile-image.png",
       role = UserRole.USER,
       active = true,
       totalStudyTime = 0,
@@ -99,10 +108,11 @@ class UserServiceTest {
       tagId = 1L
     )
     val userInfoDto = UserInfoDto.from(user = user, userLevel = userLevel, userSetting = userSetting, userTag = userTag)
-    `when`(userRepository.findById(1L)).thenReturn(Mono.just(user))
-    `when`(userLevelRepository.findById(1L)).thenReturn(Mono.just(userLevel))
-    `when`(userSettingRepository.findByUserId(1L)).thenReturn(Mono.just(userSetting))
-    `when`(userTagRepository.findByUserId(1L)).thenReturn(Mono.just(userTag))
+
+    every { userRepository.findById(1L) } returns Mono.just(user)
+    every { userLevelRepository.findById(1L) } returns Mono.just(userLevel)
+    every { userSettingRepository.findByUserId(1L) } returns Mono.just(userSetting)
+    every { userTagRepository.findByUserId(1L) } returns Mono.just(userTag)
 
     // Act
     val foundUser = userService.findById(1L)
@@ -138,7 +148,8 @@ class UserServiceTest {
       createdAt = LocalDateTime.now(),
       updatedAt = LocalDateTime.now()
     )
-    `when`(userRepository.findAll()).thenReturn(Flux.just(user1, user2))
+
+    every { userRepository.findAll() } returns Flux.just(user1, user2)
 
     // Act
     val users = userService.findAll()
@@ -175,7 +186,8 @@ class UserServiceTest {
       createdAt = LocalDateTime.now(),
       updatedAt = LocalDateTime.now()
     )
-    `when`(userRepository.save(newUser)).thenReturn(Mono.just(savedUser))
+
+    every { userRepository.save(newUser) } returns Mono.just(savedUser)
 
     // Act
     val createdUser = userService.save(newUser)
@@ -188,7 +200,6 @@ class UserServiceTest {
 
   @Test
   fun `사용자 정보 수정하기`() {
-
     // Arrange
     val createdAt = LocalDateTime.now()
     val updatedAt = LocalDateTime.now()
@@ -244,12 +255,13 @@ class UserServiceTest {
       updatedAt = updatedAt
     )
     val userInfoDto = UserInfoDto.from(user = updatedUser, userSetting = updateUserSetting, userTag = updateUserTag)
-    `when`(userRepository.findById(1L)).thenReturn(Mono.just(existingUser))
-    `when`(userRepository.save(updatedUser)).thenReturn(Mono.just(updatedUser))
-    `when`(userSettingRepository.findByUserId(1L)).thenReturn(Mono.just(existingUserSetting))
-    `when`(userSettingRepository.save(updateUserSetting)).thenReturn(Mono.just(updateUserSetting))
-    `when`(userTagRepository.findByUserId(1L)).thenReturn(Mono.just(existingUserTag))
-    `when`(userTagRepository.save(updateUserTag)).thenReturn(Mono.just(updateUserTag))
+
+    every { userRepository.findById(1L) } returns Mono.just(existingUser)
+    every { userRepository.save(any()) } returns Mono.just(updatedUser)
+    every { userSettingRepository.findByUserId(1L) } returns Mono.just(existingUserSetting)
+    every { userSettingRepository.save(any()) } returns Mono.just(updateUserSetting)
+    every { userTagRepository.findByUserId(1L) } returns Mono.just(existingUserTag)
+    every { userTagRepository.save(any()) } returns Mono.just(updateUserTag)
 
     // Act
     val savedUser = userService.update(1L, updateUserRequest)
@@ -275,16 +287,16 @@ class UserServiceTest {
       createdAt = LocalDateTime.now(),
       updatedAt = LocalDateTime.now()
     )
-    `when`(userRepository.findById(userId)).thenReturn(Mono.just(user))
-    `when`(userRepository.save(any(User::class.java))).thenReturn(Mono.just(user))
 
-    `when`(socialLoginRepository.deleteByUserId(userId)).thenReturn(Mono.empty())
-    `when`(userSettingRepository.deleteByUserId(userId)).thenReturn(Mono.empty())
-    `when`(userTagRepository.deleteByUserId(userId)).thenReturn(Mono.empty())
-    `when`(studySessionRepository.deleteByUserId(userId)).thenReturn(Mono.empty())
-    `when`(timerExamRepository.deleteByUserId(userId)).thenReturn(Mono.empty())
-    `when`(timerFocusRepository.deleteByUserId(userId)).thenReturn(Mono.empty())
-    `when`(timerPomodoroRepository.deleteByUserId(userId)).thenReturn(Mono.empty())
+    every { userRepository.findById(userId) } returns Mono.just(user)
+    every { userRepository.save(any()) } returns Mono.just(user)
+    every { socialLoginRepository.deleteByUserId(userId) } returns Mono.empty()
+    every { userSettingRepository.deleteByUserId(userId) } returns Mono.empty()
+    every { userTagRepository.deleteByUserId(userId) } returns Mono.empty()
+    every { studySessionRepository.deleteByUserId(userId) } returns Mono.empty()
+    every { timerExamRepository.deleteByUserId(userId) } returns Mono.empty()
+    every { timerFocusRepository.deleteByUserId(userId) } returns Mono.empty()
+    every { timerPomodoroRepository.deleteByUserId(userId) } returns Mono.empty()
 
     // Act
     val deletedUser = userService.deleteById(userId)
@@ -308,7 +320,8 @@ class UserServiceTest {
       createdAt = LocalDateTime.now(),
       updatedAt = LocalDateTime.now()
     )
-    `when`(userRepository.findByEmail("user1@example.com")).thenReturn(Mono.just(user))
+
+    every { userRepository.findByEmail("user1@example.com") } returns Mono.just(user)
 
     // Act
     val foundUser = userService.findByEmail("user1@example.com")
@@ -321,22 +334,16 @@ class UserServiceTest {
 
   @Test
   fun `비밀번호 유효성 검증`() {
-    // 해당 mock 객체의 메서드는 기본적으로 실제 동작을 수행하지 않습니다.
-    // 이 문제를 해결하려면 passwordEncoder.encode() 메서드에 대한 반환 값을 설정해야 합니다.
-    `when`(passwordEncoder.encode(anyString())).thenAnswer { invocation ->
-      val argument = invocation.getArgument(0, String::class.java)
-      BCryptPasswordEncoder().encode(argument)
-    }
-    // passwordEncoder.matches() 메서드를 사용하므로 해당 메서드에 대한 모의 동작을 설정해야 한다.
-    `when`(passwordEncoder.matches(anyString(), anyString())).thenAnswer { invocation ->
-      val rawPassword = invocation.getArgument(0, String::class.java)
-      val encodedPassword = invocation.getArgument(1, String::class.java)
-      BCryptPasswordEncoder().matches(rawPassword, encodedPassword)
-    }
-
     // Arrange
     val plainPassword = "password123"
-    val hashedPassword = passwordEncoder.encode(plainPassword)
+    val hashedPassword = BCryptPasswordEncoder().encode(plainPassword)
+    every { passwordEncoder.encode(any<String>()) } answers { BCryptPasswordEncoder().encode(firstArg()) }
+    every { passwordEncoder.matches(any<String>(), any()) } answers {
+      BCryptPasswordEncoder().matches(
+        firstArg(),
+        secondArg()
+      )
+    }
 
     // Act & Assert
     assertTrue(userService.validatePassword(plainPassword, hashedPassword))
@@ -345,20 +352,11 @@ class UserServiceTest {
 
   @Test
   fun `비밀번호 변경`() {
-    // 해당 mock 객체의 메서드는 기본적으로 실제 동작을 수행하지 않습니다.
-    // 이 문제를 해결하려면 passwordEncoder.encode() 메서드에 대한 반환 값을 설정해야 합니다.
-    `when`(passwordEncoder.encode(anyString())).thenAnswer { invocation ->
-      val argument = invocation.getArgument(0, String::class.java)
-      BCryptPasswordEncoder().encode(argument)
-    }
-    // passwordEncoder.matches() 메서드를 사용하므로 해당 메서드에 대한 모의 동작을 설정해야 한다.
-    `when`(passwordEncoder.matches(anyString(), anyString())).thenAnswer { invocation ->
-      val rawPassword = invocation.getArgument(0, String::class.java)
-      val encodedPassword = invocation.getArgument(1, String::class.java)
-      BCryptPasswordEncoder().matches(rawPassword, encodedPassword)
-    }
-
     // Arrange
+    val oldPassword = "old_password"
+    val newPassword = "new_password"
+    val hashedOldPassword = BCryptPasswordEncoder().encode(oldPassword)
+    val hashedNewPassword = BCryptPasswordEncoder().encode(newPassword)
     val existingUser = User(
       id = 1L,
       nickname = "user1",
@@ -367,17 +365,29 @@ class UserServiceTest {
       active = true,
       totalStudyTime = 0,
       userLevelId = 1,
-      hashedPassword = passwordEncoder.encode("old_password"),
+      hashedPassword = hashedOldPassword,
       createdAt = LocalDateTime.now(),
       updatedAt = LocalDateTime.now()
     )
-    Mockito.`when`(userRepository.findById(1L)).thenReturn(Mono.just(existingUser))
-    Mockito.`when`(userRepository.save(any(User::class.java))).thenAnswer { invocation ->
-      Mono.just(invocation.getArgument(0, User::class.java))
+
+    every { userRepository.findById(1L) } returns Mono.just(existingUser)
+    every { userRepository.save(any<User>()) } answers {
+      val user = firstArg<User>()
+      Mono.just(user.copy(hashedPassword = hashedNewPassword)) // 새로운 해시된 비밀번호 사용
     }
+    every { passwordEncoder.encode(any<String>()) } answers { BCryptPasswordEncoder().encode(firstArg()) }
+    every { passwordEncoder.matches(eq(oldPassword), eq(hashedOldPassword)) } returns true
+    every { passwordEncoder.matches(eq(newPassword), eq(hashedNewPassword)) } returns true // 새 비밀번호와 새 해시가 일치하도록 설정
+    every { passwordEncoder.matches(not(eq(oldPassword)), eq(hashedOldPassword)) } returns false
+    every {
+      passwordEncoder.matches(
+        not(eq(newPassword)),
+        eq(hashedNewPassword)
+      )
+    } returns false // 새 비밀번호가 아닌 경우 일치하지 않도록 설정
 
     // Act
-    val savedUser = userService.changePassword(1L, "old_password", "new_password")
+    val savedUser = userService.changePassword(1L, oldPassword, newPassword)
 
     // Assert
     StepVerifier.create(savedUser)
@@ -386,7 +396,7 @@ class UserServiceTest {
         assertEquals(existingUser.nickname, updatedUser.nickname)
         assertEquals(existingUser.email, updatedUser.email)
         assertNotEquals(existingUser.hashedPassword, updatedUser.hashedPassword)
-        assertTrue(passwordEncoder.matches("new_password", updatedUser.hashedPassword))
+        assertTrue(passwordEncoder.matches(newPassword, updatedUser.hashedPassword))
       }
       .verifyComplete()
   }
@@ -394,6 +404,8 @@ class UserServiceTest {
   @Test
   fun `비밀번호 변경 - 잘못된 현재 비밀번호`() {
     // Arrange
+    val correctPassword = "password123"
+    val hashedCorrectPassword = BCryptPasswordEncoder().encode(correctPassword)
     val existingUser = User(
       id = 1L,
       nickname = "user1",
@@ -402,11 +414,13 @@ class UserServiceTest {
       active = true,
       totalStudyTime = 0,
       userLevelId = 1,
-      hashedPassword = passwordEncoder.encode("old_password"),
+      hashedPassword = hashedCorrectPassword,
       createdAt = LocalDateTime.now(),
       updatedAt = LocalDateTime.now()
     )
-    Mockito.`when`(userRepository.findById(1L)).thenReturn(Mono.just(existingUser))
+    every { userRepository.findById(1L) } returns Mono.just(existingUser)
+    every { passwordEncoder.matches(eq(correctPassword), eq(hashedCorrectPassword)) } returns true
+    every { passwordEncoder.matches(not(eq(correctPassword)), eq(hashedCorrectPassword)) } returns false
 
     // Act
     val savedUser = userService.changePassword(1L, "wrong_password", "new_password")
@@ -420,6 +434,8 @@ class UserServiceTest {
   @Test
   fun `닉네임 존재 여부 성공 체크`() {
     // Arrange
+    val plainPassword = "password123"
+    val hashedPassword = BCryptPasswordEncoder().encode(plainPassword)
     val nickname = "exist이름1"
     val existingUser = User(
       id = 1L,
@@ -429,12 +445,12 @@ class UserServiceTest {
       active = true,
       totalStudyTime = 0,
       userLevelId = 1,
-      hashedPassword = passwordEncoder.encode("password"),
+      hashedPassword = hashedPassword,
       createdAt = LocalDateTime.now(),
       updatedAt = LocalDateTime.now()
     )
     // when은 TDD방식 given은 BDD방식
-    given(userRepository.findByNickname(nickname)).willReturn(Mono.just(existingUser))
+    every { userRepository.findByNickname(nickname) } returns Mono.just(existingUser)
 
     // Act
     val exists = userService.existedNickname(nickname)
