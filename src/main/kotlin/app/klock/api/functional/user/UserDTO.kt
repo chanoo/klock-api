@@ -17,6 +17,7 @@ data class UserInfoDto(
   val id: Long? = null,
   val nickname: String,
   val email: String? = null,
+  val profileImage: String? = null,
   val level: Int,
   val requiredStudyTime: Int,
   val characterName: String,
@@ -26,14 +27,17 @@ data class UserInfoDto(
   val tagId: Long
 ) {
   companion object {
-    fun from(user: User,
-             userLevel: UserLevel? = null,
-             userSetting: UserSetting? = null,
-             userTag: UserTag? = null): UserInfoDto {
+    fun from(
+      user: User,
+      userLevel: UserLevel? = null,
+      userSetting: UserSetting? = null,
+      userTag: UserTag? = null
+    ): UserInfoDto {
       return UserInfoDto(
         id = user.id,
         nickname = user.nickname,
         email = user.email,
+        profileImage = user.profileImage,
         level = userLevel?.level ?: 0,
         requiredStudyTime = userLevel?.requiredStudyTime ?: 0,
         characterName = userLevel?.characterName ?: "",
@@ -57,6 +61,7 @@ data class UpdateUserRequest(
   val startOfTheDay: Int,
   val updatedAt: LocalDateTime = LocalDateTime.now()
 )
+
 data class UpdateUserResponse(
   val id: Long?,
   override val nickname: String,
