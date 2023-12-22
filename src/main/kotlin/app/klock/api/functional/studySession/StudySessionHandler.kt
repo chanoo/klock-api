@@ -2,6 +2,7 @@ package app.klock.api.functional.studySession
 
 import app.klock.api.domain.entity.StudySession
 import app.klock.api.service.StudySessionService
+import app.klock.api.service.UserTraceService
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
@@ -59,6 +60,9 @@ class StudySessionHandler(private val studySessionService: StudySessionService) 
           .flatMap { createdSession ->
             ServerResponse.status(HttpStatus.CREATED).body(BodyInserters.fromValue(createdSession))
           }
+      }
+      .onErrorResume { e ->
+        ServerResponse.badRequest().bodyValue(mapOf("error" to (e.message ?: "Unknown error")))
       }
   }
 
