@@ -19,3 +19,8 @@ cloud:
       endpoint: https://resource.klock.app
       path-user-profile: user-profile
       path-user-trace-image: user-trace-image
+
+crypto:
+  key:
+    store-password: ${SPRING_KEY_STORE_PASSWORD}
+    alias: ${SPRING_KEY_ALIAS}

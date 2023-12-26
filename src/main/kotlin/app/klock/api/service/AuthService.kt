@@ -9,6 +9,7 @@ import app.klock.api.functional.auth.LoginDto
 import app.klock.api.functional.auth.SocialLoginRequest
 import app.klock.api.repository.SocialLoginRepository
 import app.klock.api.repository.UserRepository
+import app.klock.api.utils.CryptoUtils
 import app.klock.api.utils.JwtUtils
 import com.nimbusds.jose.JWSAlgorithm
 import com.nimbusds.jose.jwk.JWKSet
@@ -30,7 +31,8 @@ class AuthService(
   private val jwtUtils: JwtUtils,
   private val passwordEncoder: PasswordEncoder,
   private val userRepository: UserRepository,
-  private var socialLoginRepository: SocialLoginRepository
+  private var socialLoginRepository: SocialLoginRepository,
+  private val cryptoUtils: CryptoUtils
 ) {
 
   private val facebookAppId = "your_facebook_app_id"
@@ -82,7 +84,8 @@ class AuthService(
             Mono.just(
               LoginDto(
                 token = jwtUtils.generateToken(user.id.toString(), listOf(user.role.name)),
-                userId = user.id
+                userId = user.id,
+                publicKey = cryptoUtils.getPublicKey()
               )
             )
           }

@@ -1,50 +1,53 @@
 package app.klock.api.utils
 
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.stereotype.Component
+import java.security.KeyStore
 import java.security.MessageDigest
 import java.util.*
 import javax.crypto.Cipher
 import javax.crypto.spec.SecretKeySpec
 import kotlin.random.Random
 
+@Component
 class CryptoUtils {
 
-    fun main() {
-        val key = generateKey(32)
-        val text = "1234567890"
+    private val keyStoreFile: String = "key/klock.jks"
+    @Value("\${crypto.key.store-password}")
+    private val keyStorePassword: String = ""
+    @Value("\${crypto.key.alias}")
+    private val keyAlias: String = ""
 
-        val hashedKey = hashKey(key)
+    fun getPublicKey(): String {
+        val keyStore = KeyStore.getInstance("JKS")
+        keyStore.load(javaClass.classLoader.getResourceAsStream(keyStoreFile), keyStorePassword.toCharArray())
 
-        val encrypted = encrypt(text, hashedKey)
-        println("Encrypted: $encrypted")
-
-        val decrypted = decrypt(encrypted, hashedKey)
-        println("Decrypted: $decrypted")
+        val publicKey = keyStore.getCertificate(keyAlias).publicKey
+        return Base64.getEncoder().encodeToString(publicKey.encoded)
     }
 
-    fun encrypt(plainText: String, secretKey: SecretKeySpec): String {
+    fun decryptData(encryptedAesKey: String, encryptedData: String): String {
+        val aesKey = decryptAesKey(encryptedAesKey)
+        return decryptDataWithAesKey(encryptedData, aesKey)
+    }
+
+    private fun decryptAesKey(encryptedKey: String): SecretKeySpec {
+        val keyStore = KeyStore.getInstance("JKS")
+        keyStore.load(javaClass.classLoader.getResourceAsStream(keyStoreFile), keyStorePassword.toCharArray())
+
+        val privateKey = keyStore.getKey(keyAlias, keyStorePassword.toCharArray())
+        val cipher = Cipher.getInstance("RSA")
+        cipher.init(Cipher.DECRYPT_MODE, privateKey)
+
+        val decryptedKeyBytes = cipher.doFinal(Base64.getDecoder().decode(encryptedKey))
+        return SecretKeySpec(decryptedKeyBytes, "AES")
+    }
+
+    private fun decryptDataWithAesKey(encryptedData: String, aesKey: SecretKeySpec): String {
         val cipher = Cipher.getInstance("AES")
-        cipher.init(Cipher.ENCRYPT_MODE, secretKey)
-        val encrypted = cipher.doFinal(plainText.toByteArray())
-        return Base64.getEncoder().encodeToString(encrypted)
-    }
+        cipher.init(Cipher.DECRYPT_MODE, aesKey)
 
-    fun decrypt(encryptedText: String, secretKey: SecretKeySpec): String {
-        val cipher = Cipher.getInstance("AES")
-        cipher.init(Cipher.DECRYPT_MODE, secretKey)
-        val decoder = Base64.getDecoder()
-        val decrypted = cipher.doFinal(decoder.decode(encryptedText))
-        return String(decrypted)
-    }
-
-    fun hashKey(key: String): SecretKeySpec {
-        val sha = MessageDigest.getInstance("SHA-256")
-        val keyByte = key.toByteArray(charset("UTF-8"))
-        sha.update(keyByte, 0, keyByte.size)
-        val keyBytes = sha.digest()
-        return SecretKeySpec(keyBytes, "AES")
-    }
-
-    fun generateKey(size: Int): String {
-        return (1..size).map { Random.nextInt(0, 256) }.joinToString("")
+        val decryptedDataBytes = cipher.doFinal(Base64.getDecoder().decode(encryptedData))
+        return String(decryptedDataBytes)
     }
 }
