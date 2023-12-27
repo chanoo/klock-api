@@ -13,6 +13,7 @@ class FriendRelationRouter(private val friendRelationHandler: FriendRelationHand
       POST("/follow", friendRelationHandler::follow)
       POST("/unfollow", friendRelationHandler::unfollow)
       GET("", friendRelationHandler::getFriendRelations)
+      POST("/follow/qr-code", friendRelationHandler::followFromQrCode)
     }
   }
 

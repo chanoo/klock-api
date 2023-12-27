@@ -55,6 +55,8 @@ tasks.named<BootBuildImage>("bootBuildImage") {
   currentEnvironment["SPRING_R2DBC_PASSWORD"] = System.getenv("DB_PASSWORD") ?: ""
   currentEnvironment["SPRING_AWS_ACCESS_KEY"] = System.getenv("AWS_ACCESS_KEY") ?: ""
   currentEnvironment["SPRING_AWS_SECRET_KEY"] = System.getenv("AWS_SECRET_KEY") ?: ""
+  currentEnvironment["SPRING_KEY_STORE_PASSWORD"] = System.getenv("KEY_STORE_PASSWORD") ?: ""
+  currentEnvironment["SPRING_KEY_STORE_ALIAS"] = System.getenv("KEY_STORE_ALIAS") ?: ""
   environment.set(currentEnvironment)
 }
 

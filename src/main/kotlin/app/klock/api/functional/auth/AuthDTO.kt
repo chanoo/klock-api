@@ -51,7 +51,8 @@ data class SignUpResDTO(
 
 data class LoginDto(
   val token: String,
-  val userId: Long?
+  val userId: Long?,
+  val publicKey: String?
 )
 
 data class RefreshTokenRequest(val refreshToken: String)

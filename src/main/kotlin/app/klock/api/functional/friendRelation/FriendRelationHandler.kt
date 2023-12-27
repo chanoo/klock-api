@@ -1,18 +1,23 @@
 package app.klock.api.functional.friendRelation
 
 import app.klock.api.service.FriendRelationService
+import app.klock.api.utils.CryptoUtils
 import app.klock.api.utils.JwtUtils
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.ServerRequest
 import org.springframework.web.reactive.function.server.ServerResponse
 import reactor.core.publisher.Mono
 import java.net.URI
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 @Component
 class FriendRelationHandler(
   private val friendRelationService: FriendRelationService,
-  private val jwtUtils: JwtUtils
+  private val jwtUtils: JwtUtils,
+  private val cryptoUtils: CryptoUtils
 ) {
 
   /**
@@ -63,5 +68,38 @@ class FriendRelationHandler(
             ServerResponse.ok().bodyValue(friendRelations)
           }
       }
+  }
+
+  fun followFromQrCode(request: ServerRequest): Mono<ServerResponse> {
+    return jwtUtils.getUserIdFromToken()
+      .flatMap { userId ->
+        request.bodyToMono(FollowFromQrCodeRequest::class.java)
+          .flatMap { request ->
+            val objectMapper = jacksonObjectMapper()
+            val decryptData = cryptoUtils.decryptData(request.encryptedKey, request.followData)
+            val followQrCodeData = objectMapper.readValue(decryptData, FollowQrCodeData::class.java)
+
+            validateQrCodeExpireDate(followQrCodeData.expireDate)
+              .flatMap {
+                friendRelationService.followFromQrCode(followQrCodeData.userId, followQrCodeData.followId)
+                  .flatMap { friendRelation ->
+                    ServerResponse.created(URI.create("/api/v1/friend-relations/${friendRelation.id}"))
+                      .bodyValue(friendRelation)
+                  }
+                  .switchIfEmpty(ServerResponse.status(HttpStatus.BAD_REQUEST).build())
+              }.onErrorResume { e ->
+                ServerResponse.badRequest().bodyValue(mapOf("error" to (e.message ?: "Unknown error")))
+              }
+          }
+      }
+  }
+
+  fun validateQrCodeExpireDate(expireDateTimeString: String) : Mono<Boolean> {
+    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+    val expireDateTime = LocalDateTime.parse(expireDateTimeString, formatter)
+    if (expireDateTime.isBefore(LocalDateTime.now())) {
+      return Mono.error(IllegalArgumentException("QR코드 유효기간이 만료되었습니다."))
+    }
+    return Mono.just(true)
   }
 }

@@ -33,3 +33,15 @@ data class FriendDetailDto(
     val totalStudyTime: Int,
     val profileImage: String,
 )
+
+data class FollowFromQrCodeRequest(
+    val followData: String,
+    val encryptedKey: String
+)
+
+data class FollowQrCodeData(
+    val issueDate: String,
+    val expireDate: String,
+    val userId: Long,
+    val followId: Long
+)

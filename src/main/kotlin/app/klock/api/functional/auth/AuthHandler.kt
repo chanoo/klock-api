@@ -97,7 +97,7 @@ class AuthHandler(
             val token = jwtUtils.generateToken(user.id.toString(), listOf(user.role.name))
             ServerResponse.ok()
               .contentType(MediaType.APPLICATION_JSON)
-              .bodyValue(LoginDto(token = token, userId = user.id))
+              .bodyValue(LoginDto(token = token, userId = user.id, publicKey = null))
           }
       }
       .onErrorResume { error ->

@@ -48,6 +48,10 @@ spec:
               value: $AWS_ACCESS_KEY
             - name: SPRING_AWS_SECRET_KEY
               value: $AWS_SECRET_KEY
+            - name: SPRING_KEY_STORE_PASSWORD
+              value: $KEY_STORE_PASSWORD
+            - name: SPRING_KEY_ALIAS
+              value: $KEY_ALIAS
           resources:
             requests:
               cpu: 100m

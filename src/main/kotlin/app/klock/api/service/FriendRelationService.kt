@@ -41,4 +41,23 @@ class FriendRelationService(
     fun getFriendRelations(userId: Long): Flux<FriendDetailDto> {
         return friendRelationNativeSqlRepository.findFriendDetails(userId)
     }
+
+    /**
+     * QR코드를 통해 팔로우(맞팔) 처리
+     */
+    fun followFromQrCode(userId: Long, followId: Long): Mono<FriendRelationDto> {
+        return friendRelationRepository.findByUserIdAndFollowId(followId, userId)
+            .flatMap { existingRelation ->
+                val updated = existingRelation.copy(followed = true)
+                friendRelationRepository.save(updated)
+            }
+            .switchIfEmpty(
+                friendRelationRepository.save(FriendRelation(userId = followId, followId = userId, followed = true))
+            )
+            .then(
+                friendRelationRepository.save(FriendRelation(userId = userId, followId = followId, followed = true))
+            )
+            .map { FriendRelationDto.from(it) }
+    }
 }
+
