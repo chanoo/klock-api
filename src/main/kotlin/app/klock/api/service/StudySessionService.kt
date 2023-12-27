@@ -35,8 +35,9 @@ class StudySessionService(private val studySessionRepository: StudySessionReposi
     return studySessionRepository.findById(id)
       .flatMap { existingSession ->
         val updatedSession = existingSession.copy(
-          startTime = studySession.startTime,
-          endTime = studySession.endTime
+          startTime = if (studySession.startTime != null && studySession.startTime != existingSession.startTime) studySession.startTime else existingSession.startTime,
+          endTime = if (studySession.endTime != null && studySession.endTime != existingSession.endTime) studySession.endTime else existingSession.endTime,
+          timerName = if (studySession.timerName != null && studySession.timerName != existingSession.timerName) studySession.timerName else existingSession.timerName,
         )
         studySessionRepository.save(updatedSession)
       }

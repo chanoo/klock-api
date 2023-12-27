@@ -72,6 +72,7 @@ class StudySessionHandler(private val studySessionService: StudySessionService) 
             ServerResponse.ok().body(BodyInserters.fromValue(updatedSession))
           }
       }
+      .onErrorResume { e ->
+        ServerResponse.badRequest().bodyValue(mapOf("error" to (e.message ?: "Unknown error"))) }
   }
-
 }
