@@ -100,20 +100,21 @@ class UserTraceHandler(private val userTraceService: UserTraceService,
           }
   }
 
-  // 담벼락 컨텐츠 생성
-//  fun createContent(request: ServerRequest): Mono<ServerResponse> =
-//    jwtUtils.getUserIdFromToken()
-//      .flatMap { userId ->
-//        request.bodyToMono(CreateContentTrace::class.java)
-//          .flatMap {
-//              content -> userTraceService.createContent(userId, content)
-//          }
-//          .flatMap { userTrace ->
-//            ServerResponse.status(HttpStatus.CREATED).bodyValue(userTrace)
-//          }
-//      }.onErrorResume { e ->
-//        ServerResponse.badRequest().bodyValue(mapOf("error" to (e.message ?: "Unknown error")))
-//      }
+  // 담벼락 공부 컨텐츠 생성
+  fun createStudyContent(request: ServerRequest): Mono<ServerResponse> =
+    jwtUtils.getUserIdFromToken()
+      .flatMap { userId ->
+        request.bodyToMono(CreateStudyTrace::class.java)
+          .flatMap { study ->
+            val contents = study.toContents()
+            userTraceService.createStudy(userId, contents)
+          }
+          .flatMap { userTrace ->
+            ServerResponse.status(HttpStatus.CREATED).bodyValue(userTrace)
+          }
+      }.onErrorResume { e ->
+        ServerResponse.badRequest().bodyValue(mapOf("error" to (e.message ?: "Unknown error")))
+      }
 
   // 담벼락 이미지 생성
 //  fun createImage(request: ServerRequest): Mono<ServerResponse> =

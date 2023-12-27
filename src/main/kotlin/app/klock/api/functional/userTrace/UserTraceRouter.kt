@@ -12,8 +12,8 @@ class UserTraceRouter(private val userTraceHandler: UserTraceHandler) {
     "/api/v1/user-trace".nest {
       GET("", userTraceHandler::getUserTrace)
       POST("", userTraceHandler::createContentWithImage)
-//      POST("/image/{write_user_id}", userTraceHandler::createImage)
       PUT("/{trace_id}/heart", userTraceHandler::updateHeart)
+      POST("/study", userTraceHandler::createStudyContent)
     }
   }
 }

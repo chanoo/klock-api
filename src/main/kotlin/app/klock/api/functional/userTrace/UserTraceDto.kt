@@ -40,5 +40,8 @@ data class UpdateHeartTrace(
 )
 
 data class CreateStudyTrace(
-    val contents: String,
-)
+    val studyName: String,
+    val isStart: Boolean
+) {
+    fun toContents() : String = "$studyName 공부를 ${if (isStart) "시작" else "종료"}했어요."
+}

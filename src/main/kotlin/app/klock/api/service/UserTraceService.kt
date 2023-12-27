@@ -53,12 +53,12 @@ class UserTraceService(
             }
     }
 
-    fun createStudy(userId: Long, userTrace: CreateStudyTrace): Mono<UserTraceDto> {
+    fun createStudy(userId: Long, contents: String): Mono<UserTraceDto> {
         return userTraceRepository.save(
                     UserTrace(
                         userId = userId,
                         writeUserId = userId,
-                        contents = userTrace.contents)
+                        contents = contents)
             )
             .flatMap { trace ->
                 convertToUserTraceDto(trace)
