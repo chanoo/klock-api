@@ -12,8 +12,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 
 @Service
-class StudySessionService(private val studySessionRepository: StudySessionRepository,
-  private val userTraceService: UserTraceService) {
+class StudySessionService(private val studySessionRepository: StudySessionRepository) {
 
   // userId로 startTime으로 studySession 찾기
   fun findByUserIdAndStartTimeBetween(userId: Long, startDate: LocalDate): Flux<StudySession> {
@@ -30,36 +29,18 @@ class StudySessionService(private val studySessionRepository: StudySessionReposi
 
   // userId로 studySession 등록
   fun create(studySession: StudySession): Mono<StudySession> {
-    return createStudyTrace(studySession, true)
-      .then(Mono.just(studySession))
-      .flatMap {
-        studySessionRepository.save(it)
-      }
+    return studySessionRepository.save(studySession)
   }
 
   // studySession 수정
   fun update(id: Long, studySession: StudySession): Mono<StudySession> {
-    return createStudyTrace(studySession, false)
-      .then(Mono.just(studySession))
-      .flatMap {
-        studySessionRepository.findById(id)
-          .flatMap { existingSession ->
-            val updatedSession = existingSession.copy(
-              startTime = studySession.startTime,
-              endTime = studySession.endTime
-            )
-            studySessionRepository.save(updatedSession)
-          }
-      }
-  }
-
-  private fun createStudyTrace(studySession: StudySession, start: Boolean): Mono<UserTraceDto> {
-    val message = if (start) {
-      "${studySession.timerName} 공부를 시작했어요."
-    } else {
-      "${studySession.timerName} 공부를 종료했어요."
-    }
-    val createStudyTrace = CreateStudyTrace(message)
-    return userTraceService.createStudy(studySession.userId, createStudyTrace)
+    return studySessionRepository.findById(id)
+            .flatMap { existingSession ->
+              val updatedSession = existingSession.copy(
+                startTime = studySession.startTime,
+                endTime = studySession.endTime
+              )
+              studySessionRepository.save(updatedSession)
+            }
   }
 }
