@@ -34,12 +34,17 @@ class StudySessionService(private val studySessionRepository: StudySessionReposi
   fun update(id: Long, studySession: StudySession): Mono<StudySession> {
     return studySessionRepository.findById(id)
       .flatMap { existingSession ->
-        val updatedSession = existingSession.copy(
-          startTime = if (studySession.startTime != null && studySession.startTime != existingSession.startTime) studySession.startTime else existingSession.startTime,
-          endTime = if (studySession.endTime != null && studySession.endTime != existingSession.endTime) studySession.endTime else existingSession.endTime,
-          timerName = if (studySession.timerName != null && studySession.timerName != existingSession.timerName) studySession.timerName else existingSession.timerName,
+        studySessionRepository.save(
+          existingSession.updateWith(studySession)
         )
-        studySessionRepository.save(updatedSession)
       }
+  }
+
+  private fun StudySession.updateWith(newData: StudySession): StudySession {
+    return this.copy(
+      startTime = newData.startTime?.takeIf { it != startTime } ?: startTime,
+      endTime = newData.endTime?.takeIf { it != endTime } ?: endTime,
+      timerName = newData.timerName?.takeIf { it != timerName } ?: timerName
+    )
   }
 }
