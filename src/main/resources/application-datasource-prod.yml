@@ -23,4 +23,4 @@ cloud:
 crypto:
   key:
     store-password: ${SPRING_KEY_STORE_PASSWORD}
-    alias: ${SPRING_KEY_ALIAS}
+    alias: ${SPRING_KEY_STORE_ALIAS}
