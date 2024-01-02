@@ -1,6 +1,7 @@
 package app.klock.api.functional.friendRelation
 
 import app.klock.api.domain.entity.FriendRelation
+import app.klock.api.domain.entity.User
 import java.time.LocalDateTime
 
 data class FriendRelationRequest(
@@ -12,16 +13,20 @@ data class FriendRelationDto(
     val userId: Long,
     val followId: Long,
     val followed: Boolean,
+    val profileImage: String? = null,
+    val nickname: String? = null,
     val createdAt: LocalDateTime
 ) {
-    fun toDomain() = FriendRelationDto(id, userId, followId, followed, createdAt)
+    fun toDomain() = FriendRelationDto(id, userId, followId, followed, profileImage, nickname, createdAt)
 
     companion object {
-        fun from(domain: FriendRelation) = FriendRelationDto(
+        fun from(domain: FriendRelation, follow: User) = FriendRelationDto(
             domain.id,
             domain.userId,
             domain.followId,
             domain.followed,
+            follow.profileImage,
+            follow.nickname,
             domain.createdAt
         )
     }
