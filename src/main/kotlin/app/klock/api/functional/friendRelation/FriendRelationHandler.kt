@@ -81,7 +81,7 @@ class FriendRelationHandler(
 
             validateQrCodeExpireDate(followQrCodeData.expireDate)
               .flatMap {
-                friendRelationService.followFromQrCode(followQrCodeData.userId, followQrCodeData.followId)
+                friendRelationService.followFromQrCode(userId, followQrCodeData.followId)
                   .flatMap { friendRelation ->
                     ServerResponse.created(URI.create("/api/v1/friend-relations/${friendRelation.id}"))
                       .bodyValue(friendRelation)

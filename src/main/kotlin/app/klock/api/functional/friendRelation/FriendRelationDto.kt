@@ -47,6 +47,5 @@ data class FollowFromQrCodeRequest(
 data class FollowQrCodeData(
     val issueDate: String,
     val expireDate: String,
-    val userId: Long,
     val followId: Long
 )
