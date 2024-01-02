@@ -50,6 +50,24 @@ data class UserInfoDto(
   }
 }
 
+data class SimpleUserInfoDto(
+  val id: Long? = null,
+  val nickname: String,
+  val profileImage: String? = null,
+) {
+  companion object {
+    fun from(
+      user: User
+    ): SimpleUserInfoDto {
+      return SimpleUserInfoDto(
+        id = user.id,
+        nickname = user.nickname,
+        profileImage = user.profileImage
+      )
+    }
+  }
+}
+
 data class CheckNicknameRequest(
   val nickname: String
 )
@@ -70,3 +88,7 @@ data class UpdateUserResponse(
   val startOfTheWeek: DayOfWeek,
   val startOfTheDay: Int
 ) : BaseUserDTO(nickname, email)
+
+data class UserSearchRequest(
+  val nickname: String
+)

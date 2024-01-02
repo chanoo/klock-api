@@ -229,4 +229,11 @@ class UserService(
           }
       }
   }
+
+  fun searchByNickname(nickname: String): Mono<User> {
+    if (!validateNickname(nickname)) {
+      return Mono.error(IllegalArgumentException("Invalid nick name"))
+    }
+    return userRepository.findByNickname(nickname)
+  }
 }
