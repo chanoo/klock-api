@@ -2,7 +2,6 @@ package app.klock.api.functional.user
 
 import app.klock.api.service.UserService
 import org.springframework.core.io.buffer.DataBufferUtils
-import org.springframework.http.MediaType
 import org.springframework.http.codec.multipart.FilePart
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.BodyExtractors
@@ -95,6 +94,19 @@ class UserHandler(private val userService: UserService) {
         }
       }.onErrorResume { e ->
         ServerResponse.badRequest().bodyValue(mapOf("error" to (e.message ?: "Unknown error")))
+      }
+
+  // 닉네임으로 사용자 검색
+  fun searchByNickname(request: ServerRequest): Mono<ServerResponse> =
+      request.bodyToMono(UserSearchRequest::class.java)
+      .flatMap { searchByNicknameRequest ->
+          userService.searchByNickname(searchByNicknameRequest.nickname)
+          .flatMap { user ->
+              ServerResponse.ok().bodyValue(SimpleUserInfoDto.from(user))
+          }
+          .switchIfEmpty(ServerResponse.notFound().build())
+      }.onErrorResume { e ->
+          ServerResponse.badRequest().bodyValue(mapOf("error" to (e.message ?: "Unknown error")))
       }
 
 
