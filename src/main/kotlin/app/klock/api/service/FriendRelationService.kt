@@ -5,6 +5,7 @@ import app.klock.api.functional.friendRelation.FriendDetailDto
 import app.klock.api.functional.friendRelation.FriendRelationDto
 import app.klock.api.repository.FriendRelationNativeSqlRepository
 import app.klock.api.repository.FriendRelationRepository
+import app.klock.api.repository.UserRepository
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
@@ -12,7 +13,8 @@ import reactor.core.publisher.Mono
 @Service
 class FriendRelationService(
     private val friendRelationRepository: FriendRelationRepository,
-    private val friendRelationNativeSqlRepository: FriendRelationNativeSqlRepository) {
+    private val friendRelationNativeSqlRepository: FriendRelationNativeSqlRepository,
+    private val userRepository: UserRepository) {
 
     fun create(userId: Long, followId: Long): Mono<FriendRelationDto> {
         return friendRelationRepository.findByUserIdAndFollowId(followId, userId)
@@ -24,7 +26,10 @@ class FriendRelationService(
             .switchIfEmpty(
                 friendRelationRepository.save(FriendRelation(userId = userId, followId = followId, followed = false))
             )
-            .map { FriendRelationDto.from(it) }
+            .flatMap { friendRelation ->
+                userRepository.findById(friendRelation.followId)
+                    .map { FriendRelationDto.from(friendRelation, it) }
+            }
     }
 
     fun unfollow(userId: Long, followId: Long): Mono<Void> {
@@ -57,7 +62,10 @@ class FriendRelationService(
             .then(
                 friendRelationRepository.save(FriendRelation(userId = userId, followId = followId, followed = true))
             )
-            .map { FriendRelationDto.from(it) }
+            .flatMap { friendRelation ->
+                userRepository.findById(friendRelation.followId)
+                    .map { FriendRelationDto.from(friendRelation, it) }
+            }
     }
 }
 

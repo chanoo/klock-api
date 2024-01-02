@@ -1,6 +1,8 @@
 package app.klock.api.service
 
 import app.klock.api.domain.entity.FriendRelation
+import app.klock.api.domain.entity.User
+import app.klock.api.domain.entity.UserRole
 import app.klock.api.functional.friendRelation.FriendDetailDto
 import app.klock.api.functional.friendRelation.FriendRelationDto
 import app.klock.api.repository.FriendRelationNativeSqlRepository
@@ -18,6 +20,7 @@ import org.springframework.boot.test.mock.mockito.MockBean
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.test.StepVerifier
+import java.time.LocalDateTime
 
 @ExtendWith(MockitoExtension::class)
 @SpringBootTest(classes = [FriendRelationService::class])
@@ -40,11 +43,13 @@ class FriendRelationServiceTest @Autowired constructor(
     fun `팔로우 요청`() {
         val friendRelation = FriendRelation(userId = 1L, followId = 2L)
         val savedFriendRelation = friendRelation.copy(id = 1L)
+        val followUser = User(id = 2L, email = "a@a.com", nickname = "test1", totalStudyTime = 0, userLevelId = 1, profileImage = "test1_profile_img",
+            role = UserRole.USER, active = true, createdAt = LocalDateTime.now(), updatedAt = LocalDateTime.now())
 
         Mockito.`when`(friendRelationRepository.save(any(FriendRelation::class.java))).thenReturn(Mono.just(savedFriendRelation))
 
         StepVerifier.create(friendRelationService.create(1L, 2L))
-            .expectNext(FriendRelationDto.from(savedFriendRelation))
+            .expectNext(FriendRelationDto.from(savedFriendRelation, followUser))
             .verifyComplete()
     }
 
