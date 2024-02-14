@@ -28,6 +28,9 @@ data class UserTrace(
   @Column("write_user_id")
   val writeUserId: Long,
 
+  @Column("type")
+  val type: UserTraceType,
+
   @Column("contents")
   val contents: String? = null,
 

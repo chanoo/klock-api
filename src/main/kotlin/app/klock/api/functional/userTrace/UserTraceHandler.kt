@@ -1,5 +1,6 @@
 package app.klock.api.functional.userTrace
 
+import app.klock.api.domain.entity.UserTraceType
 import app.klock.api.service.UserTraceService
 import app.klock.api.utils.JwtUtils
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -17,10 +18,13 @@ import reactor.core.publisher.Mono
 import java.nio.charset.StandardCharsets
 
 private val logger = KotlinLogging.logger {}
+
 @Component
-class UserTraceHandler(private val userTraceService: UserTraceService,
-                       val jwtUtils: JwtUtils,
-                       val objectMapper: ObjectMapper) {
+class UserTraceHandler(
+  private val userTraceService: UserTraceService,
+  val jwtUtils: JwtUtils,
+  val objectMapper: ObjectMapper
+) {
 
   // 담벼락 리스트
   fun getUserTrace(request: ServerRequest): Mono<ServerResponse> {
@@ -58,9 +62,14 @@ class UserTraceHandler(private val userTraceService: UserTraceService,
                 }
                 .map { jsonString ->
                   // JSON 문자열을 CreateContentTrace 객체로 변환
-                  objectMapper.readValue(jsonString, CreateContentTrace::class.java)
+                  val contentTrace = objectMapper.readValue(jsonString, CreateContentTrace::class.java)
+                  // Type 값 체크
+                  if (contentTrace.type != UserTraceType.ACTIVITY && contentTrace.type != UserTraceType.STATE) {
+                    throw IllegalArgumentException("Invalid type value. Must be either 'ACTIVITY' or 'STATE'.")
+                  }
+                  contentTrace
                 }
-            } ?: Mono.just(CreateContentTrace(writeUserId = userId, contents = ""))
+            } ?: Mono.error(IllegalArgumentException("Content trace is missing."))
 
             contentTraceMono.flatMap { contentTrace ->
               val imagePart = partMap["image"] as? FilePart
@@ -88,16 +97,16 @@ class UserTraceHandler(private val userTraceService: UserTraceService,
   fun updateHeart(request: ServerRequest): Mono<ServerResponse> {
     val traceId = request.pathVariable("trace_id").toLong()
     return userTraceService.updateHeart(traceId)
-          .flatMap { userTrace ->
-            ServerResponse.ok().bodyValue(userTrace)
-          }
-          .onErrorResume { e ->
-            if (e is ResponseStatusException && e.statusCode == HttpStatus.NOT_FOUND) {
-              ServerResponse.notFound().build()
-            } else {
-              ServerResponse.badRequest().bodyValue(mapOf("error" to (e.message ?: "Unknown error")))
-            }
-          }
+      .flatMap { userTrace ->
+        ServerResponse.ok().bodyValue(userTrace)
+      }
+      .onErrorResume { e ->
+        if (e is ResponseStatusException && e.statusCode == HttpStatus.NOT_FOUND) {
+          ServerResponse.notFound().build()
+        } else {
+          ServerResponse.badRequest().bodyValue(mapOf("error" to (e.message ?: "Unknown error")))
+        }
+      }
   }
 
   // 담벼락 컨텐츠 생성
