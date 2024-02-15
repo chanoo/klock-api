@@ -8,6 +8,7 @@ import java.time.LocalDateTime
 data class UserTraceDto(
   val id: Long? = null,
   val writeUserId: Long? = null,
+  val writeNickname: String? = null,
   val writeUserImage: String? = null,
   val type: UserTraceType,
   val contents: String? = null,
@@ -23,6 +24,7 @@ data class UserTraceDto(
       return UserTraceDto(
         id = userTrace.id,
         writeUserId = userTrace.writeUserId,
+        writeNickname = user.nickname,
         writeUserImage = user.profileImage,
         type = userTrace.type,
         contents = userTrace.contents,
