@@ -43,12 +43,12 @@ class UserTraceNativeSqlRepository(private val databaseClient: DatabaseClient) {
           id = row.get("id", Long::class.java) ?: 0L,
           writeUserId = row.get("write_user_id", Long::class.java) ?: 0L,
           writeNickname = row.get("nickname", String::class.java) ?: "",
-          writeUserImage = row.get("profile_image", String::class.java) ?: "",
+          writeUserImage = row.get("profile_image", String::class.java),
           type = UserTraceType.valueOf(
             row.get("type", String::class.java) ?: UserTraceType.ACTIVITY.name
           ), // VARCHAR 값을 Enum으로 변환
-          contents = row.get("contents", String::class.java) ?: "",
-          contentsImage = row.get("contents_image", String::class.java) ?: "",
+          contents = row.get("contents", String::class.java),
+          contentsImage = row.get("contents_image", String::class.java),
           heart = row.get("heart", Boolean::class.java) ?: false,
           createdAt = row.get("created_at", LocalDateTime::class.java) ?: LocalDateTime.now()
         )

@@ -64,8 +64,8 @@ class UserTraceHandler(
                   // JSON 문자열을 CreateContentTrace 객체로 변환
                   val contentTrace = objectMapper.readValue(jsonString, CreateContentTrace::class.java)
                   // Type 값 체크
-                  if (contentTrace.type != UserTraceType.ACTIVITY && contentTrace.type != UserTraceType.STATE) {
-                    throw IllegalArgumentException("Invalid type value. Must be either 'ACTIVITY' or 'STATE'.")
+                  if (contentTrace.type != UserTraceType.ACTIVITY && contentTrace.type != UserTraceType.STUDY_START && contentTrace.type != UserTraceType.STUDY_END) {
+                    throw IllegalArgumentException("Invalid type value. Must be either 'ACTIVITY' or 'STUDY_START' or 'STUDY_END'")
                   }
                   contentTrace
                 }

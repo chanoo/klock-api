@@ -172,7 +172,7 @@ CREATE TABLE IF NOT EXISTS klk_user_trace
     id                      BIGINT       NOT NULL AUTO_INCREMENT,
     user_id                 BIGINT       NOT NULL,                                          -- 담벼락 사용자 ID (외래 키)
     write_user_id           BIGINT       NOT NULL,                                          -- 작성자 ID
-    type                    VARCHAR(10) NULL,                                              -- 내용
+    type                    VARCHAR(12)  NOT NULL,                                              -- 내용
     contents                VARCHAR(255) NULL,                                              -- 내용
     contents_image          VARCHAR(255) NULL,                                              -- 내용 이미지
     heart                   BOOLEAN      NOT NULL DEFAULT FALSE,                            -- 좋아요 여부

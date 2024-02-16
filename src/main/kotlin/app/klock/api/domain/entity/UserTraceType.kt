@@ -1,5 +1,5 @@
 package app.klock.api.domain.entity
 
 enum class UserTraceType {
-  ACTIVITY, STATE
+  ACTIVITY, STUDY_START, STUDY_END
 }
