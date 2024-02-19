@@ -14,6 +14,7 @@ class UserTraceRouter(private val userTraceHandler: UserTraceHandler) {
       POST("", userTraceHandler::createContentWithImage)
 //      POST("/image/{write_user_id}", userTraceHandler::createImage)
       PUT("/{trace_id}/heart", userTraceHandler::updateHeart)
+      DELETE("/{trace_id}", userTraceHandler::deleteUserTrace)
     }
   }
 }
