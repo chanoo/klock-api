@@ -109,6 +109,18 @@ class UserTraceHandler(
       }
   }
 
+  // 담벼락 삭제
+  fun deleteUserTrace(request: ServerRequest): Mono<ServerResponse> {
+    val traceId = request.pathVariable("trace_id").toLong()
+    return userTraceService.deleteUserTrace(traceId).flatMap { isDeleted ->
+      if (isDeleted) {
+        ServerResponse.status(HttpStatus.NO_CONTENT).build()
+      } else {
+        ServerResponse.status(HttpStatus.NOT_FOUND).bodyValue("User Trace not found")
+      }
+    }
+  }
+
   // 담벼락 컨텐츠 생성
 //  fun createContent(request: ServerRequest): Mono<ServerResponse> =
 //    jwtUtils.getUserIdFromToken()

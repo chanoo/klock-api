@@ -110,4 +110,9 @@ class UserTraceService(
     return userRepository.findById(trace.writeUserId)
       .map { user -> UserTraceDto.from(trace, user) }
   }
+
+  fun deleteUserTrace(id: Long): Mono<Boolean> {
+    return userTraceRepository.deleteById(id)
+      .then(userTraceRepository.findById(id).hasElement().map { !it })
+  }
 }
