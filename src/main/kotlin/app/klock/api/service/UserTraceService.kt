@@ -112,7 +112,15 @@ class UserTraceService(
   }
 
   fun deleteUserTrace(id: Long): Mono<Boolean> {
-    return userTraceRepository.deleteById(id)
+    return userTraceRepository.findById(id)
+      .flatMap { userTrace ->
+        userTrace.contentsImage?.let { s3Service.deleteFile(getS3Key(it)) } ?: Mono.just(true)
+        userTraceRepository.deleteById(id).map { true }
+      }
       .then(userTraceRepository.findById(id).hasElement().map { !it })
+  }
+
+  fun getS3Key(url: String): String {
+    return url.replace("$s3Endpoint/", "")
   }
 }

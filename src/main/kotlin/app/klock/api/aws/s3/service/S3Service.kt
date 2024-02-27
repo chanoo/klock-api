@@ -7,8 +7,7 @@ import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
 import software.amazon.awssdk.core.async.AsyncRequestBody
 import software.amazon.awssdk.services.s3.S3AsyncClient
-import software.amazon.awssdk.services.s3.model.ObjectCannedACL
-import software.amazon.awssdk.services.s3.model.PutObjectAclRequest
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
 import java.nio.ByteBuffer
 import java.util.*
@@ -66,6 +65,23 @@ class S3Service(private val s3AsyncClient: S3AsyncClient,
             "png" -> MediaType.IMAGE_PNG_VALUE
             "gif" -> MediaType.IMAGE_GIF_VALUE
             else -> MediaType.APPLICATION_OCTET_STREAM_VALUE
+        }
+    }
+
+    fun deleteFile(key: String): Mono<Void> {
+        val deleteObjectRequest = DeleteObjectRequest.builder()
+            .bucket(bucket)
+            .key(key)
+            .build()
+
+        return Mono.create { sink ->
+            s3AsyncClient.deleteObject(deleteObjectRequest).whenComplete { _, throwable ->
+                if (throwable != null) {
+                    sink.error(throwable)
+                } else {
+                    sink.success()
+                }
+            }
         }
     }
 }
