@@ -21,7 +21,7 @@ class FriendRelationService(
             .flatMap { existingRelation ->
                 val updated = existingRelation.copy(followed = true)
                 friendRelationRepository.save(updated)
-                    .then(friendRelationRepository.save(FriendRelation(userId = followId, followId = userId, followed = true)))
+                     .then(friendRelationRepository.save(FriendRelation(userId = userId, followId = followId, followed = true)))
             }
             .switchIfEmpty(
                 friendRelationRepository.save(FriendRelation(userId = userId, followId = followId, followed = false))
