@@ -1,6 +1,7 @@
 package app.klock.api.functional.user
 
 import app.klock.api.service.UserService
+import app.klock.api.utils.JwtUtils
 import org.springframework.core.io.buffer.DataBufferUtils
 import org.springframework.http.codec.multipart.FilePart
 import org.springframework.stereotype.Component
@@ -11,7 +12,10 @@ import org.springframework.web.reactive.function.server.ServerResponse
 import reactor.core.publisher.Mono
 
 @Component
-class UserHandler(private val userService: UserService) {
+class UserHandler(
+  private val userService: UserService,
+  private val jwtUtils: JwtUtils,
+) {
 
   // 사용자 목록 조회
   fun getAllUsers(request: ServerRequest): Mono<ServerResponse> {
@@ -96,18 +100,21 @@ class UserHandler(private val userService: UserService) {
         ServerResponse.badRequest().bodyValue(mapOf("error" to (e.message ?: "Unknown error")))
       }
 
+
   // 닉네임으로 사용자 검색
   fun searchByNickname(request: ServerRequest): Mono<ServerResponse> =
-      request.bodyToMono(UserSearchRequest::class.java)
-      .flatMap { searchByNicknameRequest ->
-          userService.searchByNickname(searchByNicknameRequest.nickname)
-          .flatMap { user ->
-              ServerResponse.ok().bodyValue(SimpleUserInfoDto.from(user))
+    jwtUtils.getUserIdFromToken()
+      .flatMap { userId ->
+        request.bodyToMono(UserSearchRequest::class.java)
+          .flatMap { searchByNicknameRequest ->
+            userService.searchByNickname(userId, searchByNicknameRequest.nickname)
+              .flatMap { user ->
+                ServerResponse.ok().bodyValue(SimpleUserInfoDto.from(user))
+              }
+              .switchIfEmpty(ServerResponse.noContent().build())
           }
-          .switchIfEmpty(ServerResponse.notFound().build())
-      }.onErrorResume { e ->
-          ServerResponse.badRequest().bodyValue(mapOf("error" to (e.message ?: "Unknown error")))
       }
-
-
+      .onErrorResume { e ->
+        ServerResponse.badRequest().bodyValue(mapOf("error" to (e.message ?: "Unknown error")))
+      }
 }

@@ -21,6 +21,7 @@ import java.time.LocalDateTime
 @Service
 class UserService(
   private val userRepository: UserRepository,
+  private val friendRelationRepository: FriendRelationRepository,
   private val userLevelRepository: UserLevelRepository,
   private val userSettingRepository: UserSettingRepository,
   private val userTagRepository: UserTagRepository,
@@ -230,10 +231,26 @@ class UserService(
       }
   }
 
-  fun searchByNickname(nickname: String): Mono<User> {
+  fun searchByNickname(userId: Long, nickname: String): Mono<User> {
     if (!validateNickname(nickname)) {
-      return Mono.error(IllegalArgumentException("Invalid nick name"))
+      return Mono.error(IllegalArgumentException("Invalid nickname"))
     }
+
     return userRepository.findByNickname(nickname)
+      .flatMap { user ->
+        val followId = user.id ?: return@flatMap Mono.error(IllegalArgumentException("User ID is null"))
+        if (userId == followId) {
+          return@flatMap Mono.error(IllegalArgumentException("자기 자신을 친구로 추가할 수 없어요"))
+        }
+
+        friendRelationRepository.findByUserIdAndFollowId(userId, followId)
+          .flatMap<User> { friendRelation ->
+            when {
+              friendRelation.followed -> Mono.error(RuntimeException("이미 친구예요"))
+              else -> Mono.error(RuntimeException("이미 친구 요청을 보냈어요"))
+            }
+          }
+          .switchIfEmpty(Mono.defer { Mono.just(user) }) // 팔로우 관계가 없는 경우 사용자 정보 반환
+      }
   }
 }
