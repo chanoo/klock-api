@@ -233,12 +233,12 @@ class UserService(
 
   fun searchByNickname(userId: Long, nickname: String): Mono<User> {
     if (!validateNickname(nickname)) {
-      return Mono.error(IllegalArgumentException("Invalid nickname"))
+      return Mono.error(IllegalArgumentException("친구 닉네임을 확인해주세요"))
     }
 
     return userRepository.findByNickname(nickname)
       .flatMap { user ->
-        val followId = user.id ?: return@flatMap Mono.error(IllegalArgumentException("User ID is null"))
+        val followId = user.id ?: return@flatMap Mono.error(IllegalArgumentException("친구 닉네임을 확인해주세요"))
         if (userId == followId) {
           return@flatMap Mono.error(IllegalArgumentException("자기 자신을 친구로 추가할 수 없어요"))
         }
