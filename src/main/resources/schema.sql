@@ -166,7 +166,7 @@ CREATE TABLE IF NOT EXISTS klk_timer_focus
     FOREIGN KEY (user_id) REFERENCES klk_user (id)                                          -- 사용자 타이머 테이블 참조
 );
 
--- User Traces 테이블
+-- User Trace 테이블
 CREATE TABLE IF NOT EXISTS klk_user_trace
 (
     id                      BIGINT       NOT NULL AUTO_INCREMENT,
@@ -175,9 +175,22 @@ CREATE TABLE IF NOT EXISTS klk_user_trace
     type                    VARCHAR(12)  NOT NULL,                                              -- 내용
     contents                VARCHAR(255) NULL,                                              -- 내용
     contents_image          VARCHAR(255) NULL,                                              -- 내용 이미지
-    heart                   BOOLEAN      NOT NULL DEFAULT FALSE,                            -- 좋아요 여부
+    heart_count             INT          NOT NULL DEFAULT 0,                                -- 좋아요 갯수
     created_at TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,                             -- 생성일
     PRIMARY KEY (id),
+    FOREIGN KEY (user_id) REFERENCES klk_user (id)
+);
+
+-- User Trace Heart 테이블
+CREATE TABLE IF NOT EXISTS klk_user_trace_heart
+(
+    id                      BIGINT       NOT NULL AUTO_INCREMENT,
+    user_trace_id           BIGINT       NOT NULL,                                          -- 담벼락 ID (외래 키)
+    user_id                 BIGINT       NOT NULL,                                          -- 담벼락 사용자 ID (외래 키)
+    heart_count             INT          NOT NULL,                                          -- 좋아요 갯수
+    PRIMARY KEY (id),
+    FOREIGN KEY (user_trace_id) REFERENCES klk_user_trace (id),
+    FOREIGN KEY (user_id) REFERENCES klk_user (id)
 );
 
 -- 타이머 자동시간 테이블 생성

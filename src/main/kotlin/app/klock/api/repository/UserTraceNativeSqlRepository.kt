@@ -23,7 +23,7 @@ class UserTraceNativeSqlRepository(private val databaseClient: DatabaseClient) {
     return databaseClient.sql(
       """
         SELECT
-            ut.id, ut.write_user_id, u.nickname, u.profile_image, ut.type, ut.contents, ut.contents_image, ut.heart, ut.created_at
+            ut.id, ut.write_user_id, u.nickname, u.profile_image, ut.type, ut.contents, ut.contents_image, ut.heart_count, ut.created_at
         FROM 
             klk_user_trace ut
         JOIN 
@@ -49,7 +49,7 @@ class UserTraceNativeSqlRepository(private val databaseClient: DatabaseClient) {
           ), // VARCHAR 값을 Enum으로 변환
           contents = row.get("contents", String::class.java),
           contentsImage = row.get("contents_image", String::class.java),
-          heart = row.get("heart", Boolean::class.java) ?: false,
+          heartCount = row.get("heart_count", Int::class.java) ?: 0,
           createdAt = row.get("created_at", LocalDateTime::class.java) ?: LocalDateTime.now()
         )
       }

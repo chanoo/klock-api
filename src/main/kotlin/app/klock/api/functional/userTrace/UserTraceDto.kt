@@ -13,7 +13,7 @@ data class UserTraceDto(
   val type: UserTraceType,
   val contents: String? = null,
   val contentsImage: String? = null,
-  val heart: Boolean,
+  val heartCount: Int,
   val createdAt: LocalDateTime,
 ) {
   companion object {
@@ -29,7 +29,7 @@ data class UserTraceDto(
         type = userTrace.type,
         contents = userTrace.contents,
         contentsImage = userTrace.contentsImage,
-        heart = userTrace.heart,
+        heartCount = userTrace.heartCount,
         createdAt = userTrace.createdAt
       )
     }

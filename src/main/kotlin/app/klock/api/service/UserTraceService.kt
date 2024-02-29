@@ -51,7 +51,8 @@ class UserTraceService(
       writeUserId = userTrace.writeUserId,
       type = userTrace.type,
       contents = userTrace.contents,
-      contentsImage = imageUrl
+      contentsImage = imageUrl,
+      heartCount = 0
     )
     return userTraceRepository.save(traceToSave)
       .flatMap { savedTrace ->
@@ -59,14 +60,33 @@ class UserTraceService(
       }
   }
 
-  fun updateHeart(traceId: Long): Mono<UserTraceDto> {
+  fun updateHeart(traceId: Long, heartCount: Int): Mono<UserTraceDto> {
     return userTraceRepository.findById(traceId)
       .flatMap { trace ->
         userTraceRepository.save(
           trace.copy(
-            heart = true
+            heartCount = trace.heartCount + heartCount
           )
         )
+      }
+      .flatMap { trace ->
+        convertToUserTraceDto(trace)
+      }
+      .switchIfEmpty(Mono.error(ResponseStatusException(HttpStatus.NOT_FOUND, "Trace not found with id: $traceId")))
+  }
+
+  fun cancelHeart(traceId: Long): Mono<UserTraceDto> {
+    return userTraceRepository.findById(traceId)
+      .flatMap { trace ->
+        if (trace.heartCount > 0) {
+          userTraceRepository.save(
+            trace.copy(
+              heartCount = trace.heartCount -1
+            )
+          )
+        } else {
+            Mono.just(trace)
+        }
       }
       .flatMap { trace ->
         convertToUserTraceDto(trace)
