@@ -13,7 +13,7 @@ import java.time.LocalDateTime
  * @property friendNickName 친구 닉네임
  * @property contents 흔적 내용 텍스트
  * @property contentsImage 흔적 내용 이미지
- * @property heart 좋아요 여부
+ * @property heartCount 좋아요 갯수
  * @property createdAt 레코드 생성 시간
  */
 
@@ -37,8 +37,8 @@ data class UserTrace(
   @Column("contents_image")
   val contentsImage: String? = null,
 
-  @Column("heart")
-  val heart: Boolean = false,
+  @Column("heart_count")
+  val heartCount: Int,
 
   @Column("created_at")
   val createdAt: LocalDateTime = LocalDateTime.now(),

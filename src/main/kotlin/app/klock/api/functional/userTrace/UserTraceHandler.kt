@@ -1,6 +1,7 @@
 package app.klock.api.functional.userTrace
 
 import app.klock.api.domain.entity.UserTraceType
+import app.klock.api.service.UserTraceHeartService
 import app.klock.api.service.UserTraceService
 import app.klock.api.utils.JwtUtils
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -21,6 +22,7 @@ private val logger = KotlinLogging.logger {}
 @Component
 class UserTraceHandler(
   private val userTraceService: UserTraceService,
+  private val userTraceHeartService: UserTraceHeartService,
   val jwtUtils: JwtUtils,
   val objectMapper: ObjectMapper
 ) {
@@ -95,16 +97,47 @@ class UserTraceHandler(
   // 담벼락 좋아요
   fun updateHeart(request: ServerRequest): Mono<ServerResponse> {
     val traceId = request.pathVariable("trace_id").toLong()
-    return userTraceService.updateHeart(traceId)
-      .flatMap { userTrace ->
-        ServerResponse.ok().bodyValue(userTrace)
+    return jwtUtils.getUserIdFromToken()
+      .flatMap { userId ->
+        userTraceHeartService.updateHeart(traceId, userId)
+          .flatMap { userTraceHeart ->
+            userTraceService.updateHeart(traceId, 1)
+              .flatMap { userTrace ->
+                ServerResponse.ok().bodyValue(userTrace)
+              }
+              .onErrorResume { e ->
+                if (e is ResponseStatusException && e.statusCode == HttpStatus.NOT_FOUND) {
+                  ServerResponse.notFound().build()
+                } else {
+                  ServerResponse.badRequest().bodyValue(mapOf("error" to (e.message ?: "Unknown error")))
+                }
+              }
+          }
+      }.onErrorResume { e ->
+        ServerResponse.badRequest().bodyValue(mapOf("error" to (e.message ?: "Unknown error")))
       }
-      .onErrorResume { e ->
-        if (e is ResponseStatusException && e.statusCode == HttpStatus.NOT_FOUND) {
-          ServerResponse.notFound().build()
-        } else {
-          ServerResponse.badRequest().bodyValue(mapOf("error" to (e.message ?: "Unknown error")))
-        }
+  }
+
+  fun cancelHeart(request: ServerRequest): Mono<ServerResponse> {
+    val traceId = request.pathVariable("trace_id").toLong()
+    return jwtUtils.getUserIdFromToken()
+      .flatMap { userId ->
+        userTraceHeartService.cancelHeart(traceId, userId)
+          .flatMap { userTraceHeart ->
+            userTraceService.cancelHeart(traceId)
+              .flatMap { userTrace ->
+                ServerResponse.ok().bodyValue(userTrace)
+              }
+              .onErrorResume { e ->
+                if (e is ResponseStatusException && e.statusCode == HttpStatus.NOT_FOUND) {
+                  ServerResponse.notFound().build()
+                } else {
+                  ServerResponse.badRequest().bodyValue(mapOf("error" to (e.message ?: "Unknown error")))
+                }
+              }
+          }
+      }.onErrorResume { e ->
+        ServerResponse.badRequest().bodyValue(mapOf("error" to (e.message ?: "Unknown error")))
       }
   }
 
