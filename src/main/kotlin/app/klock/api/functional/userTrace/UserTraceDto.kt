@@ -37,6 +37,7 @@ data class UserTraceDto(
 }
 
 data class CreateContentTrace(
+  val userId: Long,
   val writeUserId: Long,
   val type: UserTraceType,
   val contents: String? = null,
