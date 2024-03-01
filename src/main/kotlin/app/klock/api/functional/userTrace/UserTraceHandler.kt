@@ -99,18 +99,21 @@ class UserTraceHandler(
     val traceId = request.pathVariable("trace_id").toLong()
     return jwtUtils.getUserIdFromToken()
       .flatMap { userId ->
-        userTraceHeartService.updateHeart(traceId, userId)
-          .flatMap { userTraceHeart ->
-            userTraceService.updateHeart(traceId, 1)
-              .flatMap { userTrace ->
-                ServerResponse.ok().bodyValue(userTrace)
-              }
-              .onErrorResume { e ->
-                if (e is ResponseStatusException && e.statusCode == HttpStatus.NOT_FOUND) {
-                  ServerResponse.notFound().build()
-                } else {
-                  ServerResponse.badRequest().bodyValue(mapOf("error" to (e.message ?: "Unknown error")))
-                }
+        request.bodyToMono(UpdateHeartTrace::class.java)
+          .flatMap {
+            userTraceHeartService.updateHeart(traceId, userId, it.heartCount)
+              .flatMap { userTraceHeart ->
+                userTraceService.updateHeart(traceId, it.heartCount)
+                  .flatMap { userTrace ->
+                    ServerResponse.ok().bodyValue(userTrace)
+                  }
+                  .onErrorResume { e ->
+                    if (e is ResponseStatusException && e.statusCode == HttpStatus.NOT_FOUND) {
+                      ServerResponse.notFound().build()
+                    } else {
+                      ServerResponse.badRequest().bodyValue(mapOf("error" to (e.message ?: "Unknown error")))
+                    }
+                  }
               }
           }
       }.onErrorResume { e ->

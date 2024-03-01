@@ -44,7 +44,7 @@ data class CreateContentTrace(
 )
 
 data class UpdateHeartTrace(
-  val writeUserId: Long,
+  val heartCount: Int,
 )
 
 data class CreateStudyTrace(
