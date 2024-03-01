@@ -10,26 +10,26 @@ class UserTraceHeartService(
     private val userTraceHeartRepository: UserTraceHeartRepository
 ) {
 
-  private fun createUserTraceHeart(userId: Long, userTraceId: Long): Mono<UserTraceHeart> {
+  private fun createUserTraceHeart(userId: Long, userTraceId: Long, heartCount: Int): Mono<UserTraceHeart> {
     val heartToSave = UserTraceHeart(
         userTraceId = userTraceId,
         userId = userId,
-        heartCount = 1
+        heartCount = heartCount
     )
     return userTraceHeartRepository.save(heartToSave)
   }
 
-  fun updateHeart(traceId: Long, userId: Long): Mono<UserTraceHeart> {
+  fun updateHeart(traceId: Long, userId: Long, heartCount: Int): Mono<UserTraceHeart> {
     return userTraceHeartRepository.findByUserTraceIdAndUserId(traceId, userId)
         .flatMap { heart ->
             userTraceHeartRepository.save(
                 heart.copy(
-                    heartCount = heart.heartCount + 1
+                    heartCount = heart.heartCount + heartCount
                 )
             )
         }
         .switchIfEmpty(
-            createUserTraceHeart(userId, traceId)
+            createUserTraceHeart(userId, traceId, heartCount)
         )
   }
 
