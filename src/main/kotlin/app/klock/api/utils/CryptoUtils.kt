@@ -3,11 +3,10 @@ package app.klock.api.utils
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import java.security.KeyStore
-import java.security.MessageDigest
 import java.util.*
 import javax.crypto.Cipher
+import javax.crypto.spec.GCMParameterSpec
 import javax.crypto.spec.SecretKeySpec
-import kotlin.random.Random
 
 @Component
 class CryptoUtils {
@@ -44,10 +43,22 @@ class CryptoUtils {
     }
 
     private fun decryptDataWithAesKey(encryptedData: String, aesKey: SecretKeySpec): String {
-        val cipher = Cipher.getInstance("AES")
-        cipher.init(Cipher.DECRYPT_MODE, aesKey)
+        // AES/GCM/NoPadding 모드를 사용하여 Cipher 인스턴스를 생성합니다.
+        val cipher = Cipher.getInstance("AES/GCM/NoPadding")
 
-        val decryptedDataBytes = cipher.doFinal(Base64.getDecoder().decode(encryptedData))
+        // Base64로 인코딩된 암호화된 데이터를 디코딩합니다.
+        val encryptedDataBytes = Base64.getDecoder().decode(encryptedData)
+
+        // GCM 모드에서는 Nonce/IV가 필요합니다. 암호화된 데이터의 앞부분에서 IV를 추출하는 방식입니다
+        // IV 길이는 일반적으로 12바이트입니다. 실제 IV 추출 방식은 암호화할 때 IV를 어떻게 처리했는지에 따라 달라집니다.
+        val iv = encryptedDataBytes.copyOfRange(0, 12)
+        val encryptedMessage = encryptedDataBytes.copyOfRange(12, encryptedDataBytes.size)
+
+        // GCMParameterSpec을 사용하여 IV를 지정합니다.
+        cipher.init(Cipher.DECRYPT_MODE, aesKey, GCMParameterSpec(128, iv))
+
+        // 복호화를 수행합니다.
+        val decryptedDataBytes = cipher.doFinal(encryptedMessage)
         return String(decryptedDataBytes)
     }
 }
