@@ -28,15 +28,19 @@ class FriendRelationHandler(
       .flatMap { userId ->
         request.bodyToMono(FriendRelationRequest::class.java)
           .flatMap { friendRelationRequest ->
-            friendRelationService.create(
-              userId = userId,
-              followId = friendRelationRequest.followId
-            )
+            validateFriendRelation(userId, friendRelationRequest.followId)
+              .flatMap { _ ->
+                friendRelationService.create(
+                  userId = userId,
+                  followId = friendRelationRequest.followId
+                )
+              }
+              .flatMap { friendRelation ->
+                ServerResponse.created(URI.create("/api/v1/friend-relations/${friendRelation.id}"))
+                  .bodyValue(friendRelation)
+              }
+              .switchIfEmpty(ServerResponse.status(HttpStatus.BAD_REQUEST).build())
           }
-          .flatMap { friendRelation ->
-            ServerResponse.created(URI.create("/api/v1/friend-relations/${friendRelation.id}")).bodyValue(friendRelation)
-          }
-          .switchIfEmpty(ServerResponse.status(HttpStatus.BAD_REQUEST).build())
       }
   }
 
@@ -102,4 +106,21 @@ class FriendRelationHandler(
     }
     return Mono.just(true)
   }
+
+  /**
+   * 친구 추가시 체크 사항
+   * 1. 이미 추가된 친구일 경우
+   * 2. 내 자신을 추가 하려는 경우
+   */
+    fun validateFriendRelation(userId: Long, followId: Long): Mono<Boolean> {
+      if (userId == followId) {
+        return Mono.error(IllegalArgumentException("자신을 친구로 추가할 수 없습니다."))
+      }
+
+      return friendRelationService.getFriendRelation(userId, followId)
+        .handle<Boolean> { _, sink ->
+          sink.error(IllegalArgumentException("이미 친구로 추가된 사용자입니다."))
+        }
+        .switchIfEmpty(Mono.just(true))
+    }
 }
