@@ -17,7 +17,7 @@ class FriendRelationService(
     private val userRepository: UserRepository) {
 
     fun create(userId: Long, followId: Long): Mono<FriendRelationDto> {
-        return friendRelationRepository.findByUserIdAndFollowId(followId, userId)
+        return getFriendRelation(followId, userId)
             .flatMap { existingRelation ->
                 val updated = existingRelation.copy(followed = true)
                 friendRelationRepository.save(updated)
@@ -34,7 +34,7 @@ class FriendRelationService(
 
     fun unfollow(userId: Long, followId: Long): Mono<Void> {
         //맞팔여부 체크
-        friendRelationRepository.findByUserIdAndFollowId(followId, userId)
+        getFriendRelation(followId, userId)
             .flatMap { existingRelation ->
                 val updated = existingRelation.copy(followed = false)
                 friendRelationRepository.save(updated)
@@ -51,7 +51,7 @@ class FriendRelationService(
      * QR코드를 통해 팔로우(맞팔) 처리
      */
     fun followFromQrCode(userId: Long, followId: Long): Mono<FriendRelationDto> {
-        return friendRelationRepository.findByUserIdAndFollowId(followId, userId)
+        return getFriendRelation(followId, userId)
             .flatMap { existingRelation ->
                 val updated = existingRelation.copy(followed = true)
                 friendRelationRepository.save(updated)
@@ -66,6 +66,10 @@ class FriendRelationService(
                 userRepository.findById(friendRelation.followId)
                     .map { FriendRelationDto.from(friendRelation, it) }
             }
+    }
+
+    fun getFriendRelation(userId: Long, followId: Long): Mono<FriendRelation> {
+        return friendRelationRepository.findByUserIdAndFollowId(userId, followId)
     }
 }
 
