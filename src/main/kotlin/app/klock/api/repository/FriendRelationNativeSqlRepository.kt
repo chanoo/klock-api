@@ -15,19 +15,21 @@ class FriendRelationNativeSqlRepository(private val databaseClient: DatabaseClie
      * @param userId
      */
     fun findFriendDetails(userId: Long): Flux<FriendDetailDto> {
-       return databaseClient.sql("""
+      return databaseClient.sql("""
     (
         SELECT
-            fr.follow_id, 
+            fr.follow_id AS id, 
             u.nickname, 
-            COALESCE(sum(TIMESTAMPDIFF(MINUTE, st.start_time, st.end_time)), 0) AS total_study_time, 
+            COALESCE(SUM(CASE 
+                WHEN WEEK(st.start_time, 1) = WEEK(CURRENT_DATE, 1) THEN TIMESTAMPDIFF(SECOND, st.start_time, st.end_time)
+                ELSE 0 END), 0) AS total_study_time, 
             u.profile_image
         FROM 
             klk_friend_relation fr
         JOIN 
             klk_user u ON fr.follow_id = u.id
         LEFT OUTER JOIN
-            klk_study_session st ON fr.follow_id = st.user_id    
+            klk_study_session st ON fr.follow_id = st.user_id AND st.start_time >= DATE_SUB(CURRENT_DATE, INTERVAL (DAYOFWEEK(CURRENT_DATE)-2) DAY)
         WHERE 
             fr.user_id = :userId
             AND fr.followed = true
@@ -37,25 +39,27 @@ class FriendRelationNativeSqlRepository(private val databaseClient: DatabaseClie
     UNION ALL
     (
         SELECT
-            u.id AS follow_id, 
+            u.id, 
             u.nickname, 
-            COALESCE(sum(TIMESTAMPDIFF(MINUTE, st.start_time, st.end_time)), 0) AS total_study_time, 
+            COALESCE(SUM(CASE 
+                WHEN WEEK(st.start_time, 1) = WEEK(CURRENT_DATE, 1) THEN TIMESTAMPDIFF(SECOND, st.start_time, st.end_time)
+                ELSE 0 END), 0) AS total_study_time, 
             u.profile_image
         FROM 
             klk_user u
         LEFT OUTER JOIN
-            klk_study_session st ON u.id = st.user_id
+            klk_study_session st ON u.id = st.user_id AND st.start_time >= DATE_SUB(CURRENT_DATE, INTERVAL (DAYOFWEEK(CURRENT_DATE)-2) DAY)
         WHERE 
             u.id = :userId
         GROUP BY
             u.id
     )
     ORDER BY total_study_time DESC, nickname
-    """)
+  """)
         .bind(0, userId)
         .map { row, _ ->
           FriendDetailDto(
-            followId = row.get("follow_id", Long::class.java) ?: 0L,
+            followId = row.get("id", Long::class.java) ?: 0L,
             nickname = row.get("nickname", String::class.java) ?: "",
             totalStudyTime = row.get("total_study_time", Int::class.java) ?: 0,
             profileImage = row.get("profile_image", String::class.java) ?: ""
@@ -71,5 +75,4 @@ class FriendRelationNativeSqlRepository(private val databaseClient: DatabaseClie
           }
         }
     }
-
 }
